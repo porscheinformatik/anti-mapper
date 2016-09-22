@@ -37,7 +37,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * Returns true if the unique keys match. Most often, this is the id. The method will not be called if either or
      * both values are null. The method will be used for searches during list merge operations. The methods themself
      * ensure, that no DTO and no entity will be matched twice, thus comparing the id should be enough most of the time,
-     * even in the list may contain multiple entries with an id set to null.
+     * even if the list may contain multiple entries with an id set to null.
      *
      * If the entity is identifiable by a specific (combined) key, then use this key for the match operation. If this it
      * not the case, just use the id.
@@ -136,10 +136,10 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
     /**
      * Called after a collection mapping
      *
-     * @param entites the mapped entities
+     * @param entities the mapped entities
      * @param hints optional hints
      */
-    default void afterMergeIntoCollection(Collection<ENTITY_TYPE> entites, Object... hints)
+    default void afterMergeIntoCollection(Collection<ENTITY_TYPE> entities, Object... hints)
     {
         // intentionally left blank
     }
@@ -469,7 +469,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
     default SortedSet<ENTITY_TYPE> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO_TYPE>> dtos,
         SortedSet<ENTITY_TYPE> entities, Object... hints)
     {
-        return mergeGroupedMapIntoMixedCollection(dtos, entities, TreeSet::new, hints);
+        return mergeGroupedMapIntoOrderedCollection(dtos, entities, TreeSet::new, hints);
     }
 
     /**
@@ -484,7 +484,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
     default SortedSet<ENTITY_TYPE> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO_TYPE>> dtos,
         SortedSet<ENTITY_TYPE> entities, Comparator<? super ENTITY_TYPE> comparator, Object... hints)
     {
-        return mergeGroupedMapIntoMixedCollection(dtos, entities, () -> new TreeSet<>(comparator), hints);
+        return mergeGroupedMapIntoOrderedCollection(dtos, entities, () -> new TreeSet<>(comparator), hints);
     }
 
     /**

@@ -1,6 +1,7 @@
 package at.porscheinformatik.happy.mapper;
 
-import junit.framework.Assert;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class HintsTest
 {
@@ -12,6 +13,7 @@ public class HintsTest
         C
     }
 
+    @Test
     public void containsTest()
     {
         Object[] hints = {Flag.A, Flag.C};

@@ -10,6 +10,8 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.junit.Test;
+
 public class MapperUtilsTest
 {
 
@@ -100,6 +102,7 @@ public class MapperUtilsTest
         }
     }
 
+    @Test
     public void testSingleSame()
     {
         Collection<SourceLine> sourceList = createSourceList("A", "B", "C");
@@ -115,6 +118,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testDuplicateSame()
     {
         Collection<SourceLine> sourceList = createSourceList("A", "A", "A", "B", "B", "B", "C", "C", "C");
@@ -136,6 +140,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testSingleAdds()
     {
         Collection<SourceLine> sourceList = createSourceList("1", "A", "2", "B", "3", "C", "4");
@@ -155,6 +160,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testDuplicateAdds()
     {
         Collection<SourceLine> sourceList =
@@ -182,6 +188,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testSingleRemoves()
     {
         Collection<SourceLine> sourceList = createSourceList("A", "B", "C");
@@ -197,6 +204,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testDuplicateRemoves()
     {
         Collection<SourceLine> sourceList = createSourceList("A", "B", "C");
@@ -213,6 +221,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testSingleExchanges()
     {
         Collection<SourceLine> sourceList = createSourceList("1", "B", "C2", "D", "3");
@@ -230,6 +239,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testDuplicateExchanges()
     {
         Collection<SourceLine> sourceList = createSourceList("1", "1", "B", "B", "C2", "C2", "D", "D", "3", "3");
@@ -252,6 +262,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testSingleReverse()
     {
         Collection<SourceLine> sourceList = createSourceList("C", "B", "A");
@@ -267,6 +278,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testDuplicateReverse()
     {
         Collection<SourceLine> sourceList = createSourceList("C", "C", "B", "B", "A", "A");
@@ -285,6 +297,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testLongestSubList()
     {
         Collection<SourceLine> sourceList =
@@ -312,6 +325,7 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
     public void testUpdate()
     {
         Collection<SourceLine> sourceList = createSourceList("A1", "B2", "C3");

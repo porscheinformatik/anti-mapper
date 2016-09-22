@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -179,6 +180,136 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
         Function<ENTITY_TYPE, KEY_TYPE> keyFunction, Object... hints)
     {
         return transformToMap(entities, HashMap<KEY_TYPE, DTO_TYPE>::new, keyFunction, hints);
+    }
+
+    /**
+     * Maps a collection to a map
+     *
+     * @param <GROUP_KEY_TYPE> the type of the group key
+     * @param <COLLECTION_TYPE> the type of the collections in the result map
+     * @param entities the entities, may be null
+     * @param mapFactory a factory for the result map
+     * @param groupKeyFunction extracts the key for the map
+     * @param collectionFactory a factory for the collections in the result map
+     * @param hints optional hints
+     * @return a map
+     */
+    default <GROUP_KEY_TYPE, COLLECTION_TYPE extends Collection<DTO_TYPE>> Map<GROUP_KEY_TYPE, COLLECTION_TYPE> transformToGroupedMap(
+        Iterable<? extends ENTITY_TYPE> entities, Supplier<Map<GROUP_KEY_TYPE, COLLECTION_TYPE>> mapFactory,
+        Function<ENTITY_TYPE, GROUP_KEY_TYPE> groupKeyFunction, Supplier<COLLECTION_TYPE> collectionFactory,
+        Object... hints)
+    {
+        try
+        {
+            return MapperUtils.mapMixedGroups(entities, mapFactory.get(), groupKeyFunction, collectionFactory,
+                (entity, dto) -> false, (entity, dto) -> transform(entity, hints));
+        }
+        catch (Exception e)
+        {
+            throw new MapperException("Failed to transform entities to a grouped map: %s", e,
+                MapperUtils.abbreviate(String.valueOf(entities), 4096));
+        }
+    }
+
+    /**
+     * Maps a collection to a map
+     *
+     * @param <GROUP_KEY_TYPE> the type of the group key
+     * @param entities the entities, may be null
+     * @param groupKeyFunction extracts the key for the map
+     * @param hints optional hints
+     * @return a map
+     */
+    default <GROUP_KEY_TYPE> Map<GROUP_KEY_TYPE, Set<DTO_TYPE>> transformToGroupedHashSets(
+        Iterable<? extends ENTITY_TYPE> entities, Function<ENTITY_TYPE, GROUP_KEY_TYPE> groupKeyFunction,
+        Object... hints)
+    {
+        return transformToGroupedMap(entities, HashMap<GROUP_KEY_TYPE, Set<DTO_TYPE>>::new, groupKeyFunction,
+            HashSet::new, hints);
+    }
+
+    /**
+     * Maps a collection to a map
+     *
+     * @param <GROUP_KEY_TYPE> the type of the group key
+     * @param entities the entities, may be null
+     * @param groupKeyFunction extracts the key for the map
+     * @param hints optional hints
+     * @return a map
+     */
+    default <GROUP_KEY_TYPE> Map<GROUP_KEY_TYPE, SortedSet<DTO_TYPE>> transformToGroupedTreeSets(
+        Iterable<? extends ENTITY_TYPE> entities, Function<ENTITY_TYPE, GROUP_KEY_TYPE> groupKeyFunction,
+        Object... hints)
+    {
+        return transformToGroupedMap(entities, HashMap<GROUP_KEY_TYPE, SortedSet<DTO_TYPE>>::new, groupKeyFunction,
+            TreeSet::new, hints);
+    }
+
+    /**
+     * Maps a collection to a map
+     *
+     * @param <GROUP_KEY_TYPE> the type of the group key
+     * @param entities the entities, may be null
+     * @param groupKeyFunction extracts the key for the map
+     * @param comparator the comparator for the tree set
+     * @param hints optional hints
+     * @return a map
+     */
+    default <GROUP_KEY_TYPE> Map<GROUP_KEY_TYPE, SortedSet<DTO_TYPE>> transformToGroupedTreeSets(
+        Iterable<? extends ENTITY_TYPE> entities, Function<ENTITY_TYPE, GROUP_KEY_TYPE> groupKeyFunction,
+        Comparator<? super DTO_TYPE> comparator, Object... hints)
+    {
+        return transformToGroupedMap(entities, HashMap<GROUP_KEY_TYPE, SortedSet<DTO_TYPE>>::new, groupKeyFunction,
+            () -> new TreeSet<>(comparator), hints);
+    }
+
+    /**
+     * Maps a collection to a map
+     *
+     * @param <GROUP_KEY_TYPE> the type of the group key
+     * @param entities the entities, may be null
+     * @param groupKeyFunction extracts the key for the map
+     * @param hints optional hints
+     * @return a map
+     */
+    default <GROUP_KEY_TYPE> Map<GROUP_KEY_TYPE, List<DTO_TYPE>> transformToGroupedArrayLists(
+        Iterable<? extends ENTITY_TYPE> entities, Function<ENTITY_TYPE, GROUP_KEY_TYPE> groupKeyFunction,
+        Object... hints)
+    {
+        return transformToGroupedMap(entities, HashMap<GROUP_KEY_TYPE, List<DTO_TYPE>>::new, groupKeyFunction,
+            ArrayList::new, hints);
+    }
+
+    /**
+     * Maps a collection to a map
+     *
+     * @param <GROUP_KEY_TYPE> the type of the group key
+     * @param entities the entities, may be null
+     * @param groupKeyFunction extracts the key for the map
+     * @param hints optional hints
+     * @return a map
+     */
+    default <GROUP_KEY_TYPE> Map<GROUP_KEY_TYPE, List<DTO_TYPE>> transformToUnmodifiableGroupedArrayLists(
+        Iterable<? extends ENTITY_TYPE> entities, Function<ENTITY_TYPE, GROUP_KEY_TYPE> groupKeyFunction,
+        Object... hints)
+    {
+        Map<GROUP_KEY_TYPE, List<DTO_TYPE>> transformed =
+            transformToGroupedArrayLists(entities, groupKeyFunction, hints);
+
+        if (transformed == null)
+        {
+            return null;
+        }
+
+        Map<GROUP_KEY_TYPE, List<DTO_TYPE>> unmodifiable = new HashMap<>();
+
+        for (Entry<GROUP_KEY_TYPE, List<DTO_TYPE>> entry : transformed.entrySet())
+        {
+            unmodifiable.put(entry.getKey(),
+                entry.getValue() != null ? Collections.unmodifiableList(entry.getValue()) : null);
+        }
+
+        return Collections.unmodifiableMap(unmodifiable);
     }
 
 }
