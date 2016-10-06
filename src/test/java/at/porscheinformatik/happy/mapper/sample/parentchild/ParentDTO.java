@@ -1,5 +1,6 @@
 package at.porscheinformatik.happy.mapper.sample.parentchild;
 
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -8,23 +9,22 @@ import java.util.Map.Entry;
 public class ParentDTO
 {
 
-    private Integer id;
+    private final Integer id;
+
     private String name;
+    private LocalDateTime timestamp;
     private Map<ChildType, List<ChildDTO>> childs;
 
-    public ParentDTO()
+    public ParentDTO(Integer id)
     {
         super();
+
+        this.id = id;
     }
 
     public Integer getId()
     {
         return id;
-    }
-
-    public void setId(Integer id)
-    {
-        this.id = id;
     }
 
     public String getName()
@@ -35,6 +35,16 @@ public class ParentDTO
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public LocalDateTime getTimestamp()
+    {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp)
+    {
+        this.timestamp = timestamp;
     }
 
     public Map<ChildType, List<ChildDTO>> getChilds()

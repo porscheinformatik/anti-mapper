@@ -5,9 +5,9 @@ public class ChildDTO
 
     private final Integer id;
     private final String name;
-    private final ChildType type;
+    private final String type;
 
-    public ChildDTO(Integer id, String name, ChildType type)
+    public ChildDTO(Integer id, String name, String type)
     {
         super();
         this.id = id;
@@ -25,7 +25,7 @@ public class ChildDTO
         return name;
     }
 
-    public ChildType getType()
+    public String getType()
     {
         return type;
     }

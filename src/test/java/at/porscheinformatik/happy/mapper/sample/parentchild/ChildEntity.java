@@ -6,7 +6,7 @@ public class ChildEntity implements Comparable<ChildEntity>
 {
 
     private Integer id;
-    private String name;
+    private String key;
     private ChildType type;
     private int ordinal;
     private ParentEntity parent;
@@ -16,11 +16,11 @@ public class ChildEntity implements Comparable<ChildEntity>
         super();
     }
 
-    public ChildEntity(Integer id, String name, ChildType type, int ordinal)
+    public ChildEntity(Integer id, String key, ChildType type, int ordinal)
     {
         super();
         this.id = id;
-        this.name = name;
+        this.key = key;
         this.type = type;
         this.ordinal = ordinal;
     }
@@ -35,14 +35,14 @@ public class ChildEntity implements Comparable<ChildEntity>
         this.id = id;
     }
 
-    public String getName()
+    public String getKey()
     {
-        return name;
+        return key;
     }
 
-    public void setName(String name)
+    public void setKey(String key)
     {
-        this.name = name;
+        this.key = key;
     }
 
     public ChildType getType()
@@ -91,7 +91,7 @@ public class ChildEntity implements Comparable<ChildEntity>
     @Override
     public String toString()
     {
-        return String.format("ChildEntity (id=%s, name=%s, type=%s, ordinal=%s)", id, name, type, ordinal);
+        return String.format("ChildEntity (id=%s, name=%s, type=%s, ordinal=%s)", id, key, type, ordinal);
     }
 
 }

@@ -43,7 +43,7 @@ A `Transformer` maps an object (most often an _entity_) into a newly created obj
 
 ### `Merger`
 
-A `Merger` maps an object (most often a _DTO_) into an existing object (most often an _entity_). This process is
+A `Merger` maps an object (most often a _DTO_) into an existing object (most often an _entity_).
 
 ### `Mapper`
 
@@ -63,11 +63,18 @@ that make it simple to access default values or pass parent objects.
 
 ### `Transformer`
 
-A `Transformer` is an interface with one method: `DTO_TYPE transform(ENTITY_TYPE entity, Object... hints);`
+You implement a `Transformer` if you want to map an object into a newly create object. You make it a singleton.
+
+Call the class something like `*Mapper`. This is convenient and it makes it easy to find and recognize mapper classes.
+
+A `Transformer` is an interface with one method: 
+
+* `DTO_TYPE transform(ENTITY_TYPE entity, Object... hints);`
+
 This is the only method you have to implement for a working transformer. The interface offers a lot of default methods
 for transforming collections, sets, lists and maps.
 
-A typical transformer looks like this:
+A typical `Transformer` looks like this:
 
     @Override
     public ParentDTO transform(ParentEntity entity, Object... hints)
@@ -81,18 +88,22 @@ First, check for null. This is mandatory. You will have to do it in every transf
             return null;
         }
         
-Next, start transforming.
+Next, start transforming by creating your target object. Final values are an easy task.
 
-        ParentDTO dto = new ParentDTO();
+        ParentDTO dto = new ParentDTO(entity.getId());
          
 Add the entity and the DTO to the hints, just in case the childMapper needs it.
 
         hints = Hints.join(hints, entity, dto);
         
-        dto.setId(entity.getId());
-        dto.setName(entity.getName());
+Then set the values. Name and type conversions are trivial.
         
-This is a call to a collective transform of Happy Mapper. It transforms a collection into a grouped list. 
+        dto.setName(entity.getKey());
+        
+        ZoneId timezone = Hints.hint(hints, ZoneId.class);
+        dto.setTimestamp(entity.getTimestamp().toInstant().atZone(timezone).toLocalDateTime());
+        
+This is a call to a collective transform the `Transformer` interface provides. It transforms a collection into a grouped list. 
 
         dto.setChilds(childMapper.transformToGroupedArrayLists(entity.getChilds(), child -> child.getType(), hints));
         
@@ -101,10 +112,77 @@ That's it, return the object.
         return dto;
     }
 
+### `Merger`
 
+You implement a `Merger` if you want to map an object into an existing object. You make it a singleton.
 
+Call the class something like `*Mapper`. This is convenient and it makes it easy to find and recognize mapper classes.
 
-- TBD -
+A `Merger` is an interface with two methods:
+
+* `ENTITY_TYPE merge(DTO_TYPE dto, ENTITY_TYPE entity, Object... hints);`
+* `boolean isUniqueKeyMatching(DTO_TYPE dto, ENTITY_TYPE entity, Object... hints);`
+
+The `merge` method puts the values of the DTO in to the entity. The `isUniqueKeyMatching` method is used to
+find the right entity in collections and maps.
+
+A typical `Merger` looks like this:
+
+    @Override
+    public ChildEntity merge(ChildDTO dto, ChildEntity entity, Object... hints)
+    {
+    
+First, check for null. This is mandatory. You will have to do it in every merger. You can use the 
+`AbstractMerger` to avoid this.
+    
+        if (dto == null)
+        {
+            return null;
+        }
+
+Next, check if you have to create a new entity. You can use the `AbstractMerger` to avoid this.
+
+        if ((entity == null) || (!Objects.equals(dto.getId(), entity.getId())))
+        {
+            entity = new ChildEntity();
+            entity.setId(dto.getId());
+        }
+
+Then set the values. Name and type conversions are trivial.
+
+        entity.setKey(dto.getName());
+        entity.setType(ChildType.valueOf(dto.getType()));
+
+To set the parent, use the hints.
+
+        entity.setParent(Hints.hint(hints, ParentEntity.class));
+
+That's it, return the object.
+
+        return entity;
+    }
+
+The matching function usually just checks the ID.
+
+    @Override
+    public boolean isUniqueKeyMatching(ChildDTO dto, ChildEntity entity, Object... hints)
+    {
+        return Objects.equals(dto.getId(), entity.getId());
+    }
+
+And yes, this is enough, even if you map multiple DTOs with null as ID, because matched DTOs/Entity will not be matched
+twice.
+
+### `Mapper`
+
+You implement a `Mapper` if you want two-way mapping. It's the same as implementing a `Transformer` and a 
+`Merger` in the same class.
+
+### More documentation to come
+
+* `public void afterMergeIntoCollection(Collection<ChildEntity> entities, Object... hints)`
+* Collections, Sets, Lists, Maps
+* Best practices
 
 
 

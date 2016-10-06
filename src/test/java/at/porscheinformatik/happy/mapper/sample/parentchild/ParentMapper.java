@@ -1,5 +1,7 @@
 package at.porscheinformatik.happy.mapper.sample.parentchild;
 
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Objects;
 
 import at.porscheinformatik.happy.mapper.Hints;
@@ -25,13 +27,16 @@ public class ParentMapper implements Mapper<ParentDTO, ParentEntity>
             return null;
         }
 
-        ParentDTO dto = new ParentDTO();
+        ParentDTO dto = new ParentDTO(entity.getId());
 
         // add the entity and the DTO to the hints, just in case the childMapper needs it
         hints = Hints.join(hints, entity, dto);
 
-        dto.setId(entity.getId());
-        dto.setName(entity.getName());
+        dto.setName(entity.getKey());
+        
+        ZoneId timezone = Hints.hint(hints, ZoneId.class);
+        dto.setTimestamp(entity.getTimestamp().toInstant().atZone(timezone).toLocalDateTime());
+        
         dto.setChilds(childMapper.transformToGroupedArrayLists(entity.getChilds(), child -> child.getType(), hints));
 
         return dto;
@@ -57,7 +62,11 @@ public class ParentMapper implements Mapper<ParentDTO, ParentEntity>
         // add the entity and the DTO to the hints, just in case the childMapper needs it
         hints = Hints.join(hints, entity, dto);
 
-        entity.setName(dto.getName());
+        entity.setKey(dto.getName());
+        
+        ZoneId timezone = Hints.hint(hints, ZoneId.class);
+        entity.setTimestamp(Date.from(dto.getTimestamp().atZone(timezone).toInstant()));
+        
         entity.setChilds(childMapper.mergeGroupedMapIntoTreeSet(dto.getChilds(), entity.getChilds(), hints));
 
         return entity;

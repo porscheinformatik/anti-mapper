@@ -18,7 +18,7 @@ public class ChildMapper implements Mapper<ChildDTO, ChildEntity>
             return null;
         }
 
-        return new ChildDTO(entity.getId(), entity.getName(), entity.getType());
+        return new ChildDTO(entity.getId(), entity.getKey(), entity.getType().name());
     }
 
     @Override
@@ -38,9 +38,9 @@ public class ChildMapper implements Mapper<ChildDTO, ChildEntity>
             entity.setId(dto.getId());
         }
 
-        entity.setName(dto.getName());
-        entity.setType(dto.getType());
-        
+        entity.setKey(dto.getName());
+        entity.setType(ChildType.valueOf(dto.getType()));
+
         // the parent will be taken from the hints. The ParentMapper makes sure it is available.
         entity.setParent(Hints.hint(hints, ParentEntity.class));
 
@@ -51,15 +51,15 @@ public class ChildMapper implements Mapper<ChildDTO, ChildEntity>
     public void afterMergeIntoCollection(Collection<ChildEntity> entities, Object... hints)
     {
         int ordinal = 0;
-        
+
         for (ChildEntity entity : entities)
         {
             ordinal = Math.max(ordinal, entity.getOrdinal());
-            
+
             entity.setOrdinal(ordinal++);
         }
     }
-    
+
     @Override
     public boolean isUniqueKeyMatching(ChildDTO dto, ChildEntity entity, Object... hints)
     {

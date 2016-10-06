@@ -1,6 +1,7 @@
 package at.porscheinformatik.happy.mapper.sample.parentchild;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -8,7 +9,8 @@ public class ParentEntity
 {
 
     private Integer id;
-    private String name;
+    private String key;
+    private Date timestamp;
     private SortedSet<ChildEntity> childs;
 
     public ParentEntity()
@@ -16,12 +18,15 @@ public class ParentEntity
         super();
     }
 
-    public ParentEntity(Integer id, String name, ChildEntity... childs)
+    public ParentEntity(Integer id, String key, ChildEntity... childs)
     {
         super();
 
         this.id = id;
-        this.name = name;
+        this.key = key;
+
+        timestamp = new Date();
+
         this.childs = new TreeSet<>(Arrays.asList(childs));
 
         for (ChildEntity child : childs)
@@ -40,14 +45,24 @@ public class ParentEntity
         this.id = id;
     }
 
-    public String getName()
+    public String getKey()
     {
-        return name;
+        return key;
     }
 
-    public void setName(String name)
+    public void setKey(String key)
     {
-        this.name = name;
+        this.key = key;
+    }
+
+    public Date getTimestamp()
+    {
+        return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp)
+    {
+        this.timestamp = timestamp;
     }
 
     public SortedSet<ChildEntity> getChilds()
@@ -63,7 +78,8 @@ public class ParentEntity
     @Override
     public String toString()
     {
-        StringBuilder builder = new StringBuilder("ParentEntity (id=").append(id).append(", name=").append(name).append(") {");
+        StringBuilder builder =
+            new StringBuilder("ParentEntity (id=").append(id).append(", key=").append(key).append(") {");
 
         for (ChildEntity child : childs)
         {
