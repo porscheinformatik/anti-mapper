@@ -287,6 +287,7 @@ public final class MapperUtils
         int sourceSize = (sourceList != null) ? sourceList.size() : 0;
         int targetSize = targetList.size();
         int writeIndex = 0;
+        Collection<TargetValue> removedTargetValues = new ArrayList<>();
 
         while ((sourceIndex < sourceSize) && (targetIndex < targetSize))
         {
@@ -305,7 +306,13 @@ public final class MapperUtils
             else if (table[sourceIndex + 1][targetIndex] >= table[sourceIndex][targetIndex + 1])
             {
                 // added
-                targetList.add(writeIndex, mapFunction.apply(sourceValue, null));
+                targetValue = removedTargetValues
+                    .stream()
+                    .filter(removedValue -> uniqueKeyMatchFunction.matches(sourceValue, removedValue))
+                    .findFirst()
+                    .orElse(null);
+
+                targetList.add(writeIndex, mapFunction.apply(sourceValue, targetValue));
 
                 sourceIndex++;
                 writeIndex++;
@@ -313,7 +320,7 @@ public final class MapperUtils
             else
             {
                 // removed
-                targetList.remove(writeIndex);
+                removedTargetValues.add(targetList.remove(writeIndex));
 
                 targetIndex++;
             }
@@ -322,13 +329,20 @@ public final class MapperUtils
         // remove remaining
         while (writeIndex < targetList.size())
         {
-            targetList.remove(writeIndex);
+            removedTargetValues.add(targetList.remove(writeIndex));
         }
 
         // add remaining
         while (sourceIndex < sourceSize)
         {
-            targetList.add(mapFunction.apply(sourceList.get(sourceIndex), null));
+            SourceValue sourceValue = sourceList.get(sourceIndex);
+            TargetValue targetValue = removedTargetValues
+                .stream()
+                .filter(removedValue -> uniqueKeyMatchFunction.matches(sourceValue, removedValue))
+                .findFirst()
+                .orElse(null);
+
+            targetList.add(mapFunction.apply(sourceValue, targetValue));
 
             sourceIndex++;
         }

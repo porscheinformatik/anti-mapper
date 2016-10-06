@@ -318,9 +318,9 @@ public class MapperUtilsTest
         assertNext(iterator, Change.SAME, "C");
         assertNext(iterator, Change.SAME, "B");
         assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.ADDED, "X");
-        assertNext(iterator, Change.ADDED, "Y");
-        assertNext(iterator, Change.ADDED, "Z");
+        assertNext(iterator, Change.SAME, "X");
+        assertNext(iterator, Change.SAME, "Y");
+        assertNext(iterator, Change.SAME, "Z");
         assertNext(iterator, Change.SAME, "!");
         assertNoNext(iterator);
     }
@@ -338,6 +338,25 @@ public class MapperUtilsTest
         assertNext(iterator, Change.UPDATED, "A1");
         assertNext(iterator, Change.UPDATED, "B2");
         assertNext(iterator, Change.UPDATED, "C3");
+        assertNoNext(iterator);
+    }
+
+    @Test
+    public void testRealLife()
+    {
+        Collection<SourceLine> sourceList = createSourceList("Bs", "Cs", "Es", "As", "Ds", "Fs");
+        Collection<TargetLine> targetList = createTargetList("At", "Bt", "Ct", "Dt");
+
+        MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
+
+        Iterator<TargetLine> iterator = targetList.iterator();
+
+        assertNext(iterator, Change.UPDATED, "Bs");
+        assertNext(iterator, Change.UPDATED, "Cs");
+        assertNext(iterator, Change.ADDED, "Es");
+        assertNext(iterator, Change.UPDATED, "As");
+        assertNext(iterator, Change.UPDATED, "Ds");
+        assertNext(iterator, Change.ADDED, "Fs");
         assertNoNext(iterator);
     }
 
