@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -121,6 +122,23 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
         List<DTO_TYPE> transformed = transformToArrayList(entities, hints);
 
         return transformed != null ? Collections.unmodifiableList(transformed) : null;
+    }
+
+    /**
+     * Maps the entities in the stream to DTOs and returns the stream as an iterator.
+     * 
+     * @param entityStream the stream, may be null
+     * @return the streams iterator
+     */
+    default Stream<DTO_TYPE> transformToStream(Stream<ENTITY_TYPE> entityStream)
+    {
+        if (entityStream == null)
+        {
+            return null;
+        }
+
+        return entityStream //
+            .map(this::transform);
     }
 
     /**
