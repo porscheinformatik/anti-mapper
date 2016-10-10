@@ -20,6 +20,14 @@
 		<tag>HEAD</tag>
 	</scm>
 
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
 	<developers>
 		<developer>
 			<id>ham</id>
@@ -61,7 +69,7 @@
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
 			</plugin>
-			
+
 			<plugin>
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
@@ -76,7 +84,7 @@
 						<version>1.9.4</version>
 					</dependency>
 				</dependencies>
-			</plugin>			
+			</plugin>
 		</plugins>
 	</build>
 
