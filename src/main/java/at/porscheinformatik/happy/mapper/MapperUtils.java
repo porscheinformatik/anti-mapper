@@ -158,7 +158,8 @@ public final class MapperUtils
      * Maps the source iterable into the target collection. Keeps the order. Searches for existing objects by using the
      * specified match function, which may only match some important keys (maps the object even if the match function
      * returns true). Maps the source entry to the target entry by using the specified map function. The map function
-     * must be able to handle null as target value (create a new instance).
+     * must be able to handle null as target value (create a new instance). Tries to rescue removed target values by
+     * reusing them (if the unique key matches).
      *
      * @param <SourceValue> the type of the values in the source iterable
      * @param <TargetCollection> the type of the target collection
@@ -181,7 +182,8 @@ public final class MapperUtils
      * Maps the source iterable into the target collection. Keeps the order. Searches for existing objects by using the
      * specified match function, which may only match some important keys (maps the object even if the match function
      * returns true). Maps the source entry to the target entry by using the specified map function. The map function
-     * must be able to handle null as target value (create a new instance).
+     * must be able to handle null as target value (create a new instance). Tries to rescue removed target values by
+     * reusing them (if the unique key matches).
      *
      * @param <SourceValue> the type of the values in the source iterable
      * @param <TargetCollection> the type of the target collection
@@ -244,7 +246,8 @@ public final class MapperUtils
      * Maps the source list into the target list. Keeps the order. Searches for existing objects by using the specified
      * match function, which may only match some important keys (maps the object even if the match function returns
      * true). Maps the source entry to the target entry by using the specified map function. The map function must be
-     * able to handle null as target value (create a new instance).
+     * able to handle null as target value (create a new instance).Tries to rescue removed target values by reusing them
+     * (if the unique key matches).
      *
      * @param <SourceEntry> the type of the values in the source list
      * @param <TargetValue> the type of the values in the target list
@@ -265,7 +268,8 @@ public final class MapperUtils
      * Maps the source list into the target list. Keeps the order. Searches for existing objects by using the specified
      * match function, which may only match some important keys (maps the object even if the match function returns
      * true). Maps the source entry to the target entry by using the specified map function. The map function must be
-     * able to handle null as target value (create a new instance).
+     * able to handle null as target value (create a new instance). Tries to rescue removed target values by reusing
+     * them (if the unique key matches).
      *
      * @param <SourceValue> the type of the values in the source list
      * @param <TargetValue> the type of the values in the target list
@@ -297,33 +301,52 @@ public final class MapperUtils
             if (uniqueKeyMatchFunction.matches(sourceValue, targetValue))
             {
                 // exists
+
                 targetList.set(writeIndex, mapFunction.apply(sourceValue, targetValue));
 
                 sourceIndex++;
                 targetIndex++;
                 writeIndex++;
+
+                continue;
             }
-            else if (table[sourceIndex + 1][targetIndex] >= table[sourceIndex][targetIndex + 1])
+
+            if (table[sourceIndex + 1][targetIndex] >= table[sourceIndex][targetIndex + 1])
             {
                 // added
-                targetValue = removedTargetValues
+
+                // rescue a removed value
+                TargetValue rescuedTargetValue = removedTargetValues
                     .stream()
                     .filter(removedValue -> uniqueKeyMatchFunction.matches(sourceValue, removedValue))
                     .findFirst()
                     .orElse(null);
 
-                targetList.add(writeIndex, mapFunction.apply(sourceValue, targetValue));
+                if (rescuedTargetValue == null)
+                {
+                    // rescue a value that will be removed
+                    for (int i = writeIndex + 1; i < targetList.size(); i++)
+                    {
+                        if (uniqueKeyMatchFunction.matches(sourceValue, targetList.get(i)))
+                        {
+                            rescuedTargetValue = targetList.remove(i);
+                            break;
+                        }
+                    }
+               }
+
+                targetList.add(writeIndex, mapFunction.apply(sourceValue, rescuedTargetValue));
 
                 sourceIndex++;
                 writeIndex++;
-            }
-            else
-            {
-                // removed
-                removedTargetValues.add(targetList.remove(writeIndex));
 
-                targetIndex++;
+                continue;
             }
+
+            // removed
+            removedTargetValues.add(targetList.remove(writeIndex));
+
+            targetIndex++;
         }
 
         // remove remaining
@@ -336,6 +359,8 @@ public final class MapperUtils
         while (sourceIndex < sourceSize)
         {
             SourceValue sourceValue = sourceList.get(sourceIndex);
+
+            // rescue a removed value
             TargetValue targetValue = removedTargetValues
                 .stream()
                 .filter(removedValue -> uniqueKeyMatchFunction.matches(sourceValue, removedValue))

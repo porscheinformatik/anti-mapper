@@ -272,8 +272,8 @@ public class MapperUtilsTest
 
         Iterator<TargetLine> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.ADDED, "C");
-        assertNext(iterator, Change.ADDED, "B");
+        assertNext(iterator, Change.SAME, "C");
+        assertNext(iterator, Change.SAME, "B");
         assertNext(iterator, Change.SAME, "A");
         assertNoNext(iterator);
     }
@@ -286,12 +286,14 @@ public class MapperUtilsTest
 
         MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
 
+        System.out.println(targetList);
+
         Iterator<TargetLine> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.ADDED, "C");
-        assertNext(iterator, Change.ADDED, "C");
-        assertNext(iterator, Change.ADDED, "B");
-        assertNext(iterator, Change.ADDED, "B");
+        assertNext(iterator, Change.SAME, "C");
+        assertNext(iterator, Change.SAME, "C");
+        assertNext(iterator, Change.SAME, "B");
+        assertNext(iterator, Change.SAME, "B");
         assertNext(iterator, Change.SAME, "A");
         assertNext(iterator, Change.SAME, "A");
         assertNoNext(iterator);
@@ -310,9 +312,9 @@ public class MapperUtilsTest
         Iterator<TargetLine> iterator = targetList.iterator();
 
         assertNext(iterator, Change.SAME, "@");
-        assertNext(iterator, Change.ADDED, "1");
-        assertNext(iterator, Change.ADDED, "2");
-        assertNext(iterator, Change.ADDED, "3");
+        assertNext(iterator, Change.SAME, "1");
+        assertNext(iterator, Change.SAME, "2");
+        assertNext(iterator, Change.SAME, "3");
         assertNext(iterator, Change.SAME, "A");
         assertNext(iterator, Change.SAME, "B");
         assertNext(iterator, Change.SAME, "C");
