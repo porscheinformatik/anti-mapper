@@ -184,6 +184,8 @@ You implement a `Mapper` if you want two-way mapping. It's the same as implement
 * Collections, Sets, Lists, Maps
 * Best practices
 
+# Installation
 
+	mvn install
 
 
