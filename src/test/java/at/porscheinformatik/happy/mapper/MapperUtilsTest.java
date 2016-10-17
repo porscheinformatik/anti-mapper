@@ -3,13 +3,17 @@ package at.porscheinformatik.happy.mapper;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class MapperUtilsTest
@@ -286,8 +290,6 @@ public class MapperUtilsTest
 
         MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
 
-        System.out.println(targetList);
-
         Iterator<TargetLine> iterator = targetList.iterator();
 
         assertNext(iterator, Change.SAME, "C");
@@ -362,8 +364,215 @@ public class MapperUtilsTest
         assertNoNext(iterator);
     }
 
+    @Test
+    public void testRealLife2()
+    {
+        Collection<SourceLine> sourceList = createSourceList("As", "Bs", "Cs", "Ds");
+        Collection<TargetLine> targetList = createTargetList("Bt", "Ct", "Et", "At", "Dt", "Ft");
+
+        MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
+
+        Iterator<TargetLine> iterator = targetList.iterator();
+
+        assertNext(iterator, Change.UPDATED, "As");
+        assertNext(iterator, Change.UPDATED, "Bs");
+        assertNext(iterator, Change.UPDATED, "Cs");
+        assertNext(iterator, Change.UPDATED, "Ds");
+        assertNoNext(iterator);
+    }
+
+    @Test
+    public void testRealLife3()
+    {
+        Collection<SourceLine> sourceList = createSourceList("As", "As");
+        Collection<TargetLine> targetList = createTargetList("Ct", "At");
+
+        MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
+
+        Iterator<TargetLine> iterator = targetList.iterator();
+
+        assertNext(iterator, Change.UPDATED, "As");
+        assertNext(iterator, Change.ADDED, "As");
+        assertNoNext(iterator);
+    }
+
+    @Test
+    public void testEmptyTarget()
+    {
+        Collection<SourceLine> sourceList = createSourceList("As");
+        Collection<TargetLine> targetList = createTargetList();
+
+        MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
+
+        Iterator<TargetLine> iterator = targetList.iterator();
+
+        assertNext(iterator, Change.ADDED, "As");
+        assertNoNext(iterator);
+    }
+
+    @Test
+    public void testEmptySource()
+    {
+        Collection<SourceLine> sourceList = createSourceList();
+        Collection<TargetLine> targetList = createTargetList("At");
+
+        MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
+
+        Iterator<TargetLine> iterator = targetList.iterator();
+
+        assertNoNext(iterator);
+    }
+
+    @Test
+    public void testRealLife4()
+    {
+        Collection<SourceLine> sourceList = createSourceList("1", "A", "2");
+        Collection<TargetLine> targetList = createTargetList("A");
+
+        MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
+
+        Iterator<TargetLine> iterator = targetList.iterator();
+
+        assertNext(iterator, Change.ADDED, "1");
+        assertNext(iterator, Change.SAME, "A");
+        assertNext(iterator, Change.ADDED, "2");
+        assertNoNext(iterator);
+    }
+
+    @Test
+    public void testRealLife5()
+    {
+        Collection<SourceLine> sourceList = createSourceList("A", "B", "B");
+        Collection<TargetLine> targetList = createTargetList("B", "B", "A", "A", "B", "B");
+
+        MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
+
+        Iterator<TargetLine> iterator = targetList.iterator();
+
+        assertNext(iterator, Change.SAME, "A");
+        assertNext(iterator, Change.SAME, "B");
+        assertNext(iterator, Change.SAME, "B");
+        assertNoNext(iterator);
+    }
+
+    @Test
+    public void testRealLife6()
+    {
+        Collection<SourceLine> sourceList = createSourceList("A", "A", "B", "B");
+        Collection<TargetLine> targetList = createTargetList("B", "A", "A", "A");
+
+        MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
+
+        Iterator<TargetLine> iterator = targetList.iterator();
+
+        assertNext(iterator, Change.SAME, "A");
+        assertNext(iterator, Change.SAME, "A");
+        assertNext(iterator, Change.SAME, "B");
+        assertNext(iterator, Change.ADDED, "B");
+        assertNoNext(iterator);
+    }
+
+    @Test
+    public void testRealLife7()
+    {
+        Collection<SourceLine> sourceList = createSourceList("A", "A", "B", "B");
+        Collection<TargetLine> targetList = createTargetList("B", "A", "A");
+
+        MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
+
+        Iterator<TargetLine> iterator = targetList.iterator();
+
+        assertNext(iterator, Change.SAME, "A");
+        assertNext(iterator, Change.SAME, "A");
+        assertNext(iterator, Change.SAME, "B");
+        assertNext(iterator, Change.ADDED, "B");
+        assertNoNext(iterator);
+    }
+
+    @Test
+    public void testRandom()
+    {
+        for (int sample = 0; sample < 65536; sample++)
+        {
+            int count = (int) (Math.random() * (2 + sample / 4096));
+            List<String> targetLines = new ArrayList<>();
+            char ch = 'A';
+
+            for (int i = 0; i < count; i++)
+            {
+                targetLines.add(String.valueOf(ch));
+
+                if (Math.random() < 0.5)
+                {
+                    ch++;
+                }
+            }
+
+            Collections.shuffle(targetLines);
+
+            count = Math.max(count, (int) (Math.random() * 8));
+            List<String> sourceLines = new ArrayList<>(targetLines);
+
+            while (sourceLines.size() < count)
+            {
+                int pos = (int) (Math.random() * (sourceLines.size() - 1));
+
+                sourceLines.add(pos, String.valueOf(ch));
+
+                if (Math.random() < 0.5)
+                {
+                    ch++;
+                }
+            }
+
+            int i = 0;
+
+            while (i < sourceLines.size())
+            {
+                double wat = Math.random();
+
+                if (wat < 0.25)
+                {
+                    sourceLines.remove(i);
+                }
+                else if (wat < 0.5)
+                {
+                    int pos = (int) (Math.random() * (sourceLines.size() - 1));
+
+                    sourceLines.add(pos, sourceLines.remove(i));
+                }
+                else
+                {
+
+                    i++;
+                }
+            }
+
+            System.out.println("Random test: " + sourceLines + " into " + targetLines);
+            Collection<SourceLine> sourceList = createSourceList(sourceLines.toArray(new String[sourceLines.size()]));
+            Collection<TargetLine> targetList = createTargetList(targetLines.toArray(new String[targetLines.size()]));
+
+            MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsTest::matches, MapperUtilsTest::map);
+
+            assertThat(targetList.size(), equalTo(sourceLines.size()));
+
+            Iterator<String> sourceIterator = sourceLines.iterator();
+            Iterator<TargetLine> targetIterator = targetList.iterator();
+
+            while (sourceIterator.hasNext())
+            {
+                assertThat(targetIterator.next().getText(), equalTo(sourceIterator.next()));
+            }
+        }
+    }
+
     protected static void assertNext(Iterator<TargetLine> iterator, Change change, String text)
     {
+        if (!iterator.hasNext())
+        {
+            Assert.fail("No next");
+        }
+
         TargetLine targetLine = iterator.next();
 
         assertThat(targetLine.getChange(), is(change));

@@ -289,11 +289,10 @@ public final class MapperUtils
         int sourceIndex = 0;
         int targetIndex = 0;
         int sourceSize = (sourceList != null) ? sourceList.size() : 0;
-        int targetSize = targetList.size();
         int writeIndex = 0;
         Collection<TargetValue> removedTargetValues = new ArrayList<>();
 
-        while ((sourceIndex < sourceSize) && (targetIndex < targetSize))
+        while ((sourceIndex < sourceSize) && (writeIndex < targetList.size()))
         {
             SourceValue sourceValue = sourceList.get(sourceIndex);
             TargetValue targetValue = targetList.get(writeIndex);
@@ -314,13 +313,8 @@ public final class MapperUtils
             if (table[sourceIndex + 1][targetIndex] >= table[sourceIndex][targetIndex + 1])
             {
                 // added
-
-                // rescue a removed value
-                TargetValue rescuedTargetValue = removedTargetValues
-                    .stream()
-                    .filter(removedValue -> uniqueKeyMatchFunction.matches(sourceValue, removedValue))
-                    .findFirst()
-                    .orElse(null);
+                TargetValue rescuedTargetValue =
+                    rescueTargetValue(sourceValue, removedTargetValues, uniqueKeyMatchFunction);
 
                 if (rescuedTargetValue == null)
                 {
@@ -333,7 +327,7 @@ public final class MapperUtils
                             break;
                         }
                     }
-               }
+                }
 
                 targetList.add(writeIndex, mapFunction.apply(sourceValue, rescuedTargetValue));
 
@@ -359,15 +353,10 @@ public final class MapperUtils
         while (sourceIndex < sourceSize)
         {
             SourceValue sourceValue = sourceList.get(sourceIndex);
+            TargetValue rescuedTargetValue =
+                rescueTargetValue(sourceValue, removedTargetValues, uniqueKeyMatchFunction);
 
-            // rescue a removed value
-            TargetValue targetValue = removedTargetValues
-                .stream()
-                .filter(removedValue -> uniqueKeyMatchFunction.matches(sourceValue, removedValue))
-                .findFirst()
-                .orElse(null);
-
-            targetList.add(mapFunction.apply(sourceValue, targetValue));
+            targetList.add(mapFunction.apply(sourceValue, rescuedTargetValue));
 
             sourceIndex++;
         }
@@ -378,6 +367,26 @@ public final class MapperUtils
         }
 
         return targetList;
+    }
+
+    private static <TargetValue, SourceValue> TargetValue rescueTargetValue(SourceValue sourceValue,
+        Collection<TargetValue> removedTargetValues, MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction)
+    {
+        TargetValue rescuedTargetValue = null;
+        Iterator<TargetValue> iterator = removedTargetValues.iterator();
+
+        while (iterator.hasNext())
+        {
+            TargetValue currentTargetValue = iterator.next();
+
+            if (uniqueKeyMatchFunction.matches(sourceValue, currentTargetValue))
+            {
+                rescuedTargetValue = currentTargetValue;
+                iterator.remove();
+                break;
+            }
+        }
+        return rescuedTargetValue;
     }
 
     private static <SourceValue, TargetValue> int[][] buildLCSTable(List<? extends SourceValue> sourceList,
