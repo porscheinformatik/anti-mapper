@@ -1,4 +1,4 @@
-# Happy Mapper
+# Anti-Mapper
 
 Entity <-> DTO mapping in Java is a bit of a problem. 
 
@@ -12,29 +12,40 @@ and quickly become irregular, error-prone and hard to maintain.
 Using a library simplifies and unifies the default cases, but usually makes special cases harder to solve. Most often
 you cannot simply implement theses special cases, you have to configure the mapper instead. And this can be a real pain.
 
-Happy Mapper offers a third possibility, the assisted manual mapping
+Anti-Mapper offers a third possibility, the **assisted manual mapping**. That's why it is called Anti-Mapper. It is no
+classic mapping library. That's exactly the functionality it is missing.  
 
-It let's you implement the direct mappings manually and just helps with the complex mapping of collections, sets, lists 
-and maps. It offers simple interfaces like a `Transformer` and a `Merger` which will keep your implementations 
-uniform and consistent. There is no need for any configuration. Everything is pure Java code, that will be checked
-by the compiler.
+**Happy one:** _"It let's you implement the direct mappings manually and just helps with the complex stuff like:_
+_collections, sets, lists and maps._
+
+_It offers simple interfaces like a_ `Transformer` _and a_ `Merger` _which will keep your implementations uniform_
+_and consistent. There is no need for any configuration. Everything is pure Java code, checked by the compiler."_
+
+
+**Grumpy one:** _"But, oh my god, what if I add a property to the entity and the DTO, I'm sure, I will forget the mapping. No reflection! What a stupid library!"_
+ 
+**Happy one:** _"No. Because you will test your new property at least once. You will notice that. If you don't, it's not the mappers fault."_
+
+**Grumpy one:** _"I'm faster when I map it manually."_
+ 
+**Happy one:** _"No. You are mapping it manually. You cannot be faster either way. And doing collection mappings right is hard stuff."_
 
 ## Basic Concepts
 
 ### DTO and Entity
 
-Happy Mapper commonly uses the terms _entity_ and _DTO_.
+Anti-Mapper commonly uses the terms _entity_ and _DTO_.
 
-### Entity (in the scope of Happy Mapper)
+### Entity (in the scope of Anti-Mapper)
 
-For Happy Mapper an _entity_ is an existing object that has to be modified when being mapped into. The most common case 
-for this is a database entity, that's why it is called _entity_. In Happy Mapper the process of mapping into an 
+For Anti-Mapper an _entity_ is an existing object that has to be modified when being mapped into. The most common case 
+for this is a database entity, that's why it is called _entity_. In Anti-Mapper the process of mapping into an 
 existing object called _merging_.
 
-### DTO (in the scope of Happy Mapper)
+### DTO (in the scope of Anti-Mapper)
 
 A _DTO_ on the other hand, is an object that will always be newly created when mapped into. The most common case for 
-this is a DTO used in client-server applications. In Happy Mapper the process of mapping into a newly created object
+this is a DTO used in client-server applications. In Anti-Mapper the process of mapping into a newly created object
 is called _transforming_.
 
 ### `Transformer`

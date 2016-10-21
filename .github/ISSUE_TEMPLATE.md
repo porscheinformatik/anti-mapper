@@ -1,10 +1,10 @@
 ### Bug description
 
-### Version of Java and Happy Mapper
+### Version of Java and Anti Mapper
 
 Java:
 
-Happy Mapper:
+Anti Mapper:
 
 ### Minimal sample that shows the problem
 

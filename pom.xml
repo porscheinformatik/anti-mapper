@@ -3,19 +3,19 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>at.porscheinformatik</groupId>
-	<artifactId>happy-mapper</artifactId>
-	<version>1.0.4-BUILD-SNAPSHOT</version>
+	<artifactId>anti-mapper</artifactId>
+	<version>1.1.0-BUILD-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 
-	<name>happy-mapper</name>
+	<name>anti-mapper</name>
 
-	<url>https://github.com/porscheinformatik/happy-mapper</url>
+	<url>https://github.com/porscheinformatik/anti-mapper</url>
 
 	<scm>
-		<connection>scm:git:https://github.com/porscheinformatik/happy-mapper.git</connection>
-		<developerConnection>scm:git:https://github.com/porscheinformatik/happy-mapper.git</developerConnection>
-		<url>https://github.com/porscheinformatik/happy-mapper</url>
+		<connection>scm:git:https://github.com/porscheinformatik/anti-mapper.git</connection>
+		<developerConnection>scm:git:https://github.com/porscheinformatik/anti-mapper.git</developerConnection>
+		<url>https://github.com/porscheinformatik/anti-mapper</url>
 		<tag>HEAD</tag>
 	</scm>
 
