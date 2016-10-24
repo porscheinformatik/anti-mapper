@@ -31,8 +31,9 @@ _and consistent. There is no need for any configuration. Everything is pure Java
 
 **Grumpy one:** _"It will never map my lists the right way!"_
  
-**Happy one:** _"It will. It uses a diff-algorithm for lists and reuses entities for Hibernate's sake. The is not reason_
-not to use it, but if you want, you can still do it."_
+**Happy one:** _"It will. It uses a diff-algorithm for lists and reuses entities for Hibernate's sake. It can even handle_
+_deleted flags. There is no reason not to use the list mappings. But the best thing is: if you want to implement it in_
+_your style, it does not hinder you to do it."_
 
 ## Basic Concepts
 
@@ -71,16 +72,16 @@ A `Referer` is a special case for mapping into _entities_, when it is enough to 
 
 ### `Hints`
 
-'Hints' are a list of objects that can be passed to transform and merge functions. Hints provide a context for mapping
+`Hints` are a list of objects that can be passed to transform and merge functions. Hints provide a context for mapping
 that make it simple to access default values or pass parent objects.
 
 ## How-To
 
 ### `Transformer` and `AbstractTransformer`
 
-If you want to map an object into a newly create object, then you implement a `Transformer`. You can either 
+If you want to map an object into a newly created object, then you implement a `Transformer`. You can either 
 implement the interface or extend the `AbstractTransformer`. Make it a singleton - that means, you should always 
-use the same instance for transforming. Write it thread-safe (don't use fields).
+use the same instance for transforming. Write it thread-safe (don't use fields)!
 
 Call the class something like `*Mapper`. This is convenient and it makes it easy to find and recognize mapper classes.
 
@@ -109,9 +110,9 @@ Next, start transforming by creating your target object. Final values are an eas
 
         ParentDTO dto = new ParentDTO(entity.getId());
          
-Add the entity and the DTO to the hints, just in case the childMapper needs it.
+Add the entity and the DTO to the hints, just in case any child mapper needs it.
 
-        hints = Hints.join(hints, entity, dto);
+        hints = Hints.join(hints, dto);
         
 Then set the values. Name and type conversions are trivial.
         
@@ -128,12 +129,14 @@ That's it, return the object.
 
         return dto;
     }
+    
+Have a look at the [ParentMapper-Sample](https://github.com/porscheinformatik/anti-mapper/blob/master/src/test/java/at/porscheinformatik/antimapper/sample/parentchild/ParentMapper.java)!
 
 ### `Merger` and `AbstractMerger`
 
 If you want to map an object into an existing object, then you implement a `Merger`. You can either 
 implement the interface or extend the `AbstractMerger`. Make it a singleton - that means, you should always 
-use the same instance for merging. Write it thread-safe (don't use fields).
+use the same instance for merging. Write it thread-safe (don't use fields)!
 
 Call the class something like `*Mapper`. This is convenient and it makes it easy to find and recognize mapper classes.
 
@@ -191,6 +194,8 @@ The matching function usually just checks the ID.
 
 And yes, this is enough, even if you map multiple DTOs with null as ID, because matched DTOs/Entity will not be matched
 twice.
+
+Have a look at the [ChildMapper-Sample](https://github.com/porscheinformatik/anti-mapper/blob/master/src/test/java/at/porscheinformatik/antimapper/sample/parentchild/ChildMapper.java)!
 
 ### `Mapper` and `AbstractMapper`
 
