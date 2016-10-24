@@ -28,8 +28,8 @@ public class ParentMapper extends AbstractMapper<ParentDTO, ParentEntity>
 
         ParentDTO dto = new ParentDTO(entity.getId());
 
-        // add the entity and the DTO to the hints, just in case the childMapper needs it
-        hints = Hints.join(hints, entity, dto);
+        // add the DTO to the hints, just in case the child mapper needs it
+        hints = Hints.join(hints, dto);
 
         dto.setName(entity.getName());
         dto.setChilds(childMapper.transformToArrayList(entity.getChilds(), hints));
@@ -48,8 +48,8 @@ public class ParentMapper extends AbstractMapper<ParentDTO, ParentEntity>
     @Override
     protected ParentEntity mergeNonNull(ParentDTO dto, ParentEntity entity, Object... hints)
     {
-        // add the entity and the DTO to the hints, just in case the childMapper needs it
-        hints = Hints.join(hints, entity, dto);
+        // add the entity to the hints, just in case the child mapper needs it
+        hints = Hints.join(hints, entity);
 
         entity.setName(dto.getName());
         entity.setChilds(childMapper.mergeIntoTreeSet(dto.getChilds(), entity.getChilds(), hints));

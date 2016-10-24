@@ -29,8 +29,8 @@ public class ParentMapper implements Mapper<ParentDTO, ParentEntity>
 
         ParentDTO dto = new ParentDTO(entity.getId());
 
-        // add the entity and the DTO to the hints, just in case the childMapper needs it
-        hints = Hints.join(hints, entity, dto);
+        // add the DTO to the hints, just in case the child mapper needs it
+        hints = Hints.join(hints, dto);
 
         dto.setName(entity.getKey());
         
@@ -59,8 +59,8 @@ public class ParentMapper implements Mapper<ParentDTO, ParentEntity>
             entity.setId(dto.getId());
         }
 
-        // add the entity and the DTO to the hints, just in case the childMapper needs it
-        hints = Hints.join(hints, entity, dto);
+        // add the entity to the hints, just in case the child mapper needs it
+        hints = Hints.join(hints, entity);
 
         entity.setKey(dto.getName());
         

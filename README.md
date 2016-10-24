@@ -35,6 +35,10 @@ _and consistent. There is no need for any configuration. Everything is pure Java
 _deleted flags. There is no reason not to use the list mappings. But the best thing is: if you want to implement it in_
 _your style, it does not hinder you to do it."_
 
+**Grumpy one:** _"It's not worth to learn it."_
+
+**Happy one:** _"There is one recipe that fits all. Just read on."_
+
 ## Basic Concepts
 
 ### DTO and Entity
