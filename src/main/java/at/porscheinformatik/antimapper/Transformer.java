@@ -30,7 +30,7 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
 {
 
     /**
-     * Maps the entity to a DTO. Be aware, that the passed entity may be null!
+     * Transforms the entity to a DTO. Be aware, that the passed entity may be null!
      *
      * @param entity the entity, may be null
      * @param hints optional hints
@@ -39,7 +39,60 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
     DTO_TYPE transform(ENTITY_TYPE entity, Object... hints);
 
     /**
-     * Maps a collection to a collection
+     * Transforms the entities in the {@link Stream} to DTOs and returns the {@link Stream} with DTOs. Ignores entities
+     * that transform to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     *
+     * @param entities the stream, may be null
+     * @param hints optional hints
+     * @return the streams iterator
+     */
+    default Stream<DTO_TYPE> transformEach(Stream<? extends ENTITY_TYPE> entities, Object... hints)
+    {
+        if (entities == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            Stream<DTO_TYPE> stream = entities.map(entity -> transform(entity, hints));
+
+            if (!Hints.containsHint(hints, Hint.KEEP_NULL))
+            {
+                stream = stream.filter(dto -> dto != null);
+            }
+
+            return stream;
+        }
+        catch (Exception e)
+        {
+            throw new MapperException("Failed to transform entities in stream: %s", e,
+                MapperUtils.abbreviate(String.valueOf(entities), 4096));
+        }
+    }
+
+    /**
+     * Transforms the entities in the {@link Collection} to DTOs and returns the {@link Stream} with DTOs. Removes
+     * entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     *
+     * @param entities the stream, may be null
+     * @param hints optional hints
+     * @return the streams iterator
+     */
+    default Stream<DTO_TYPE> transformToStream(Iterable<? extends ENTITY_TYPE> entities, Object... hints)
+    {
+        if (entities == null)
+        {
+            return null;
+        }
+
+        return transformEach(StreamSupport.stream(entities.spliterator(), false), hints);
+    }
+
+    /**
+     * Transforms a {@link Collection} of entities to a {@link Collection} of DTOs. The {@link Collection} of DTOs will
+     * be created by the specified factory. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL}
+     * hint is set.
      *
      * @param <DTO_COLLECTION_TYPE> the type of the collection of DTOs
      * @param entities the entities, may be null
@@ -55,20 +108,12 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
             return null;
         }
 
-        try
-        {
-            return StreamSupport.stream(entities.spliterator(), false).map(entity -> transform(entity, hints)).collect(
-                Collectors.toCollection(dtoCollectionFactory));
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to transform entities to a collection: %s", e,
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return transformToStream(entities, hints).collect(Collectors.toCollection(dtoCollectionFactory));
     }
 
     /**
-     * Maps a collection to a set
+     * Transforms a {@link Collection} of entities to a {@link HashSet} of DTOs. Ignores entities that transform to
+     * null, unless the {@link Hint#KEEP_NULL} hint is set.
      *
      * @param entities the entities, may be null
      * @param hints optional hints
@@ -80,7 +125,8 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
     }
 
     /**
-     * Maps a collection to a set
+     * Transforms a {@link Collection} of entities to a {@link SortedSet} of DTOs. Ignores entities that transform to
+     * null, unless the {@link Hint#KEEP_NULL} hint is set.
      *
      * @param entities the entities, may be null
      * @param hints optional hints
@@ -92,7 +138,8 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
     }
 
     /**
-     * Maps a collection to a set
+     * Transforms a {@link Collection} of entities to a {@link SortedSet} of DTOs. Ignores entities that transform to
+     * null, unless the {@link Hint#KEEP_NULL} hint is set.
      *
      * @param entities the entities, may be null
      * @param comparator the comparator for the tree set
@@ -106,7 +153,8 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
     }
 
     /**
-     * Maps a collection to a list
+     * Transforms a {@link Collection} of entities to an {@link ArrayList} of DTOs. Ignores entities that transform to
+     * null, unless the {@link Hint#KEEP_NULL} hint is set.
      *
      * @param entities the entities, may be null
      * @param hints optional hints
@@ -117,7 +165,15 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
         return transformToCollection(entities, ArrayList::new, hints);
     }
 
-    default List<DTO_TYPE> transformToUnmodifiableList(Iterable<? extends ENTITY_TYPE> entities, Object[] hints)
+    /**
+     * Transforms a {@link Collection} of entities to an unmodifiable {@link ArrayList} of DTOs. Ignores entities that
+     * transform to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     *
+     * @param entities the entities, may be null
+     * @param hints optional hints
+     * @return a list
+     */
+    default List<DTO_TYPE> transformToUnmodifiableArrayList(Iterable<? extends ENTITY_TYPE> entities, Object... hints)
     {
         List<DTO_TYPE> transformed = transformToArrayList(entities, hints);
 
@@ -125,24 +181,9 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
     }
 
     /**
-     * Maps the entities in the stream to DTOs and returns the stream as an iterator.
-     * 
-     * @param entityStream the stream, may be null
-     * @return the streams iterator
-     */
-    default Stream<DTO_TYPE> transformToStream(Stream<ENTITY_TYPE> entityStream)
-    {
-        if (entityStream == null)
-        {
-            return null;
-        }
-
-        return entityStream //
-            .map(this::transform);
-    }
-
-    /**
-     * Maps a collection to a map
+     * Transforms a {@link Collection} of entities to a {@link Map} of DTOs. Ignores entities that transform to null,
+     * unless the {@link Hint#KEEP_NULL} hint is set. This method does not group results. DTOs with the same key will
+     * overwrite each other.
      *
      * @param <KEY_TYPE> the type of the group key
      * @param entities the entities, may be null
@@ -159,6 +200,8 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
             return null;
         }
 
+        boolean keepNull = Hints.containsHint(hints, Hint.KEEP_NULL);
+
         try
         {
             Map<KEY_TYPE, DTO_TYPE> result = new HashMap<>();
@@ -173,7 +216,10 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
                 KEY_TYPE key = keyFunction.apply(entity);
                 DTO_TYPE dto = transform(entity, hints);
 
-                result.put(key, dto);
+                if (dto != null || keepNull)
+                {
+                    result.put(key, dto);
+                }
             }
 
             return result;
@@ -186,7 +232,9 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
     }
 
     /**
-     * Maps a collection to a map
+     * Transforms a {@link Collection} of entities to a {@link HashMap} of DTOs. Ignores entities that transform to
+     * null, unless the {@link Hint#KEEP_NULL} hint is set. This method does not group results. DTOs with the same key
+     * will overwrite each other.
      *
      * @param <KEY_TYPE> the type of the group key
      * @param entities the entities, may be null
@@ -201,7 +249,8 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
     }
 
     /**
-     * Maps a collection to a map
+     * Transforms a {@link Collection} of entities to a grouped {@link Map} of DTOs. Ignores entities that transform to
+     * null, unless the {@link Hint#KEEP_NULL} hint is set.
      *
      * @param <GROUP_KEY_TYPE> the type of the group key
      * @param <COLLECTION_TYPE> the type of the collections in the result map
@@ -220,7 +269,8 @@ public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, EN
         try
         {
             return MapperUtils.mapMixedGroups(entities, mapFactory.get(), groupKeyFunction, collectionFactory,
-                (entity, dto) -> false, (entity, dto) -> transform(entity, hints));
+                (entity, dto) -> false, (entity, dto) -> transform(entity, hints),
+                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null, null);
         }
         catch (Exception e)
         {

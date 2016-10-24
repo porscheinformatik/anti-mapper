@@ -81,7 +81,9 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
             }
 
             return MapperUtils.mapMixed(dtos, entities, this::isUniqueKeyMatching,
-                (dto, entity) -> merge(dto, entity, hints), list -> afterMergeIntoCollection(list, hints));
+                (dto, entity) -> merge(dto, entity, hints),
+                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null,
+                list -> afterMergeIntoCollection(list, hints));
         }
         catch (Exception e)
         {
@@ -123,7 +125,8 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
             }
 
             return MapperUtils.mapOrdered(dtos, entities, this::isUniqueKeyMatching,
-                (dto, entity) -> merge(dto, entity, hints), list -> afterMergeIntoCollection(list, hints));
+                (dto, entity) -> merge(dto, entity, hints), entity -> entity != null,
+                list -> afterMergeIntoCollection(list, hints));
         }
         catch (Exception e)
         {
@@ -235,7 +238,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
             return MapperUtils.mapMixed(dtos.entrySet(), entities,
                 (entry, entity) -> isUniqueKeyMatching(entry.getValue(), entity, Hints.join(hints, entry.getKey())),
                 (entry, entity) -> merge(entry.getValue(), entity, Hints.join(hints, entry.getKey())),
-                this::afterMergeIntoCollection);
+                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null, this::afterMergeIntoCollection);
         }
         catch (Exception e)
         {
@@ -279,7 +282,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
             return MapperUtils.mapOrdered(dtos.entrySet(), entities,
                 (entry, entity) -> isUniqueKeyMatching(entry.getValue(), entity, Hints.join(hints, entry.getKey())),
                 (entry, entity) -> merge(entry.getValue(), entity, Hints.join(hints, entry.getKey())),
-                this::afterMergeIntoCollection);
+                entity -> entity != null, this::afterMergeIntoCollection);
         }
         catch (Exception e)
         {
@@ -385,6 +388,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
             return MapperUtils.mapMixed(pairs, entities,
                 (pair, entity) -> isUniqueKeyMatching(pair.getRight(), entity, Hints.join(hints, pair.getLeft())),
                 (pair, entity) -> merge(pair.getRight(), entity, Hints.join(hints, pair.getLeft())),
+                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null,
                 list -> afterMergeIntoCollection(list, hints));
         }
         catch (Exception e)
@@ -434,7 +438,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
             return MapperUtils.mapOrdered(pairs, entities,
                 (pair, entity) -> isUniqueKeyMatching(pair.getRight(), entity, Hints.join(hints, pair.getLeft())),
                 (pair, entity) -> merge(pair.getRight(), entity, Hints.join(hints, pair.getLeft())),
-                list -> afterMergeIntoCollection(list, hints));
+                entity -> entity != null, list -> afterMergeIntoCollection(list, hints));
         }
         catch (Exception e)
         {

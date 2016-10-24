@@ -17,18 +17,22 @@ classic mapping library. That's exactly the functionality it is missing.
 
 **Happy one:** _"It let's you implement the direct mappings manually and just helps with the complex stuff like:_
 _collections, sets, lists and maps._
-
 _It offers simple interfaces like a_ `Transformer` _and a_ `Merger` _which will keep your implementations uniform_
 _and consistent. There is no need for any configuration. Everything is pure Java code, checked by the compiler."_
 
 
-**Grumpy one:** _"But, oh my god, what if I add a property to the entity and the DTO, I'm sure, I will forget the mapping. No reflection! What a stupid library!"_
+**Grumpy one:** _"But OMG, what if I add a property to the entity and the DTO, I'm sure, I will forget the mapping. No reflection! What a stupid library!"_
  
 **Happy one:** _"No. Because you will test your new property at least once. You will notice that. If you don't, it's not the mappers fault."_
 
 **Grumpy one:** _"I'm faster when I map it manually."_
  
-**Happy one:** _"No. You are mapping it manually. You cannot be faster either way. And doing collection mappings right is hard stuff."_
+**Happy one:** _"No. You are mapping it manually. You cannot be faster either way."_
+
+**Grumpy one:** _"It will never map my lists the right way!"_
+ 
+**Happy one:** _"It will. It uses a diff-algorithm for lists and reuses entities for Hibernate's sake. The is not reason_
+not to use it, but if you want, you can still do it."_
 
 ## Basic Concepts
 
@@ -72,9 +76,11 @@ that make it simple to access default values or pass parent objects.
 
 ## How-To
 
-### `Transformer`
+### `Transformer` and `AbstractTransformer`
 
-You implement a `Transformer` if you want to map an object into a newly create object. You make it a singleton.
+If you want to map an object into a newly create object, then you implement a `Transformer`. You can either 
+implement the interface or extend the `AbstractTransformer`. Make it a singleton - that means, you should always 
+use the same instance for transforming. Write it thread-safe (don't use fields).
 
 Call the class something like `*Mapper`. This is convenient and it makes it easy to find and recognize mapper classes.
 
@@ -123,9 +129,11 @@ That's it, return the object.
         return dto;
     }
 
-### `Merger`
+### `Merger` and `AbstractMerger`
 
-You implement a `Merger` if you want to map an object into an existing object. You make it a singleton.
+If you want to map an object into an existing object, then you implement a `Merger`. You can either 
+implement the interface or extend the `AbstractMerger`. Make it a singleton - that means, you should always 
+use the same instance for merging. Write it thread-safe (don't use fields).
 
 Call the class something like `*Mapper`. This is convenient and it makes it easy to find and recognize mapper classes.
 
@@ -184,9 +192,9 @@ The matching function usually just checks the ID.
 And yes, this is enough, even if you map multiple DTOs with null as ID, because matched DTOs/Entity will not be matched
 twice.
 
-### `Mapper`
+### `Mapper` and `AbstractMapper`
 
-You implement a `Mapper` if you want two-way mapping. It's the same as implementing a `Transformer` and a 
+If you want a two-way mapping, then you implement a `Mapper`. It's the same as implementing a `Transformer` and a 
 `Merger` in the same class.
 
 ### More documentation to come

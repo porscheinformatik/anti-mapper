@@ -4,7 +4,7 @@ public class ChildDTO
 {
 
     private final Integer id;
-    private final String name;
+    private String name;
 
     public ChildDTO(Integer id, String name)
     {
@@ -22,6 +22,11 @@ public class ChildDTO
     public String getName()
     {
         return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 
     @Override
