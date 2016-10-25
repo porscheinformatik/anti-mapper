@@ -1,6 +1,6 @@
 # anti-mapper 1.1
 
-## anti-mapper-1.1.0-RELEASE
+## anti-mapper-1.1.0
 
 * Simplifies the mapping with deleted-flags (see sample).
 * Renamed the `transformInternal` and `mergeInternal` methods to `transformNonNull` and 
@@ -9,6 +9,8 @@
 * Renamed to anti-mapper to avoid collisions with existing happymapper library.
 * Renamed the package `at.porscheinformatik.happy.mapper` to `at.porscheinformatik.antimapper`.
 * Renamed the module from `at.porscheinformatik:happy-mapper` to `at.porscheinformatik:anti-mapper`.
+
+* No more RELEASE suffixes in versions.
 
 # happy-mapper 1.0
 
