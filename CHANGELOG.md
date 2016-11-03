@@ -1,5 +1,10 @@
 # anti-mapper 1.1
 
+## anti-mapper-1.1.1
+
+* Removed Referer. You won't need it.
+* Entity automatically gets added to hints in AbstractMerger and AbstractMapper, now.
+
 ## anti-mapper-1.1.0
 
 * Simplifies the mapping with deleted-flags (see sample).

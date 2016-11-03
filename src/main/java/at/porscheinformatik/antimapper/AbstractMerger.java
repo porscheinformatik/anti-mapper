@@ -22,6 +22,8 @@ public abstract class AbstractMerger<DTO_TYPE, ENTITY_TYPE> implements Merger<DT
         {
             entity = create(dto, hints);
         }
+        
+        hints = Hints.join(hints, entity);
 
         return mergeNonNull(dto, entity, hints);
     }
