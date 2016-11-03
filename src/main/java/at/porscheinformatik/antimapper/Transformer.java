@@ -26,7 +26,7 @@ import java.util.stream.StreamSupport;
  * @param <DTO_TYPE> the type of the DTO
  * @param <ENTITY_TYPE> the type of the entity
  */
-public interface Transformer<DTO_TYPE, ENTITY_TYPE> extends Referer<DTO_TYPE, ENTITY_TYPE>
+public interface Transformer<DTO_TYPE, ENTITY_TYPE>
 {
 
     /**
