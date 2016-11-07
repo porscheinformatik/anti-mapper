@@ -1,9 +1,11 @@
-# anti-mapper 1.1
+# anti-mapper 1.2
 
-## anti-mapper-1.1.1
+## anti-mapper-1.2.0
 
 * Removed Referer. You won't need it.
 * Entity automatically gets added to hints in AbstractMerger and AbstractMapper, now.
+
+# anti-mapper 1.1
 
 ## anti-mapper-1.1.0
 
