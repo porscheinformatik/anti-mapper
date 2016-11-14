@@ -33,7 +33,7 @@ public class ParentMapper extends AbstractMapper<ParentDTO, ParentEntity>
 
         dto.setName(entity.getName());
         dto.setChilds(childMapper.transformToArrayList(entity.getChilds(), hints));
-        
+
         return dto;
     }
 
@@ -56,7 +56,7 @@ public class ParentMapper extends AbstractMapper<ParentDTO, ParentEntity>
 
         // ensure, that the entity is not deleted, because there was a DTO
         entity.setDeleted(false);
-        
+
         return entity;
     }
 

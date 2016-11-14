@@ -108,13 +108,13 @@ public class DeletedFlagTest
         assertThat(childs.get(0).getName(), equalTo("Child#1"));
 
         childs.get(0).setName("Updated Child#1");
-        
+
         assertThat(childs.get(1), notNullValue());
         assertThat(childs.get(1).getId(), equalTo(3));
         assertThat(childs.get(1).getName(), equalTo("Child#3"));
 
         childs.get(1).setName("Updated Child#3");
-        
+
         entity = parentMapper.merge(dto, entity);
 
         assertThat(entity, notNullValue());

@@ -3,12 +3,12 @@ package at.porscheinformatik.antimapper;
 /**
  * Provides a matching operation
  *
- * @param <LEFT_TYPE> the type of the left object
- * @param <RIGHT_TYPE> the type of the right object
+ * @param <DTO> the type of the left object
+ * @param <Entity> the type of the right object
  * @author ham
  */
 @FunctionalInterface
-public interface MatchFunction<LEFT_TYPE, RIGHT_TYPE>
+public interface MatchFunction<DTO, Entity>
 {
 
     /**
@@ -19,6 +19,6 @@ public interface MatchFunction<LEFT_TYPE, RIGHT_TYPE>
      * @param right the right object
      * @return true if the left object matches the right object, false otherwise
      */
-    boolean matches(LEFT_TYPE left, RIGHT_TYPE right);
+    boolean matches(DTO left, Entity right);
 
 }

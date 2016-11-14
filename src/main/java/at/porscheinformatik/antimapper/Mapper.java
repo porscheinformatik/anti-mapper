@@ -4,10 +4,10 @@ package at.porscheinformatik.antimapper;
  * A {@link Transformer} and {@link Merger} as one interface
  *
  * @author ham
- * @param <DTO_TYPE> the type of DTO
- * @param <ENTITY_TYPE> the type of entity
+ * @param <DTO> the type of DTO
+ * @param <Entity> the type of entity
  */
-public interface Mapper<DTO_TYPE, ENTITY_TYPE> extends Transformer<DTO_TYPE, ENTITY_TYPE>, Merger<DTO_TYPE, ENTITY_TYPE>
+public interface Mapper<DTO, Entity> extends Transformer<DTO, Entity>, Merger<DTO, Entity>
 {
 
     // intentionally left blank

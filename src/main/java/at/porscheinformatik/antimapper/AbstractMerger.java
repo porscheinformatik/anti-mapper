@@ -4,14 +4,14 @@ package at.porscheinformatik.antimapper;
  * An abstract base implementation of a {@link Merger}. It just handles the null-case
  *
  * @author ham
- * @param <DTO_TYPE> the dto type
- * @param <ENTITY_TYPE> the entity type
+ * @param <DTO> the dto type
+ * @param <Entity> the entity type
  */
-public abstract class AbstractMerger<DTO_TYPE, ENTITY_TYPE> implements Merger<DTO_TYPE, ENTITY_TYPE>
+public abstract class AbstractMerger<DTO, Entity> implements Merger<DTO, Entity>
 {
 
     @Override
-    public final ENTITY_TYPE merge(DTO_TYPE dto, ENTITY_TYPE entity, Object... hints)
+    public final Entity merge(DTO dto, Entity entity, Object... hints)
     {
         if (dto == null)
         {
@@ -22,7 +22,7 @@ public abstract class AbstractMerger<DTO_TYPE, ENTITY_TYPE> implements Merger<DT
         {
             entity = create(dto, hints);
         }
-        
+
         hints = Hints.join(hints, entity);
 
         return mergeNonNull(dto, entity, hints);
@@ -35,7 +35,7 @@ public abstract class AbstractMerger<DTO_TYPE, ENTITY_TYPE> implements Merger<DT
      * @param hints optional hints
      * @return the entity, either the passed one, or a newly created one
      */
-    protected ENTITY_TYPE mergeNull(ENTITY_TYPE entity, Object[] hints)
+    protected Entity mergeNull(Entity entity, Object[] hints)
     {
         return null;
     }
@@ -48,7 +48,7 @@ public abstract class AbstractMerger<DTO_TYPE, ENTITY_TYPE> implements Merger<DT
      * @param hints optional hints
      * @return the entity, either the passed one, or a newly created one
      */
-    protected abstract ENTITY_TYPE mergeNonNull(DTO_TYPE dto, ENTITY_TYPE entity, Object... hints);
+    protected abstract Entity mergeNonNull(DTO dto, Entity entity, Object... hints);
 
     /**
      * Create a new entity. Set basic values, that will not be set by the
@@ -58,6 +58,6 @@ public abstract class AbstractMerger<DTO_TYPE, ENTITY_TYPE> implements Merger<DT
      * @param hints the hints the hints
      * @return the entity, never null
      */
-    protected abstract ENTITY_TYPE create(DTO_TYPE dto, Object... hints);
+    protected abstract Entity create(DTO dto, Object... hints);
 
 }

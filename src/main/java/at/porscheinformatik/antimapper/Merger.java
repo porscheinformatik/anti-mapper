@@ -16,10 +16,10 @@ import java.util.function.Supplier;
  * A merger is a mapper that merges a DTO into an entity.
  *
  * @author ham
- * @param <DTO_TYPE> the dto type
- * @param <ENTITY_TYPE> the entity type
+ * @param <DTO> the dto type
+ * @param <Entity> the entity type
  */
-public interface Merger<DTO_TYPE, ENTITY_TYPE>
+public interface Merger<DTO, Entity>
 {
 
     /**
@@ -31,7 +31,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return the entity, either the passed one, or a newly created one
      */
-    ENTITY_TYPE merge(DTO_TYPE dto, ENTITY_TYPE entity, Object... hints);
+    Entity merge(DTO dto, Entity entity, Object... hints);
 
     /**
      * Returns true if the unique keys match. Most often, this is the id. The method will not be called if either or
@@ -47,21 +47,21 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return true on match
      */
-    boolean isUniqueKeyMatching(DTO_TYPE dto, ENTITY_TYPE entity, Object... hints);
+    boolean isUniqueKeyMatching(DTO dto, Entity entity, Object... hints);
 
     /**
      * Maps a collection to a collection
      *
-     * @param <ENTITY_COLLECTION_TYPE> the type of the collection
+     * @param <EntityCollection> the type of the collection
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
      * @param entityCollectionFactory a factory for the needed collection
      * @param hints optional hints
      * @return a collection
      */
-    default <ENTITY_COLLECTION_TYPE extends Collection<ENTITY_TYPE>> ENTITY_COLLECTION_TYPE mergeIntoMixedCollection(
-        Iterable<? extends DTO_TYPE> dtos, ENTITY_COLLECTION_TYPE entities,
-        Supplier<ENTITY_COLLECTION_TYPE> entityCollectionFactory, Object... hints)
+    default <EntityCollection extends Collection<Entity>> EntityCollection mergeIntoMixedCollection(
+        Iterable<? extends DTO> dtos, EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory,
+        Object... hints)
     {
         if (dtos == null)
         {
@@ -96,16 +96,16 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
     /**
      * Maps a collection to a collection
      *
-     * @param <ENTITY_COLLECTION_TYPE> the type of the collection
+     * @param <EntityCollection> the type of the collection
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
      * @param entityCollectionFactory a factory for the needed collection
      * @param hints optional hints
      * @return a collection
      */
-    default <ENTITY_COLLECTION_TYPE extends Collection<ENTITY_TYPE>> ENTITY_COLLECTION_TYPE mergeIntoOrderedCollection(
-        Iterable<? extends DTO_TYPE> dtos, ENTITY_COLLECTION_TYPE entities,
-        Supplier<ENTITY_COLLECTION_TYPE> entityCollectionFactory, Object... hints)
+    default <EntityCollection extends Collection<Entity>> EntityCollection mergeIntoOrderedCollection(
+        Iterable<? extends DTO> dtos, EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory,
+        Object... hints)
     {
         if (dtos == null)
         {
@@ -142,7 +142,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param entities the mapped entities
      * @param hints optional hints
      */
-    default void afterMergeIntoCollection(Collection<ENTITY_TYPE> entities, Object... hints)
+    default void afterMergeIntoCollection(Collection<Entity> entities, Object... hints)
     {
         // intentionally left blank
     }
@@ -155,8 +155,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return a collection
      */
-    default Set<ENTITY_TYPE> mergeIntoHashSet(Iterable<? extends DTO_TYPE> dtos, Set<ENTITY_TYPE> entities,
-        Object... hints)
+    default Set<Entity> mergeIntoHashSet(Iterable<? extends DTO> dtos, Set<Entity> entities, Object... hints)
     {
         return mergeIntoMixedCollection(dtos, entities, HashSet::new, hints);
     }
@@ -169,7 +168,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return a collection
      */
-    default SortedSet<ENTITY_TYPE> mergeIntoTreeSet(Iterable<? extends DTO_TYPE> dtos, SortedSet<ENTITY_TYPE> entities,
+    default SortedSet<Entity> mergeIntoTreeSet(Iterable<? extends DTO> dtos, SortedSet<Entity> entities,
         Object... hints)
     {
         return mergeIntoMixedCollection(dtos, entities, TreeSet::new, hints);
@@ -184,8 +183,8 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return a collection
      */
-    default SortedSet<ENTITY_TYPE> mergeIntoTreeSet(Iterable<? extends DTO_TYPE> dtos, SortedSet<ENTITY_TYPE> entities,
-        Comparator<? super ENTITY_TYPE> comparator, Object... hints)
+    default SortedSet<Entity> mergeIntoTreeSet(Iterable<? extends DTO> dtos, SortedSet<Entity> entities,
+        Comparator<? super Entity> comparator, Object... hints)
     {
         return mergeIntoMixedCollection(dtos, entities, () -> new TreeSet<>(comparator), hints);
     }
@@ -198,8 +197,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return a collection
      */
-    default List<ENTITY_TYPE> mergeIntoArrayList(Iterable<? extends DTO_TYPE> dtos, List<ENTITY_TYPE> entities,
-        Object... hints)
+    default List<Entity> mergeIntoArrayList(Iterable<? extends DTO> dtos, List<Entity> entities, Object... hints)
     {
         return mergeIntoOrderedCollection(dtos, entities, ArrayList::new, hints);
     }
@@ -207,16 +205,16 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
     /**
      * Maps a map to a collection
      *
-     * @param <ENTITY_COLLECTION_TYPE> the type of the collection
+     * @param <EntityCollection> the type of the collection
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
      * @param entityCollectionFactory a factory for the needed collection
      * @param hints optional hints
      * @return a collection
      */
-    default <ENTITY_COLLECTION_TYPE extends Collection<ENTITY_TYPE>> ENTITY_COLLECTION_TYPE mergeMapIntoMixedCollection(
-        Map<?, ? extends DTO_TYPE> dtos, ENTITY_COLLECTION_TYPE entities,
-        Supplier<ENTITY_COLLECTION_TYPE> entityCollectionFactory, Object... hints)
+    default <EntityCollection extends Collection<Entity>> EntityCollection mergeMapIntoMixedCollection(
+        Map<?, ? extends DTO> dtos, EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory,
+        Object... hints)
     {
         if (dtos == null)
         {
@@ -251,16 +249,16 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
     /**
      * Maps a map to a collection
      *
-     * @param <ENTITY_COLLECTION_TYPE> the type of the collection
+     * @param <EntityCollection> the type of the collection
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
      * @param entityCollectionFactory a factory for the needed collection
      * @param hints optional hints
      * @return a collection
      */
-    default <ENTITY_COLLECTION_TYPE extends Collection<ENTITY_TYPE>> ENTITY_COLLECTION_TYPE mergeMapIntoOrderedCollection(
-        Map<?, ? extends DTO_TYPE> dtos, ENTITY_COLLECTION_TYPE entities,
-        Supplier<ENTITY_COLLECTION_TYPE> entityCollectionFactory, Object... hints)
+    default <EntityCollection extends Collection<Entity>> EntityCollection mergeMapIntoOrderedCollection(
+        Map<?, ? extends DTO> dtos, EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory,
+        Object... hints)
     {
         if (dtos == null)
         {
@@ -300,8 +298,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return a collection
      */
-    default Set<ENTITY_TYPE> mergeMapIntoHashSet(Map<?, ? extends DTO_TYPE> dtos, Set<ENTITY_TYPE> entities,
-        Object... hints)
+    default Set<Entity> mergeMapIntoHashSet(Map<?, ? extends DTO> dtos, Set<Entity> entities, Object... hints)
     {
         return mergeMapIntoMixedCollection(dtos, entities, HashSet::new, hints);
     }
@@ -314,7 +311,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return a sorted set
      */
-    default SortedSet<ENTITY_TYPE> mergeMapIntoTreeSet(Map<?, ? extends DTO_TYPE> dtos, SortedSet<ENTITY_TYPE> entities,
+    default SortedSet<Entity> mergeMapIntoTreeSet(Map<?, ? extends DTO> dtos, SortedSet<Entity> entities,
         Object... hints)
     {
         return mergeMapIntoMixedCollection(dtos, entities, TreeSet::new, hints);
@@ -329,8 +326,8 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return a sorted set
      */
-    default SortedSet<ENTITY_TYPE> mergeMapIntoTreeSet(Map<?, ? extends DTO_TYPE> dtos, SortedSet<ENTITY_TYPE> entities,
-        Comparator<? super ENTITY_TYPE> comparator, Object... hints)
+    default SortedSet<Entity> mergeMapIntoTreeSet(Map<?, ? extends DTO> dtos, SortedSet<Entity> entities,
+        Comparator<? super Entity> comparator, Object... hints)
     {
         return mergeMapIntoMixedCollection(dtos, entities, () -> new TreeSet<>(comparator), hints);
     }
@@ -343,8 +340,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return a collection
      */
-    default List<ENTITY_TYPE> mergeMapIntoArrayList(Map<?, ? extends DTO_TYPE> dtos, List<ENTITY_TYPE> entities,
-        Object... hints)
+    default List<Entity> mergeMapIntoArrayList(Map<?, ? extends DTO> dtos, List<Entity> entities, Object... hints)
     {
         return mergeMapIntoOrderedCollection(dtos, entities, ArrayList::new, hints);
     }
@@ -352,16 +348,16 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
     /**
      * Maps a grouped map to a collection
      *
-     * @param <ENTITY_COLLECTION_TYPE> the type of the collection
+     * @param <EntityCollection> the type of the collection
      * @param dtos the grouped dtos
      * @param entities the entities
      * @param entityCollectionFactory the factory for the entities collection
      * @param hints optional hints
      * @return the collection
      */
-    default <ENTITY_COLLECTION_TYPE extends Collection<ENTITY_TYPE>> ENTITY_COLLECTION_TYPE mergeGroupedMapIntoMixedCollection(
-        Map<?, ? extends Collection<? extends DTO_TYPE>> dtos, ENTITY_COLLECTION_TYPE entities,
-        Supplier<ENTITY_COLLECTION_TYPE> entityCollectionFactory, Object... hints)
+    default <EntityCollection extends Collection<Entity>> EntityCollection mergeGroupedMapIntoMixedCollection(
+        Map<?, ? extends Collection<? extends DTO>> dtos, EntityCollection entities,
+        Supplier<EntityCollection> entityCollectionFactory, Object... hints)
     {
         if (dtos == null)
         {
@@ -380,7 +376,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
                 entities = entityCollectionFactory.get();
             }
 
-            Collection<Pair<?, ? extends DTO_TYPE>> pairs = new LinkedHashSet<>();
+            Collection<Pair<?, ? extends DTO>> pairs = new LinkedHashSet<>();
 
             dtos.entrySet().forEach(
                 entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
@@ -402,16 +398,16 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
     /**
      * Maps a grouped map to a collection
      *
-     * @param <ENTITY_COLLECTION_TYPE> the type of the collection
+     * @param <EntityCollection> the type of the collection
      * @param dtos the grouped dtos
      * @param entities the entities
      * @param entityCollectionFactory the factory for the entities collection
      * @param hints optional hints
      * @return the collection
      */
-    default <ENTITY_COLLECTION_TYPE extends Collection<ENTITY_TYPE>> ENTITY_COLLECTION_TYPE mergeGroupedMapIntoOrderedCollection(
-        Map<?, ? extends Collection<? extends DTO_TYPE>> dtos, ENTITY_COLLECTION_TYPE entities,
-        Supplier<ENTITY_COLLECTION_TYPE> entityCollectionFactory, Object... hints)
+    default <EntityCollection extends Collection<Entity>> EntityCollection mergeGroupedMapIntoOrderedCollection(
+        Map<?, ? extends Collection<? extends DTO>> dtos, EntityCollection entities,
+        Supplier<EntityCollection> entityCollectionFactory, Object... hints)
     {
         if (dtos == null)
         {
@@ -430,7 +426,7 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
                 entities = entityCollectionFactory.get();
             }
 
-            Collection<Pair<?, ? extends DTO_TYPE>> pairs = new LinkedHashSet<>();
+            Collection<Pair<?, ? extends DTO>> pairs = new LinkedHashSet<>();
 
             dtos.entrySet().forEach(
                 entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
@@ -456,8 +452,8 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return the collection
      */
-    default Set<ENTITY_TYPE> mergeGroupedMapIntoHashSet(Map<?, ? extends Collection<? extends DTO_TYPE>> dtos,
-        Set<ENTITY_TYPE> entities, Object... hints)
+    default Set<Entity> mergeGroupedMapIntoHashSet(Map<?, ? extends Collection<? extends DTO>> dtos,
+        Set<Entity> entities, Object... hints)
     {
         return mergeGroupedMapIntoMixedCollection(dtos, entities, HashSet::new, hints);
     }
@@ -470,8 +466,8 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return the collection
      */
-    default SortedSet<ENTITY_TYPE> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO_TYPE>> dtos,
-        SortedSet<ENTITY_TYPE> entities, Object... hints)
+    default SortedSet<Entity> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO>> dtos,
+        SortedSet<Entity> entities, Object... hints)
     {
         return mergeGroupedMapIntoOrderedCollection(dtos, entities, TreeSet::new, hints);
     }
@@ -485,8 +481,8 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return the collection
      */
-    default SortedSet<ENTITY_TYPE> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO_TYPE>> dtos,
-        SortedSet<ENTITY_TYPE> entities, Comparator<? super ENTITY_TYPE> comparator, Object... hints)
+    default SortedSet<Entity> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO>> dtos,
+        SortedSet<Entity> entities, Comparator<? super Entity> comparator, Object... hints)
     {
         return mergeGroupedMapIntoOrderedCollection(dtos, entities, () -> new TreeSet<>(comparator), hints);
     }
@@ -499,8 +495,8 @@ public interface Merger<DTO_TYPE, ENTITY_TYPE>
      * @param hints optional hints
      * @return the collection
      */
-    default List<ENTITY_TYPE> mergeGroupedMapIntoArrayList(Map<?, ? extends Collection<? extends DTO_TYPE>> dtos,
-        List<ENTITY_TYPE> entities, Object... hints)
+    default List<Entity> mergeGroupedMapIntoArrayList(Map<?, ? extends Collection<? extends DTO>> dtos,
+        List<Entity> entities, Object... hints)
     {
         return mergeGroupedMapIntoOrderedCollection(dtos, entities, ArrayList::new, hints);
     }

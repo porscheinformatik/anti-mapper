@@ -271,7 +271,7 @@ public final class MapperUtils
         else
         {
             // the target is a collection - it has to be rebuilt
-            targetList = new ArrayList<TargetValue>(targetCollection);
+            targetList = new ArrayList<>(targetCollection);
         }
 
         mapOrdered(sourceList, targetList, uniqueKeyMatchFunction, mapFunction, filter, afterMapConsumer);
@@ -416,7 +416,7 @@ public final class MapperUtils
             {
                 removedTargetValues.add(targetValue);
                 targetList.remove(writeIndex);
-                
+
                 targetIndex++;
 
                 continue;

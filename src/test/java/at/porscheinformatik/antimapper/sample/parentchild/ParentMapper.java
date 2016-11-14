@@ -33,10 +33,10 @@ public class ParentMapper implements Mapper<ParentDTO, ParentEntity>
         hints = Hints.join(hints, dto);
 
         dto.setName(entity.getKey());
-        
+
         ZoneId timezone = Hints.hint(hints, ZoneId.class);
         dto.setTimestamp(entity.getTimestamp().toInstant().atZone(timezone).toLocalDateTime());
-        
+
         dto.setChilds(childMapper.transformToGroupedArrayLists(entity.getChilds(), child -> child.getType(), hints));
 
         return dto;
@@ -63,10 +63,10 @@ public class ParentMapper implements Mapper<ParentDTO, ParentEntity>
         hints = Hints.join(hints, entity);
 
         entity.setKey(dto.getName());
-        
+
         ZoneId timezone = Hints.hint(hints, ZoneId.class);
         entity.setTimestamp(Date.from(dto.getTimestamp().atZone(timezone).toInstant()));
-        
+
         entity.setChilds(childMapper.mergeGroupedMapIntoTreeSet(dto.getChilds(), entity.getChilds(), hints));
 
         return entity;

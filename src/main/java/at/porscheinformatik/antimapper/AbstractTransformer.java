@@ -4,14 +4,14 @@ package at.porscheinformatik.antimapper;
  * A default implementation for a {@link Transformer}. It just handles the null-case.
  *
  * @author ham
- * @param <DTO_TYPE> the type of the DTO
- * @param <ENTITY_TYPE> the type of the entity
+ * @param <DTO> the type of the DTO
+ * @param <Entity> the type of the entity
  */
-public abstract class AbstractTransformer<DTO_TYPE, ENTITY_TYPE> implements Transformer<DTO_TYPE, ENTITY_TYPE>
+public abstract class AbstractTransformer<DTO, Entity> implements Transformer<DTO, Entity>
 {
 
     @Override
-    public final DTO_TYPE transform(ENTITY_TYPE entity, Object... hints)
+    public final DTO transform(Entity entity, Object... hints)
     {
         if (entity == null)
         {
@@ -27,7 +27,7 @@ public abstract class AbstractTransformer<DTO_TYPE, ENTITY_TYPE> implements Tran
      * @param hints optional hints
      * @return the DTO
      */
-    protected DTO_TYPE transformNull(Object[] hints)
+    protected DTO transformNull(Object[] hints)
     {
         return null;
     }
@@ -39,6 +39,6 @@ public abstract class AbstractTransformer<DTO_TYPE, ENTITY_TYPE> implements Tran
      * @param hints optional hints
      * @return the DTO
      */
-    protected abstract DTO_TYPE transformNonNull(ENTITY_TYPE entity, Object[] hints);
+    protected abstract DTO transformNonNull(Entity entity, Object[] hints);
 
 }

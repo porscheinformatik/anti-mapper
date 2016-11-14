@@ -4,15 +4,14 @@ package at.porscheinformatik.antimapper;
  * An implementation of a {@link Transformer} and extends the {@link AbstractMerger}.
  *
  * @author ham
- * @param <DTO_TYPE> the type of DTO
- * @param <ENTITY_TYPE> the type of entity
+ * @param <DTO> the type of DTO
+ * @param <Entity> the type of entity
  */
-public abstract class AbstractMapper<DTO_TYPE, ENTITY_TYPE> extends AbstractMerger<DTO_TYPE, ENTITY_TYPE>
-    implements Mapper<DTO_TYPE, ENTITY_TYPE>
+public abstract class AbstractMapper<DTO, Entity> extends AbstractMerger<DTO, Entity> implements Mapper<DTO, Entity>
 {
 
     @Override
-    public final DTO_TYPE transform(ENTITY_TYPE entity, Object... hints)
+    public final DTO transform(Entity entity, Object... hints)
     {
         if (entity == null)
         {
@@ -24,11 +23,11 @@ public abstract class AbstractMapper<DTO_TYPE, ENTITY_TYPE> extends AbstractMerg
 
     /**
      * Maps null to a dto. The default implementation returns null.
-     * 
+     *
      * @param hints optional hints
      * @return the DTO
      */
-    protected DTO_TYPE transformNull(Object[] hints)
+    protected DTO transformNull(Object[] hints)
     {
         return null;
     }
@@ -40,6 +39,6 @@ public abstract class AbstractMapper<DTO_TYPE, ENTITY_TYPE> extends AbstractMerg
      * @param hints optional hints
      * @return the DTO
      */
-    protected abstract DTO_TYPE transformNonNull(ENTITY_TYPE entity, Object[] hints);
+    protected abstract DTO transformNonNull(Entity entity, Object[] hints);
 
 }

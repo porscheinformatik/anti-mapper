@@ -37,7 +37,7 @@ public class ChildMapper extends AbstractMapper<ChildDTO, ChildEntity>
 
         // the parent will be taken from the hints. The ParentMapper makes sure it is available.
         entity.setParent(Hints.hint(hints, ParentEntity.class));
-        
+
         // ensure, that the entity is not deleted, because there was a DTO
         entity.setDeleted(false);
 
