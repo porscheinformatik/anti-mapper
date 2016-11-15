@@ -2,11 +2,17 @@ package at.porscheinformatik.antimapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -26,6 +32,72 @@ public final class MapperUtils
     private MapperUtils()
     {
         super();
+    }
+
+    /**
+     * Transforms the collection to an unmodifiable one, if there is any implementation in the Java {@link Collections}
+     * utilities.
+     *
+     * @param collection the collection
+     * @return the collection
+     */
+    @SuppressWarnings("unchecked")
+    public static <AnyCollection extends Collection<?>> AnyCollection toUnmodifiableCollection(AnyCollection collection)
+    {
+        if (collection instanceof List<?>)
+        {
+            return (AnyCollection) Collections.unmodifiableList((List<?>) collection);
+        }
+
+        if (collection instanceof NavigableSet<?>)
+        {
+            return (AnyCollection) Collections.unmodifiableNavigableSet((NavigableSet<?>) collection);
+        }
+
+        if (collection instanceof SortedSet<?>)
+        {
+            return (AnyCollection) Collections.unmodifiableSortedSet((SortedSet<?>) collection);
+        }
+
+        if (collection instanceof Set<?>)
+        {
+            return (AnyCollection) Collections.unmodifiableSet((Set<?>) collection);
+        }
+
+        if (collection instanceof Collection<?>)
+        {
+            return (AnyCollection) Collections.unmodifiableCollection(collection);
+        }
+
+        return collection;
+    }
+
+    /**
+     * Transforms the map into an unmodifiable one, if there is any implemenation in the Java {@link Collections}
+     * utilities.
+     *
+     * @param map the map
+     * @return the map
+     */
+    @SuppressWarnings("unchecked")
+    public static <AnyMap extends Map<?, ?>> AnyMap toUnmodifiableMap(AnyMap map)
+    {
+        if (map instanceof NavigableMap<?, ?>)
+        {
+            return (AnyMap) Collections.unmodifiableNavigableMap((NavigableMap<?, ?>) map);
+        }
+
+        if (map instanceof SortedMap<?, ?>)
+        {
+            return (AnyMap) Collections.unmodifiableSortedMap((SortedMap<?, ?>) map);
+        }
+
+        if (map instanceof Map<?, ?>)
+        {
+            return (AnyMap) Collections.unmodifiableMap(map);
+        }
+
+        return map;
     }
 
     /**

@@ -1,3 +1,10 @@
+# anti-mapper 1.3
+
+## anti-mapper-1.3.0
+
+* Added `Hint.UNMODIFIABLE` for the transformer to produce unmodifiable collections and maps.
+  This hint replaces the two `*unmodifiableArrayList` functions. 
+
 # anti-mapper 1.2
 
 ## anti-mapper-1.2.0

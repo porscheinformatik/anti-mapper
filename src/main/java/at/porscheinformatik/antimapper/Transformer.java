@@ -2,13 +2,11 @@ package at.porscheinformatik.antimapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -92,7 +90,7 @@ public interface Transformer<DTO, Entity>
     /**
      * Transforms a {@link Collection} of entities to a {@link Collection} of DTOs. The {@link Collection} of DTOs will
      * be created by the specified factory. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL}
-     * hint is set.
+     * hint is set. Returns an unmodifiable collection if the {@link Hint#UNMODIFIABLE} is set.
      *
      * @param <DTOCollection> the type of the collection of DTOs
      * @param entities the entities, may be null
@@ -108,12 +106,20 @@ public interface Transformer<DTO, Entity>
             return null;
         }
 
-        return transformToStream(entities, hints).collect(Collectors.toCollection(dtoCollectionFactory));
+        DTOCollection dtos = transformToStream(entities, hints).collect(Collectors.toCollection(dtoCollectionFactory));
+
+        if (Hints.containsHint(hints, Hint.UNMODIFIABLE))
+        {
+            dtos = MapperUtils.toUnmodifiableCollection(dtos);
+        }
+
+        return dtos;
     }
 
     /**
      * Transforms a {@link Collection} of entities to a {@link HashSet} of DTOs. Ignores entities that transform to
-     * null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable set if the {@link Hint#UNMODIFIABLE}
+     * is set.
      *
      * @param entities the entities, may be null
      * @param hints optional hints
@@ -126,7 +132,8 @@ public interface Transformer<DTO, Entity>
 
     /**
      * Transforms a {@link Collection} of entities to a {@link SortedSet} of DTOs. Ignores entities that transform to
-     * null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable set if the {@link Hint#UNMODIFIABLE}
+     * is set.
      *
      * @param entities the entities, may be null
      * @param hints optional hints
@@ -139,7 +146,8 @@ public interface Transformer<DTO, Entity>
 
     /**
      * Transforms a {@link Collection} of entities to a {@link SortedSet} of DTOs. Ignores entities that transform to
-     * null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable set if the {@link Hint#UNMODIFIABLE}
+     * is set.
      *
      * @param entities the entities, may be null
      * @param comparator the comparator for the tree set
@@ -154,7 +162,8 @@ public interface Transformer<DTO, Entity>
 
     /**
      * Transforms a {@link Collection} of entities to an {@link ArrayList} of DTOs. Ignores entities that transform to
-     * null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable list if the
+     * {@link Hint#UNMODIFIABLE} is set.
      *
      * @param entities the entities, may be null
      * @param hints optional hints
@@ -172,12 +181,12 @@ public interface Transformer<DTO, Entity>
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a list
+     * @deprecated use {@link Hint#UNMODIFIABLE} instead
      */
+    @Deprecated
     default List<DTO> transformToUnmodifiableArrayList(Iterable<? extends Entity> entities, Object... hints)
     {
-        List<DTO> transformed = transformToArrayList(entities, hints);
-
-        return transformed != null ? Collections.unmodifiableList(transformed) : null;
+        return transformToArrayList(entities, Hints.join(hints, Hint.UNMODIFIABLE));
     }
 
     /**
@@ -185,15 +194,15 @@ public interface Transformer<DTO, Entity>
      * unless the {@link Hint#KEEP_NULL} hint is set. This method does not group results. DTOs with the same key will
      * overwrite each other.
      *
-     * @param <GroupKey> the type of the group key
+     * @param <Key> the type of the key
      * @param entities the entities, may be null
      * @param mapFactory a factory for the result map
      * @param keyFunction the function to extract the key from one entity
      * @param hints optional hints
      * @return a map
      */
-    default <GroupKey> Map<GroupKey, DTO> transformToMap(Iterable<? extends Entity> entities,
-        Supplier<Map<GroupKey, DTO>> mapFactory, Function<Entity, GroupKey> keyFunction, Object... hints)
+    default <Key, DTOMap extends Map<Key, DTO>> DTOMap transformToMap(Iterable<? extends Entity> entities,
+        Supplier<DTOMap> mapFactory, Function<Entity, Key> keyFunction, Object... hints)
     {
         if (entities == null)
         {
@@ -204,7 +213,7 @@ public interface Transformer<DTO, Entity>
 
         try
         {
-            Map<GroupKey, DTO> result = new HashMap<>();
+            DTOMap dtos = mapFactory.get();
 
             for (Entity entity : entities)
             {
@@ -213,16 +222,21 @@ public interface Transformer<DTO, Entity>
                     continue;
                 }
 
-                GroupKey key = keyFunction.apply(entity);
+                Key key = keyFunction.apply(entity);
                 DTO dto = transform(entity, hints);
 
                 if (dto != null || keepNull)
                 {
-                    result.put(key, dto);
+                    dtos.put(key, dto);
                 }
             }
 
-            return result;
+            if (Hints.containsHint(hints, Hint.UNMODIFIABLE))
+            {
+                dtos = MapperUtils.toUnmodifiableMap(dtos);
+            }
+
+            return dtos;
         }
         catch (Exception e)
         {
@@ -236,16 +250,16 @@ public interface Transformer<DTO, Entity>
      * null, unless the {@link Hint#KEEP_NULL} hint is set. This method does not group results. DTOs with the same key
      * will overwrite each other.
      *
-     * @param <GroupKey> the type of the group key
+     * @param <Key> the type of the key
      * @param entities the entities, may be null
      * @param keyFunction the function to extract the key from one entity
      * @param hints optional hints
      * @return a map
      */
-    default <GroupKey> Map<GroupKey, DTO> transformToHashMap(Iterable<? extends Entity> entities,
-        Function<Entity, GroupKey> keyFunction, Object... hints)
+    default <Key> Map<Key, DTO> transformToHashMap(Iterable<? extends Entity> entities,
+        Function<Entity, Key> keyFunction, Object... hints)
     {
-        return transformToMap(entities, HashMap<GroupKey, DTO>::new, keyFunction, hints);
+        return transformToMap(entities, HashMap<Key, DTO>::new, keyFunction, hints);
     }
 
     /**
@@ -261,15 +275,22 @@ public interface Transformer<DTO, Entity>
      * @param hints optional hints
      * @return a map
      */
-    default <GroupKey, DTOCollection extends Collection<DTO>> Map<GroupKey, DTOCollection> transformToGroupedMap(
-        Iterable<? extends Entity> entities, Supplier<Map<GroupKey, DTOCollection>> mapFactory,
-        Function<Entity, GroupKey> groupKeyFunction, Supplier<DTOCollection> collectionFactory, Object... hints)
+    default <GroupKey, DTOCollection extends Collection<DTO>, DTOMap extends Map<GroupKey, DTOCollection>> Map<GroupKey, DTOCollection> transformToGroupedMap(
+        Iterable<? extends Entity> entities, Supplier<DTOMap> mapFactory, Function<Entity, GroupKey> groupKeyFunction,
+        Supplier<DTOCollection> collectionFactory, Object... hints)
     {
         try
         {
-            return MapperUtils.mapMixedGroups(entities, mapFactory.get(), groupKeyFunction, collectionFactory,
-                (entity, dto) -> false, (entity, dto) -> transform(entity, hints),
+            Map<GroupKey, DTOCollection> dtos = MapperUtils.mapMixedGroups(entities, mapFactory.get(), groupKeyFunction,
+                collectionFactory, (entity, dto) -> false, (entity, dto) -> transform(entity, hints),
                 Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null, null);
+
+            if (Hints.containsHint(hints, Hint.UNMODIFIABLE))
+            {
+                dtos = MapperUtils.toUnmodifiableMap(dtos);
+            }
+
+            return dtos;
         }
         catch (Exception e)
         {
@@ -350,26 +371,13 @@ public interface Transformer<DTO, Entity>
      * @param groupKeyFunction extracts the key for the map
      * @param hints optional hints
      * @return a map
+     * @deprecated use {@link Hint#UNMODIFIABLE} instead
      */
+    @Deprecated
     default <GroupKey> Map<GroupKey, List<DTO>> transformToUnmodifiableGroupedArrayLists(
         Iterable<? extends Entity> entities, Function<Entity, GroupKey> groupKeyFunction, Object... hints)
     {
-        Map<GroupKey, List<DTO>> transformed = transformToGroupedArrayLists(entities, groupKeyFunction, hints);
-
-        if (transformed == null)
-        {
-            return null;
-        }
-
-        Map<GroupKey, List<DTO>> unmodifiable = new HashMap<>();
-
-        for (Entry<GroupKey, List<DTO>> entry : transformed.entrySet())
-        {
-            unmodifiable.put(entry.getKey(),
-                entry.getValue() != null ? Collections.unmodifiableList(entry.getValue()) : null);
-        }
-
-        return Collections.unmodifiableMap(unmodifiable);
+        return transformToGroupedArrayLists(entities, groupKeyFunction, Hints.join(hints, Hint.UNMODIFIABLE));
     }
 
 }

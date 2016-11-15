@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
 
@@ -435,40 +436,44 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
     @Test
     public void testRandom()
     {
-        for (int sample = 0; sample < 65536; sample++)
+        System.out.println("Performing random ordered test ...");
+        
+        IntStream.range(0, 65536).parallel().forEach(i -> testSample(i));
+    }
+
+    private void testSample(int sample)
+    {
+        int count = (int) (Math.random() * (2 + sample / 4096));
+        List<String> sourceLines = new ArrayList<>();
+        List<String> targetLines = new ArrayList<>();
+
+        createRandomItems(sourceLines, targetLines, count);
+
+        // System.out.println("Random ordered test: " + sourceLines + " into " + targetLines);
+
+        Collection<SourceItem> sourceList = createSourceList(sourceLines.toArray(new String[sourceLines.size()]));
+        Collection<TargetItem> targetList = createTargetList(targetLines.toArray(new String[targetLines.size()]));
+
+        MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsOrderedTest::matches, MapperUtilsOrderedTest::map,
+            MapperUtilsOrderedTest::nullFilter, null);
+
+        assertThat(targetList.size(), equalTo(countNotNull(sourceLines)));
+
+        Iterator<String> sourceIterator = sourceLines.iterator();
+        Iterator<TargetItem> targetIterator = targetList.iterator();
+
+        while (sourceIterator.hasNext())
         {
-            int count = (int) (Math.random() * (2 + sample / 4096));
-            List<String> sourceLines = new ArrayList<>();
-            List<String> targetLines = new ArrayList<>();
+            String sourceItem = sourceIterator.next();
 
-            createRandomItems(sourceLines, targetLines, count);
-
-            System.out.println("Random ordered test: " + sourceLines + " into " + targetLines);
-
-            Collection<SourceItem> sourceList = createSourceList(sourceLines.toArray(new String[sourceLines.size()]));
-            Collection<TargetItem> targetList = createTargetList(targetLines.toArray(new String[targetLines.size()]));
-
-            MapperUtils.mapOrdered(sourceList, targetList, MapperUtilsOrderedTest::matches, MapperUtilsOrderedTest::map,
-                MapperUtilsOrderedTest::nullFilter, null);
-
-            assertThat(targetList.size(), equalTo(countNotNull(sourceLines)));
-
-            Iterator<String> sourceIterator = sourceLines.iterator();
-            Iterator<TargetItem> targetIterator = targetList.iterator();
-
-            while (sourceIterator.hasNext())
+            if ("!".equals(sourceItem))
             {
-                String sourceItem = sourceIterator.next();
+                assertNo(targetList, "!");
 
-                if ("!".equals(sourceItem))
-                {
-                    assertNo(targetList, "!");
-
-                    continue;
-                }
-
-                assertThat(targetIterator.next().getText(), equalTo(sourceItem));
+                continue;
             }
+
+            assertThat(targetIterator.next().getText(), equalTo(sourceItem));
         }
     }
 }

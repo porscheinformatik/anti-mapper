@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
 
@@ -66,39 +67,43 @@ public class MapperUtilsMixedTest extends AbstractMapperUtilsTest
     @Test
     public void testRandom()
     {
-        for (int sample = 0; sample < 65536; sample++)
+        System.out.println("Performing random mixed test ...");
+
+        IntStream.range(0, 65536).parallel().forEach(i -> testSample(i));
+    }
+
+    private void testSample(int sample)
+    {
+        int count = (int) (Math.random() * (2 + sample / 4096));
+        List<String> sourceItems = new ArrayList<>();
+        List<String> targetItems = new ArrayList<>();
+
+        createRandomItems(sourceItems, targetItems, count);
+
+        // System.out.println("Random mixed test: " + sourceItems + " into " + targetItems);
+
+        Collection<SourceItem> sourceList = createSourceList(sourceItems.toArray(new String[sourceItems.size()]));
+        Collection<TargetItem> targetList = createTargetList(targetItems.toArray(new String[targetItems.size()]));
+
+        MapperUtils.mapMixed(sourceList, targetList, MapperUtilsMixedTest::matches, MapperUtilsMixedTest::map,
+            MapperUtilsMixedTest::nullFilter, null);
+
+        assertThat(targetList.size(), equalTo(countNotNull(sourceItems)));
+
+        Iterator<String> sourceIterator = sourceItems.iterator();
+
+        while (sourceIterator.hasNext())
         {
-            int count = (int) (Math.random() * (2 + sample / 4096));
-            List<String> sourceItems = new ArrayList<>();
-            List<String> targetItems = new ArrayList<>();
+            String sourceItem = sourceIterator.next();
 
-            createRandomItems(sourceItems, targetItems, count);
-
-            System.out.println("Random mixed test: " + sourceItems + " into " + targetItems);
-
-            Collection<SourceItem> sourceList = createSourceList(sourceItems.toArray(new String[sourceItems.size()]));
-            Collection<TargetItem> targetList = createTargetList(targetItems.toArray(new String[targetItems.size()]));
-
-            MapperUtils.mapMixed(sourceList, targetList, MapperUtilsMixedTest::matches, MapperUtilsMixedTest::map,
-                MapperUtilsMixedTest::nullFilter, null);
-
-            assertThat(targetList.size(), equalTo(countNotNull(sourceItems)));
-
-            Iterator<String> sourceIterator = sourceItems.iterator();
-
-            while (sourceIterator.hasNext())
+            if ("!".equals(sourceItem))
             {
-                String sourceItem = sourceIterator.next();
+                assertNo(targetList, "!");
 
-                if ("!".equals(sourceItem))
-                {
-                    assertNo(targetList, "!");
-
-                    continue;
-                }
-
-                assertAny(targetList, null, toKey(sourceItem));
+                continue;
             }
+
+            assertAny(targetList, null, toKey(sourceItem));
         }
     }
 
