@@ -201,7 +201,7 @@ public abstract class AbstractMapperUtilsTest
                 return item;
             }
 
-            if (Objects.equals(key, item.getKey()))
+            if (item != null && Objects.equals(key, item.getKey()))
             {
                 if (change != null)
                 {
@@ -230,7 +230,7 @@ public abstract class AbstractMapperUtilsTest
                 Assert.fail("Collection contains item with key: " + key);
             }
 
-            if (Objects.equals(key, item.getKey()))
+            if (item != null && Objects.equals(key, item.getKey()))
             {
                 Assert.fail("Collection contains item with key: " + key);
             }

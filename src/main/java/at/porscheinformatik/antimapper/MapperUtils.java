@@ -38,12 +38,19 @@ public final class MapperUtils
      * Transforms the collection to an unmodifiable one, if there is any implementation in the Java {@link Collections}
      * utilities.
      *
+     * @param <AnyCollection> UNDOCUMENTED
+     *
      * @param collection the collection
      * @return the collection
      */
     @SuppressWarnings("unchecked")
     public static <AnyCollection extends Collection<?>> AnyCollection toUnmodifiableCollection(AnyCollection collection)
     {
+        if (collection == null)
+        {
+            return null;
+        }
+
         if (collection instanceof List<?>)
         {
             return (AnyCollection) Collections.unmodifiableList((List<?>) collection);
@@ -64,24 +71,25 @@ public final class MapperUtils
             return (AnyCollection) Collections.unmodifiableSet((Set<?>) collection);
         }
 
-        if (collection instanceof Collection<?>)
-        {
-            return (AnyCollection) Collections.unmodifiableCollection(collection);
-        }
-
-        return collection;
+        return (AnyCollection) Collections.unmodifiableCollection(collection);
     }
 
     /**
      * Transforms the map into an unmodifiable one, if there is any implemenation in the Java {@link Collections}
      * utilities.
      *
+     * @param <AnyMap> the type of map
      * @param map the map
      * @return the map
      */
     @SuppressWarnings("unchecked")
     public static <AnyMap extends Map<?, ?>> AnyMap toUnmodifiableMap(AnyMap map)
     {
+        if (map == null)
+        {
+            return null;
+        }
+
         if (map instanceof NavigableMap<?, ?>)
         {
             return (AnyMap) Collections.unmodifiableNavigableMap((NavigableMap<?, ?>) map);
@@ -92,12 +100,7 @@ public final class MapperUtils
             return (AnyMap) Collections.unmodifiableSortedMap((SortedMap<?, ?>) map);
         }
 
-        if (map instanceof Map<?, ?>)
-        {
-            return (AnyMap) Collections.unmodifiableMap(map);
-        }
-
-        return map;
+        return (AnyMap) Collections.unmodifiableMap(map);
     }
 
     /**
@@ -417,6 +420,7 @@ public final class MapperUtils
 
         while ((sourceIndex < sourceSize) && (writeIndex < targetList.size()))
         {
+            @SuppressWarnings("null")
             SourceValue sourceValue = sourceList.get(sourceIndex);
             TargetValue targetValue = targetList.get(writeIndex);
 
@@ -520,6 +524,7 @@ public final class MapperUtils
         // add remaining
         while (sourceIndex < sourceSize)
         {
+            @SuppressWarnings("null")
             SourceValue sourceValue = sourceList.get(sourceIndex);
             TargetValue rescuedTargetValue =
                 rescueTargetValue(sourceValue, removedTargetValues, uniqueKeyMatchFunction);
@@ -563,9 +568,11 @@ public final class MapperUtils
                 break;
             }
         }
+
         return rescuedTargetValue;
     }
 
+    @SuppressWarnings("null")
     private static <SourceValue, TargetValue> int[][] buildLCSTable(List<? extends SourceValue> sourceList,
         List<TargetValue> targetList, MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction)
     {
@@ -925,6 +932,7 @@ public final class MapperUtils
         {
             currentName = currentName.substring(beginIndex + 1);
         }
+
         return currentName;
     }
 

@@ -1,5 +1,9 @@
 # anti-mapper 1.3
 
+## anti-mapper-1.3.1
+
+* Some code cleanup.
+
 ## anti-mapper-1.3.0
 
 * Added `Hint.UNMODIFIABLE` for the transformer to produce unmodifiable collections and maps.

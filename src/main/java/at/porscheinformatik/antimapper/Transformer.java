@@ -195,6 +195,7 @@ public interface Transformer<DTO, Entity>
      * overwrite each other.
      *
      * @param <Key> the type of the key
+     * @param <DTOMap> the type of map
      * @param entities the entities, may be null
      * @param mapFactory a factory for the result map
      * @param keyFunction the function to extract the key from one entity
@@ -268,6 +269,7 @@ public interface Transformer<DTO, Entity>
      *
      * @param <GroupKey> the type of the group key
      * @param <DTOCollection> the type of the collections in the result map
+     * @param <DTOMap> the type of map
      * @param entities the entities, may be null
      * @param mapFactory a factory for the result map
      * @param groupKeyFunction extracts the key for the map
