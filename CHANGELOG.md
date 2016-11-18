@@ -4,11 +4,13 @@
 
 * Renamed group to `at.porscheinformatik.anti-mapper`. The correct dependency is now:
 
-	<groupId>at.porscheinformatik.anti-mapper</groupId>
-	<artifactId>anti-mapper</artifactId>
-	<version>1.4.0</version>
+    <groupId>at.porscheinformatik.anti-mapper</groupId>
+    <artifactId>anti-mapper</artifactId>
+    <version>1.4.0</version>
 
 * Some code cleanup.
+
+# anti-mapper 1.3
 
 ## anti-mapper-1.3.0
 

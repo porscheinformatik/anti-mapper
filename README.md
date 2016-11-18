@@ -215,10 +215,10 @@ The Transformer and Mapper interfaces contains a lot of method for mapping colle
 First, the Transformer. It contains the following methods:
 
 * for transforming streams: `transformEach`, `transformToStream`.
-* for transforming collection: `transformToCollection`, `	transformToHashSet`, `	transformToTreeSet`, `	transformToArrayList`.
+* for transforming collection: `transformToCollection`, `    transformToHashSet`, `    transformToTreeSet`, `    transformToArrayList`.
 * for transforming maps: `transformToMap`, `transformToHashMap`.
-* for transforming grouped maps: `transformToGroupedMap`, `transformToGroupedHashSets`, `	transformToGroupedTreeSets`, `transformToGroupedMap`, `transformToGroupedTreeSets`, `transformToGroupedArrayLists`.
-	
+* for transforming grouped maps: `transformToGroupedMap`, `transformToGroupedHashSets`, `    transformToGroupedTreeSets`, `transformToGroupedMap`, `transformToGroupedTreeSets`, `transformToGroupedArrayLists`.
+    
 The resulting collection will not contain any null values. If you need them, pass the `Hint.KEEP_NULL` hint.
 If the resulting collection should be unmodifiable (e.g. for a cache), pass the `Hint.UNMODIFIABLE` hint.
 
@@ -226,16 +226,16 @@ Next, the Merger. It basically distinguishes between ordered and mixed collectio
 sets will ignore the order. The mixed method just uses the `isUniqueKeyMatching` method to find the entity, the ordered
 method additionally uses a diff algorithm, too.
 
-* for merging collections: `mergeIntoMixedCollection`, `	mergeIntoOrderedCollection`.	
-* for merging sets (mixed): `mergeIntoHashSet`, `mergeIntoTreeSet`.	
+* for merging collections: `mergeIntoMixedCollection`, `    mergeIntoOrderedCollection`.    
+* for merging sets (mixed): `mergeIntoHashSet`, `mergeIntoTreeSet`.    
 * for merging lists (ordered): `mergeIntoArrayList`.
-* for merging maps into sets or lists: `mergeMapIntoMixedCollection`, `mergeMapIntoOrderedCollection`, `mergeMapIntoTreeSet`, `mergeMapIntoArrayList`.	
+* for merging maps into sets or lists: `mergeMapIntoMixedCollection`, `mergeMapIntoOrderedCollection`, `mergeMapIntoTreeSet`, `mergeMapIntoArrayList`.    
 * for merging grouped maps into sets or lists: `mergeGroupedMapIntoMixedCollection`, `mergeGroupedMapIntoOrderedCollection`, `mergeGroupedMapIntoHashSet`, `mergeGroupedMapIntoTreeSet`, `mergeGroupedMapIntoArrayList`.
-	
+    
 For keeping null values in the resulting collections, you need to pass the `Hint.KEEP_NULL` hint.
 
 If you need to process all entities in the collection after merging, implement the `afterMergeIntoCollection` method.
-	
+    
 ### isUniqueKeyMatching method
 
 This method is used by the mapping method that map collections of DTOs to collections of entities. It helps to determine which DTO matches which entity. Despite it is just a little method, it can be a little bit tricky to implement.
@@ -244,22 +244,22 @@ First of all, the method is never called with null values, this is checked befor
 
 If your objects have an unique id, the first step is to check for equality. If the id is the same, return true.
 
-	if (Objects.equals(dto.getId(), entity.getId())) {
-		return true;
-	} 
+    if (Objects.equals(dto.getId(), entity.getId())) {
+        return true;
+    } 
 
 This even works if your have multiple DTOs with null as id (this usually happens when you add multiple new childs). Objects that have already been matched, will not be matched another time. There is a strict one-to-one relationship between DTOs and entities. If you return true for a DTO/entity pair, neither object will take part in another match.
 
 Most of the time, checking the unique id is enough.
 
-	...
-	return false;	 
+    ...
+    return false;     
 
 If your objects have some functional keys you may want to check these, too. This is only necessary if you are not sure, that your DTO contains the id, even if the entity exists already.
 
-	if (Objects.equals(dto.getKey(), entity.getKey())) {
-		return true;
-	}
+    if (Objects.equals(dto.getKey(), entity.getKey())) {
+        return true;
+    }
 
 If your matching method is wrong, the less bad thing that can happen, is that too many mappings will take place. This happens if you always return `true`. The worse thing may be, that entities will never be updated and any DTO will be added to the entities. This happens if you always return `false`.  
 
@@ -269,14 +269,14 @@ Sometimes it is necessary to update all entities of a collection, after the merg
 
 The merger contains a method that is called after collection merges, this is a simple implementation that updates the ordinal:
 
-	public void afterMergeIntoCollection(Collection<ChildEntity> entities, Object... hints) {
+    public void afterMergeIntoCollection(Collection<ChildEntity> entities, Object... hints) {
         int ordinal = 0;
         for (ChildEntity entity : entities)
         {
             ordinal = Math.max(ordinal, entity.getOrdinal());
             entity.setOrdinal(ordinal++);
         }
-	}
+    }
 
 ### Deleted-Flags and deleted-timestamps
 
@@ -286,27 +286,27 @@ It does not map entities that have been deleted, and sets the deleted-flag, if a
 
 You can find the trick in the [ChildMapper](https://github.com/porscheinformatik/anti-mapper/blob/master/src/test/java/at/porscheinformatik/antimapper/sample/deletedflag/ChildMapper.java):
 
-	@Override 
-	protected ChildDTO transformNonNull(ChildEntity entity, Object[] hints) 
-	{ 
-		if (entity.isDeleted()) 
-		{ 
-			return null; 
-		} 
-		return new ChildDTO(entity.getId(), entity.getName()); 
-	} 
-	
-	@Override 
-	protected ChildEntity mergeNull(ChildEntity entity, Object[] hints) 
-	{ 
-		entity.setDeleted(true); 
-		return entity; 
-	}
+    @Override 
+    protected ChildDTO transformNonNull(ChildEntity entity, Object[] hints) 
+    { 
+        if (entity.isDeleted()) 
+        { 
+            return null; 
+        } 
+        return new ChildDTO(entity.getId(), entity.getName()); 
+    } 
+    
+    @Override 
+    protected ChildEntity mergeNull(ChildEntity entity, Object[] hints) 
+    { 
+        entity.setDeleted(true); 
+        return entity; 
+    }
 
 Null values will automatically be filtered from the resulting collections.
 
 # Installation
 
-	mvn install
+    mvn install
 
 
