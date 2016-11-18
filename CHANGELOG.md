@@ -1,13 +1,19 @@
-# anti-mapper 1.3
+# anti-mapper 1.4
 
-## anti-mapper-1.3.1
+## anti-mapper-1.4.0
+
+* Renamed group to `at.porscheinformatik.anti-mapper`. The correct dependency is now:
+
+	<groupId>at.porscheinformatik.anti-mapper</groupId>
+	<artifactId>anti-mapper</artifactId>
+	<version>1.4.0</version>
 
 * Some code cleanup.
 
 ## anti-mapper-1.3.0
 
 * Added `Hint.UNMODIFIABLE` for the transformer to produce unmodifiable collections and maps.
-  This hint replaces the two `*unmodifiableArrayList` functions. 
+  This hint replaces the two `*UnmodifiableArrayList` functions. 
 
 # anti-mapper 1.2
 
