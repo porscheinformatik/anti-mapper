@@ -320,6 +320,33 @@ The merger contains a method that is called after collection merges, this is a s
         }
 	}
 
+### Deleted-Flags and deleted-timestamps
+
+To work with deleted-flags or deleted-timestamps, have a look at the [DeletedFlag Sample](https://github.com/porscheinformatik/anti-mapper/tree/master/src/test/java/at/porscheinformatik/antimapper/sample/deletedflag).
+
+It does not map entities that have been deleted, and sets the deleted-flag, if a DTO is missing.
+
+You can find the trick in the [ChildMapper](https://github.com/porscheinformatik/anti-mapper/blob/master/src/test/java/at/porscheinformatik/antimapper/sample/deletedflag/ChildMapper.java):
+
+	@Override 
+	protected ChildDTO transformNonNull(ChildEntity entity, Object[] hints) 
+	{ 
+		if (entity.isDeleted()) 
+		{ 
+			return null; 
+		} 
+		return new ChildDTO(entity.getId(), entity.getName()); 
+	} 
+	
+	@Override 
+	protected ChildEntity mergeNull(ChildEntity entity, Object[] hints) 
+	{ 
+		entity.setDeleted(true); 
+		return entity; 
+	}
+
+Null values will automatically be filtered from the resulting collections.
+
 # Installation
 
 	mvn install
