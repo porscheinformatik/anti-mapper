@@ -206,11 +206,119 @@ Have a look at the [ChildMapper-Sample](https://github.com/porscheinformatik/ant
 If you want a two-way mapping, then you implement a `Mapper`. It's the same as implementing a `Transformer` and a 
 `Merger` in the same class.
 
-### More documentation to come
+## Best Practices
 
-* `public void afterMergeIntoCollection(Collection<ChildEntity> entities, Object... hints)`
-* Collections, Sets, Lists, Maps
-* Best practices
+### Mapping collections and maps
+
+The Transformer and Mapper interfaces contains a lot of method for mapping collections and maps.
+
+First, the Transformer. It contains the following methods:
+
+* for transforming streams:
+
+    transformEach
+    transformToStream
+    
+* for transforming collection:
+
+	transformToCollection
+	transformToHashSet
+	transformToTreeSet
+	transformToArrayList
+	
+* for transforming maps:
+
+	transformToMap
+	transformToHashMap
+	
+* for transforming grouped maps:
+
+	transformToGroupedMap
+	transformToGroupedHashSets
+	transformToGroupedTreeSets
+	transformToGroupedMap
+	transformToGroupedTreeSets
+	transformToGroupedArrayLists
+	
+The resulting collection will not contain any null values. If you need them, pass the `Hint.KEEP_NULL` hint.
+If the resulting collection should be unmodifiable (e.g. for a cache), pass the `Hint.UNMODIFIABLE` hint.
+
+Next, the Merger. It basically distinguishes between ordered and mixed collections. Lists will keep the order when being mapped,
+sets will ignore the order. The mixed method just uses the `isUniqueKeyMatching` method to find the entity, the ordered
+method additionally uses a diff algorithm, too.
+
+	mergeIntoMixedCollection
+	mergeIntoOrderedCollection
+	
+* for merging sets (mixed):
+
+	mergeIntoHashSet
+	mergeIntoTreeSet
+	
+* for merging lists (ordered):
+	
+	mergeIntoArrayList
+
+* for merging maps into sets or lists:
+
+	mergeMapIntoMixedCollection
+	mergeMapIntoOrderedCollection
+	mergeMapIntoTreeSet
+	mergeMapIntoArrayList 
+	
+* for merging grouped maps into sets or lists:
+	
+	mergeGroupedMapIntoMixedCollection
+	mergeGroupedMapIntoOrderedCollection
+	mergeGroupedMapIntoHashSet
+	mergeGroupedMapIntoTreeSet
+	mergeGroupedMapIntoArrayList
+	
+For keeping null values in the resulting collections, you need to pass the `Hint.KEEP_NULL` hint.
+
+If you need to process all entities in the collection after merging, implement the `afterMergeIntoCollection` method.
+	
+### isUniqueKeyMatching method
+
+This method is used by the mapping method that map collections of DTOs to collections of entities. It helps to determine which DTO matches which entity. Despite it is just a little method, it can be a little bit tricky to implement.
+
+First of all, the method is never called with null values, this is checked beforehand.
+
+If your objects have an unique id, the first step is to check for equality. If the id is the same, return true.
+
+	if (Objects.equals(dto.getId(), entity.getId())) {
+		return true;
+	} 
+
+This even works if your have multiple DTOs with null as id (this usually happens when you add multiple new childs). Objects that have already been matched, will not be matched another time. There is a strict one-to-one relationship between DTOs and entities. If you return true for a DTO/entity pair, neither object will take part in another match.
+
+Most of the time, checking the unique id is enough.
+
+	...
+	return false;	 
+
+If your objects have some functional keys you may want to check these, too. This is only necessary if you are not sure, that your DTO contains the id, even if the entity exists already.
+
+	if (Objects.equals(dto.getKey(), entity.getKey())) {
+		return true;
+	}
+
+If your matching method is wrong, the less bad thing that can happen, is that too many mappings will take place. This happens if you always return `true`. The worse thing may be, that entities will never be updated and any DTO will be added to the entities. This happens if you always return `false`.  
+
+### afterMergeIntoCollection
+
+Sometimes it is necessary to update all entities of a collection, after the merge has finished. You will need this, e.g. if you want to update an ordinal value.
+
+The merger contains a method that is called after collection merges, this is a simple implementation that updates the ordinal:
+
+	public void afterMergeIntoCollection(Collection<ChildEntity> entities, Object... hints) {
+        int ordinal = 0;
+        for (ChildEntity entity : entities)
+        {
+            ordinal = Math.max(ordinal, entity.getOrdinal());
+            entity.setOrdinal(ordinal++);
+        }
+	}
 
 # Installation
 
