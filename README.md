@@ -214,31 +214,10 @@ The Transformer and Mapper interfaces contains a lot of method for mapping colle
 
 First, the Transformer. It contains the following methods:
 
-* for transforming streams:
-
-    transformEach
-    transformToStream
-    
-* for transforming collection:
-
-	transformToCollection
-	transformToHashSet
-	transformToTreeSet
-	transformToArrayList
-	
-* for transforming maps:
-
-	transformToMap
-	transformToHashMap
-	
-* for transforming grouped maps:
-
-	transformToGroupedMap
-	transformToGroupedHashSets
-	transformToGroupedTreeSets
-	transformToGroupedMap
-	transformToGroupedTreeSets
-	transformToGroupedArrayLists
+* for transforming streams: `transformEach`, `transformToStream`.
+* for transforming collection: `transformToCollection`, `	transformToHashSet`, `	transformToTreeSet`, `	transformToArrayList`.
+* for transforming maps: `transformToMap`, `transformToHashMap`.
+* for transforming grouped maps: `transformToGroupedMap`, `transformToGroupedHashSets`, `	transformToGroupedTreeSets`, `transformToGroupedMap`, `transformToGroupedTreeSets`, `transformToGroupedArrayLists`.
 	
 The resulting collection will not contain any null values. If you need them, pass the `Hint.KEEP_NULL` hint.
 If the resulting collection should be unmodifiable (e.g. for a cache), pass the `Hint.UNMODIFIABLE` hint.
@@ -247,32 +226,11 @@ Next, the Merger. It basically distinguishes between ordered and mixed collectio
 sets will ignore the order. The mixed method just uses the `isUniqueKeyMatching` method to find the entity, the ordered
 method additionally uses a diff algorithm, too.
 
-	mergeIntoMixedCollection
-	mergeIntoOrderedCollection
-	
-* for merging sets (mixed):
-
-	mergeIntoHashSet
-	mergeIntoTreeSet
-	
-* for merging lists (ordered):
-	
-	mergeIntoArrayList
-
-* for merging maps into sets or lists:
-
-	mergeMapIntoMixedCollection
-	mergeMapIntoOrderedCollection
-	mergeMapIntoTreeSet
-	mergeMapIntoArrayList 
-	
-* for merging grouped maps into sets or lists:
-	
-	mergeGroupedMapIntoMixedCollection
-	mergeGroupedMapIntoOrderedCollection
-	mergeGroupedMapIntoHashSet
-	mergeGroupedMapIntoTreeSet
-	mergeGroupedMapIntoArrayList
+* for merging collections: `mergeIntoMixedCollection`, `	mergeIntoOrderedCollection`.	
+* for merging sets (mixed): `mergeIntoHashSet`, `mergeIntoTreeSet`.	
+* for merging lists (ordered): `mergeIntoArrayList`.
+* for merging maps into sets or lists: `mergeMapIntoMixedCollection`, `mergeMapIntoOrderedCollection`, `mergeMapIntoTreeSet`, `mergeMapIntoArrayList`.	
+* for merging grouped maps into sets or lists: `mergeGroupedMapIntoMixedCollection`, `mergeGroupedMapIntoOrderedCollection`, `mergeGroupedMapIntoHashSet`, `mergeGroupedMapIntoTreeSet`, `mergeGroupedMapIntoArrayList`.
 	
 For keeping null values in the resulting collections, you need to pass the `Hint.KEEP_NULL` hint.
 
