@@ -31,7 +31,7 @@ public class ChildMapper extends AbstractMapper<ChildDTO, ChildEntity>
     }
 
     @Override
-    protected ChildEntity mergeNonNull(ChildDTO dto, ChildEntity entity, Object... hints)
+    protected ChildEntity mergeNonNull(ChildDTO dto, ChildEntity entity, Object[] hints)
     {
         entity.setName(dto.getName());
 
@@ -45,7 +45,7 @@ public class ChildMapper extends AbstractMapper<ChildDTO, ChildEntity>
     }
 
     @Override
-    protected ChildEntity create(ChildDTO dto, Object... hints)
+    protected ChildEntity create(ChildDTO dto, Object[] hints)
     {
         ChildEntity entity = new ChildEntity();
 

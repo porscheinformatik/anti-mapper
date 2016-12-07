@@ -27,9 +27,14 @@ public final class Hints
      */
     public static Object[] join(Object[] left, Object... right)
     {
-        if ((left == null) || (left.length == 0))
+        if (left == null || left.length == 0)
         {
             return right;
+        }
+
+        if (right == null || right.length == 0)
+        {
+            return left;
         }
 
         Object[] result = Arrays.copyOf(left, left.length + right.length);

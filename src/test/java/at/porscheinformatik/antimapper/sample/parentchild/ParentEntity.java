@@ -1,9 +1,9 @@
 package at.porscheinformatik.antimapper.sample.parentchild;
 
-import java.util.Arrays;
+import static at.porscheinformatik.antimapper.TestUtils.*;
+
 import java.util.Date;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 public class ParentEntity
 {
@@ -27,7 +27,7 @@ public class ParentEntity
 
         timestamp = new Date();
 
-        this.childs = new TreeSet<>(Arrays.asList(childs));
+        this.childs = toTreeSet(childs);
 
         for (ChildEntity child : childs)
         {

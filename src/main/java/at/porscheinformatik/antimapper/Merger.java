@@ -2,9 +2,9 @@ package at.porscheinformatik.antimapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +49,21 @@ public interface Merger<DTO, Entity>
      */
     boolean isUniqueKeyMatching(DTO dto, Entity entity, Object... hints);
 
+    default boolean isUniqueKeyMatchingNullable(DTO dto, Entity entity, Object... hints)
+    {
+        if (dto == entity)
+        {
+            return true;
+        }
+
+        if (dto == null || entity == null)
+        {
+            return false;
+        }
+
+        return isUniqueKeyMatching(dto, entity, hints);
+    }
+
     /**
      * Maps a collection to a collection
      *
@@ -65,25 +80,42 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities != null)
+            if (entities == null)
             {
-                entities.clear();
+                return null;
             }
 
-            return entities;
+            dtos = Collections.emptyList();
         }
 
         try
         {
+            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
+
             if (entities == null)
             {
                 entities = entityCollectionFactory.get();
             }
+            else if (unmodifiable)
+            {
+                EntityCollection originalEntity = entities;
 
-            return MapperUtils.mapMixed(dtos, entities, this::isUniqueKeyMatching,
-                (dto, entity) -> merge(dto, entity, hints),
-                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null,
-                list -> afterMergeIntoCollection(list, hints));
+                entities = entityCollectionFactory.get();
+                entities.addAll(originalEntity);
+            }
+
+            entities =
+                MapperUtils.mapMixed(dtos, entities, (dto, entity) -> isUniqueKeyMatchingNullable(dto, entity, hints),
+                    (dto, entity) -> merge(dto, entity, hints),
+                    Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null,
+                    list -> afterMergeIntoCollection(list, hints));
+
+            if (unmodifiable)
+            {
+                entities = MapperUtils.toUnmodifiableCollection(entities);
+            }
+
+            return entities;
         }
         catch (Exception e)
         {
@@ -109,24 +141,42 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities != null)
+            if (entities == null)
             {
-                entities.clear();
+                return null;
             }
 
-            return entities;
+            dtos = Collections.emptyList();
         }
 
         try
         {
+            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
+
             if (entities == null)
             {
                 entities = entityCollectionFactory.get();
             }
+            else if (unmodifiable)
+            {
+                EntityCollection originalEntity = entities;
 
-            return MapperUtils.mapOrdered(dtos, entities, this::isUniqueKeyMatching,
-                (dto, entity) -> merge(dto, entity, hints), entity -> entity != null,
-                list -> afterMergeIntoCollection(list, hints));
+                entities = entityCollectionFactory.get();
+                entities.addAll(originalEntity);
+            }
+
+            entities =
+                MapperUtils.mapOrdered(dtos, entities, (dto, entity) -> isUniqueKeyMatchingNullable(dto, entity, hints),
+                    (dto, entity) -> merge(dto, entity, hints),
+                    Hints.containsHint(hints, Hint.KEEP_NULL) ? null : entity -> entity != null,
+                    list -> afterMergeIntoCollection(list, hints));
+
+            if (unmodifiable)
+            {
+                entities = MapperUtils.toUnmodifiableCollection(entities);
+            }
+
+            return entities;
         }
         catch (Exception e)
         {
@@ -171,7 +221,8 @@ public interface Merger<DTO, Entity>
     default SortedSet<Entity> mergeIntoTreeSet(Iterable<? extends DTO> dtos, SortedSet<Entity> entities,
         Object... hints)
     {
-        return mergeIntoMixedCollection(dtos, entities, TreeSet::new, hints);
+        return mergeIntoMixedCollection(dtos, entities,
+            () -> entities != null ? new TreeSet<>(entities.comparator()) : new TreeSet<>(), hints);
     }
 
     /**
@@ -179,7 +230,7 @@ public interface Merger<DTO, Entity>
      *
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
-     * @param comparator the comparator for the tree set
+     * @param comparator the comparator for the tree set, will only be used for the create method
      * @param hints optional hints
      * @return a collection
      */
@@ -218,25 +269,43 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities != null)
+            if (entities == null)
             {
-                entities.clear();
+                return null;
             }
 
-            return entities;
+            dtos = Collections.emptyMap();
         }
 
         try
         {
+            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
+
             if (entities == null)
             {
                 entities = entityCollectionFactory.get();
             }
+            else if (unmodifiable)
+            {
+                EntityCollection originalEntity = entities;
 
-            return MapperUtils.mapMixed(dtos.entrySet(), entities,
-                (entry, entity) -> isUniqueKeyMatching(entry.getValue(), entity, Hints.join(hints, entry.getKey())),
-                (entry, entity) -> merge(entry.getValue(), entity, Hints.join(hints, entry.getKey())),
+                entities = entityCollectionFactory.get();
+                entities.addAll(originalEntity);
+            }
+
+            entities = MapperUtils.mapMixed(dtos.entrySet(), entities,
+                (entry, entity) -> isUniqueKeyMatchingNullable(entry != null ? entry.getValue() : null, entity,
+                    entry != null ? Hints.join(hints, entry.getKey()) : hints),
+                (entry, entity) -> merge(entry != null ? entry.getValue() : null, entity,
+                    entry != null ? Hints.join(hints, entry.getKey()) : hints),
                 Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null, this::afterMergeIntoCollection);
+
+            if (unmodifiable)
+            {
+                entities = MapperUtils.toUnmodifiableCollection(entities);
+            }
+
+            return entities;
         }
         catch (Exception e)
         {
@@ -262,25 +331,44 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities != null)
+            if (entities == null)
             {
-                entities.clear();
+                return null;
             }
 
-            return entities;
+            dtos = Collections.emptyMap();
         }
 
         try
         {
+            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
+
             if (entities == null)
             {
                 entities = entityCollectionFactory.get();
             }
+            else if (unmodifiable)
+            {
+                EntityCollection originalEntity = entities;
 
-            return MapperUtils.mapOrdered(dtos.entrySet(), entities,
-                (entry, entity) -> isUniqueKeyMatching(entry.getValue(), entity, Hints.join(hints, entry.getKey())),
-                (entry, entity) -> merge(entry.getValue(), entity, Hints.join(hints, entry.getKey())),
-                entity -> entity != null, this::afterMergeIntoCollection);
+                entities = entityCollectionFactory.get();
+                entities.addAll(originalEntity);
+            }
+
+            entities = MapperUtils.mapOrdered(dtos.entrySet(), entities,
+                (entry, entity) -> isUniqueKeyMatchingNullable(entry != null ? entry.getValue() : null, entity,
+                    entry != null ? Hints.join(hints, entry.getKey()) : hints),
+                (entry, entity) -> merge(entry != null ? entry.getValue() : null, entity,
+                    entry != null ? Hints.join(hints, entry.getKey()) : hints),
+                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : entity -> entity != null,
+                this::afterMergeIntoCollection);
+
+            if (unmodifiable)
+            {
+                entities = MapperUtils.toUnmodifiableCollection(entities);
+            }
+
+            return entities;
         }
         catch (Exception e)
         {
@@ -314,7 +402,8 @@ public interface Merger<DTO, Entity>
     default SortedSet<Entity> mergeMapIntoTreeSet(Map<?, ? extends DTO> dtos, SortedSet<Entity> entities,
         Object... hints)
     {
-        return mergeMapIntoMixedCollection(dtos, entities, TreeSet::new, hints);
+        return mergeMapIntoMixedCollection(dtos, entities,
+            () -> entities != null ? new TreeSet<>(entities.comparator()) : new TreeSet<>(), hints);
     }
 
     /**
@@ -361,31 +450,49 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities != null)
+            if (entities == null)
             {
-                entities.clear();
+                return null;
             }
 
-            return entities;
+            dtos = Collections.emptyMap();
         }
 
         try
         {
+            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
+
             if (entities == null)
             {
                 entities = entityCollectionFactory.get();
             }
+            else if (unmodifiable)
+            {
+                EntityCollection originalEntity = entities;
 
-            Collection<Pair<?, ? extends DTO>> pairs = new LinkedHashSet<>();
+                entities = entityCollectionFactory.get();
+                entities.addAll(originalEntity);
+            }
+
+            Collection<Pair<?, ? extends DTO>> pairs = new ArrayList<>();
 
             dtos.entrySet().forEach(
                 entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
 
-            return MapperUtils.mapMixed(pairs, entities,
-                (pair, entity) -> isUniqueKeyMatching(pair.getRight(), entity, Hints.join(hints, pair.getLeft())),
-                (pair, entity) -> merge(pair.getRight(), entity, Hints.join(hints, pair.getLeft())),
+            entities = MapperUtils.mapMixed(pairs, entities,
+                (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
+                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
+                (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
+                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
                 Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null,
                 list -> afterMergeIntoCollection(list, hints));
+
+            if (unmodifiable)
+            {
+                entities = MapperUtils.toUnmodifiableCollection(entities);
+            }
+
+            return entities;
         }
         catch (Exception e)
         {
@@ -411,30 +518,49 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities != null)
+            if (entities == null)
             {
-                entities.clear();
+                return null;
             }
 
-            return entities;
+            dtos = Collections.emptyMap();
         }
 
         try
         {
+            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
+
             if (entities == null)
             {
                 entities = entityCollectionFactory.get();
             }
+            else if (unmodifiable)
+            {
+                EntityCollection originalEntity = entities;
 
-            Collection<Pair<?, ? extends DTO>> pairs = new LinkedHashSet<>();
+                entities = entityCollectionFactory.get();
+                entities.addAll(originalEntity);
+            }
+
+            Collection<Pair<?, ? extends DTO>> pairs = new ArrayList<>();
 
             dtos.entrySet().forEach(
                 entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
 
-            return MapperUtils.mapOrdered(pairs, entities,
-                (pair, entity) -> isUniqueKeyMatching(pair.getRight(), entity, Hints.join(hints, pair.getLeft())),
-                (pair, entity) -> merge(pair.getRight(), entity, Hints.join(hints, pair.getLeft())),
-                entity -> entity != null, list -> afterMergeIntoCollection(list, hints));
+            entities = MapperUtils.mapOrdered(pairs, entities,
+                (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
+                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
+                (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
+                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
+                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : entity -> entity != null,
+                list -> afterMergeIntoCollection(list, hints));
+
+            if (unmodifiable)
+            {
+                entities = MapperUtils.toUnmodifiableCollection(entities);
+            }
+
+            return entities;
         }
         catch (Exception e)
         {
@@ -469,7 +595,8 @@ public interface Merger<DTO, Entity>
     default SortedSet<Entity> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO>> dtos,
         SortedSet<Entity> entities, Object... hints)
     {
-        return mergeGroupedMapIntoOrderedCollection(dtos, entities, TreeSet::new, hints);
+        return mergeGroupedMapIntoOrderedCollection(dtos, entities,
+            () -> entities != null ? new TreeSet<>(entities.comparator()) : new TreeSet<>(), hints);
     }
 
     /**

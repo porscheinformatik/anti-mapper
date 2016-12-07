@@ -3,10 +3,12 @@ package at.porscheinformatik.antimapper;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Objects;
@@ -38,8 +40,7 @@ public final class MapperUtils
      * Transforms the collection to an unmodifiable one, if there is any implementation in the Java {@link Collections}
      * utilities.
      *
-     * @param <AnyCollection> UNDOCUMENTED
-     *
+     * @param <AnyCollection> the type of collection
      * @param collection the collection
      * @return the collection
      */
@@ -114,34 +115,7 @@ public final class MapperUtils
      * @param <TargetValue> the type of the values in the target collection
      * @param sourceIterable the source iterable, may be null
      * @param targetCollection the target collection, may not be null
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
-     * @param mapFunction the function to map the source to a target object (the source and the target object may be
-     *            null)
-     * @return the target collection itself
-     * @deprecated no silly wrappers anymore
-     */
-    @Deprecated
-    public static <SourceValue, TargetCollection extends Collection<TargetValue>, TargetValue> TargetCollection mapMixed(
-        Iterable<? extends SourceValue> sourceIterable, TargetCollection targetCollection,
-        MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
-        BiFunction<SourceValue, TargetValue, TargetValue> mapFunction)
-    {
-        return mapMixed(sourceIterable, targetCollection, uniqueKeyMatchFunction, mapFunction,
-            targetValue -> targetValue != null, null);
-    }
-
-    /**
-     * Maps the source iterable into the target collection. Ignores the order. Searches for existing objects by using
-     * the specified match function, which may only match some important keys (maps the object even if the match
-     * function returns true). Maps the source entry to the target entry by using the specified map function. The map
-     * function must be able to handle null as target value (create a new instance).
-     *
-     * @param <SourceValue> the type of the values in the source iterable
-     * @param <TargetCollection> the type of the target collection
-     * @param <TargetValue> the type of the values in the target collection
-     * @param sourceIterable the source iterable, may be null
-     * @param targetCollection the target collection, may not be null
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
+     * @param matchFunction the function to compare the source and the target object
      * @param mapFunction the function to map the source to a target object (the source and the target object may be
      *            null)
      * @param filter optional filter for excluding results
@@ -150,7 +124,7 @@ public final class MapperUtils
      */
     public static <SourceValue, TargetCollection extends Collection<TargetValue>, TargetValue> TargetCollection mapMixed(
         Iterable<? extends SourceValue> sourceIterable, TargetCollection targetCollection,
-        MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
+        MatchFunction<SourceValue, TargetValue> matchFunction,
         BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
         Consumer<TargetCollection> afterMapConsumer)
     {
@@ -165,8 +139,7 @@ public final class MapperUtils
 
         Map<TargetValue, Void> mappedTargetValues = new IdentityHashMap<>();
 
-        mapMixedUpdate(mappedTargetValues, sourceIterable, targetCollection, uniqueKeyMatchFunction, mapFunction,
-            filter);
+        mapMixedUpdate(mappedTargetValues, sourceIterable, targetCollection, matchFunction, mapFunction, filter);
         mapMixedDelete(mappedTargetValues, targetCollection, mapFunction, filter);
 
         if (afterMapConsumer != null)
@@ -179,7 +152,7 @@ public final class MapperUtils
 
     private static <TargetValue, TargetCollection extends Collection<TargetValue>, SourceValue> void mapMixedUpdate(
         Map<TargetValue, Void> mappedTargetValues, Iterable<? extends SourceValue> sourceIterable,
-        TargetCollection targetCollection, MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
+        TargetCollection targetCollection, MatchFunction<SourceValue, TargetValue> matchFunction,
         BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter)
     {
         StreamSupport.stream(sourceIterable.spliterator(), false).forEach(sourceValue -> {
@@ -193,7 +166,7 @@ public final class MapperUtils
                     continue;
                 }
 
-                if (uniqueKeyMatchFunction.matches(sourceValue, currentTargetValue))
+                if (matchFunction.matches(sourceValue, currentTargetValue))
                 {
                     targetValue = currentTargetValue;
                     break;
@@ -263,7 +236,10 @@ public final class MapperUtils
             newTargetValues.add(newTargetValue);
         }
 
-        targetCollection.addAll(newTargetValues);
+        if (newTargetValues.size() > 0)
+        {
+            targetCollection.addAll(newTargetValues);
+        }
     }
 
     /**
@@ -278,35 +254,7 @@ public final class MapperUtils
      * @param <TargetValue> the type of the values in the target collection
      * @param sourceIterable the source iterable, may be null
      * @param targetCollection the target collection, may not be null
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
-     * @param mapFunction the function to map the source to a target object (the source and the target object may be
-     *            null)
-     * @return the target collection itself
-     * @deprecated no silly wrappers anymore
-     */
-    @Deprecated
-    public static <SourceValue, TargetCollection extends Collection<TargetValue>, TargetValue> TargetCollection mapOrdered(
-        Iterable<? extends SourceValue> sourceIterable, TargetCollection targetCollection,
-        MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
-        BiFunction<SourceValue, TargetValue, TargetValue> mapFunction)
-    {
-        return mapOrdered(sourceIterable, targetCollection, uniqueKeyMatchFunction, mapFunction,
-            targetValue -> targetValue != null, null);
-    }
-
-    /**
-     * Maps the source iterable into the target collection. Keeps the order. Searches for existing objects by using the
-     * specified match function, which may only match some important keys (maps the object even if the match function
-     * returns true). Maps the source entry to the target entry by using the specified map function. The map function
-     * must be able to handle null as target value (create a new instance). Tries to rescue removed target values by
-     * reusing them (if the unique key matches).
-     *
-     * @param <SourceValue> the type of the values in the source iterable
-     * @param <TargetCollection> the type of the target collection
-     * @param <TargetValue> the type of the values in the target collection
-     * @param sourceIterable the source iterable, may be null
-     * @param targetCollection the target collection, may not be null
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
+     * @param matchFunction the function to compare the source and the target object
      * @param mapFunction the function to map the source to a target object (the source and the target object may be
      *            null)
      * @param filter optional filter for excluding results
@@ -315,7 +263,7 @@ public final class MapperUtils
      */
     public static <SourceValue, TargetCollection extends Collection<TargetValue>, TargetValue> TargetCollection mapOrdered(
         Iterable<? extends SourceValue> sourceIterable, TargetCollection targetCollection,
-        MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
+        MatchFunction<SourceValue, TargetValue> matchFunction,
         BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
         Consumer<List<TargetValue>> afterMapConsumer)
     {
@@ -349,42 +297,23 @@ public final class MapperUtils
             targetList = new ArrayList<>(targetCollection);
         }
 
-        mapOrdered(sourceList, targetList, uniqueKeyMatchFunction, mapFunction, filter, afterMapConsumer);
+        mapOrdered(sourceList, targetList, matchFunction, mapFunction, filter, afterMapConsumer);
 
         if (targetCollection != targetList)
         {
             // the target is not a list - rebuild it
-            targetCollection.clear();
-            targetCollection.addAll(targetList);
+            if (targetCollection.size() > 0)
+            {
+                targetCollection.clear();
+            }
+
+            if (targetList.size() > 0)
+            {
+                targetCollection.addAll(targetList);
+            }
         }
 
         return targetCollection;
-    }
-
-    /**
-     * Maps the source list into the target list. Keeps the order. Searches for existing objects by using the specified
-     * match function, which may only match some important keys (maps the object even if the match function returns
-     * true). Maps the source entry to the target entry by using the specified map function. The map function must be
-     * able to handle null as target value (create a new instance).Tries to rescue removed target values by reusing them
-     * (if the unique key matches).
-     *
-     * @param <SourceEntry> the type of the values in the source list
-     * @param <TargetValue> the type of the values in the target list
-     * @param sourceList the source list, may be null
-     * @param targetList the target list, may not be null
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
-     * @param mapFunction the function to map the source to a target object (the source and the target object may be
-     *            null)
-     * @return the target list itself
-     * @deprecated no silly wrappers anymore
-     */
-    @Deprecated
-    public static <TargetValue, SourceEntry> List<TargetValue> mapOrdered(List<? extends SourceEntry> sourceList,
-        List<TargetValue> targetList, MatchFunction<SourceEntry, TargetValue> uniqueKeyMatchFunction,
-        BiFunction<SourceEntry, TargetValue, TargetValue> mapFunction)
-    {
-        return mapOrdered(sourceList, targetList, uniqueKeyMatchFunction, mapFunction,
-            targetValue -> targetValue != null, null);
     }
 
     /**
@@ -398,7 +327,7 @@ public final class MapperUtils
      * @param <TargetValue> the type of the values in the target list
      * @param sourceList the source list, may be null
      * @param targetList the target list, may not be null
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
+     * @param matchFunction the function to compare the source and the target object
      * @param mapFunction the function to map the source to a target object (the source and the target object may be
      *            null)
      * @param filter optional filter for excluding results
@@ -406,11 +335,11 @@ public final class MapperUtils
      * @return the target list itself
      */
     public static <SourceValue, TargetValue> List<TargetValue> mapOrdered(List<? extends SourceValue> sourceList,
-        List<TargetValue> targetList, MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
+        List<TargetValue> targetList, MatchFunction<SourceValue, TargetValue> matchFunction,
         BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
         Consumer<List<TargetValue>> afterMapConsumer)
     {
-        int[][] table = buildLCSTable(sourceList, targetList, uniqueKeyMatchFunction);
+        int[][] table = buildLCSTable(sourceList, targetList, matchFunction);
 
         int sourceIndex = 0;
         int targetIndex = 0;
@@ -424,7 +353,7 @@ public final class MapperUtils
             SourceValue sourceValue = sourceList.get(sourceIndex);
             TargetValue targetValue = targetList.get(writeIndex);
 
-            if (uniqueKeyMatchFunction.matches(sourceValue, targetValue))
+            if (matchFunction.matches(sourceValue, targetValue))
             {
                 // exists
 
@@ -452,15 +381,14 @@ public final class MapperUtils
             if (table[sourceIndex + 1][targetIndex] >= table[sourceIndex][targetIndex + 1])
             {
                 // added
-                TargetValue rescuedTargetValue =
-                    rescueTargetValue(sourceValue, removedTargetValues, uniqueKeyMatchFunction);
+                TargetValue rescuedTargetValue = rescueTargetValue(sourceValue, removedTargetValues, matchFunction);
 
                 if (rescuedTargetValue == null)
                 {
                     // rescue a value that will be removed
                     for (int i = writeIndex + 1; i < targetList.size(); i++)
                     {
-                        if (uniqueKeyMatchFunction.matches(sourceValue, targetList.get(i)))
+                        if (matchFunction.matches(sourceValue, targetList.get(i)))
                         {
                             rescuedTargetValue = targetList.remove(i);
                             break;
@@ -517,7 +445,7 @@ public final class MapperUtils
                 continue;
             }
 
-            targetList.add(mappedTargetValue);
+            targetList.add(writeIndex, mappedTargetValue);
             writeIndex++;
         }
 
@@ -526,8 +454,7 @@ public final class MapperUtils
         {
             @SuppressWarnings("null")
             SourceValue sourceValue = sourceList.get(sourceIndex);
-            TargetValue rescuedTargetValue =
-                rescueTargetValue(sourceValue, removedTargetValues, uniqueKeyMatchFunction);
+            TargetValue rescuedTargetValue = rescueTargetValue(sourceValue, removedTargetValues, matchFunction);
 
             TargetValue mappedTargetValue = mapFunction.apply(sourceValue, rescuedTargetValue);
 
@@ -552,7 +479,7 @@ public final class MapperUtils
     }
 
     private static <TargetValue, SourceValue> TargetValue rescueTargetValue(SourceValue sourceValue,
-        Collection<TargetValue> removedTargetValues, MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction)
+        Collection<TargetValue> removedTargetValues, MatchFunction<SourceValue, TargetValue> matchFunction)
     {
         TargetValue rescuedTargetValue = null;
         Iterator<TargetValue> iterator = removedTargetValues.iterator();
@@ -561,7 +488,7 @@ public final class MapperUtils
         {
             TargetValue currentTargetValue = iterator.next();
 
-            if (uniqueKeyMatchFunction.matches(sourceValue, currentTargetValue))
+            if (matchFunction.matches(sourceValue, currentTargetValue))
             {
                 rescuedTargetValue = currentTargetValue;
                 iterator.remove();
@@ -574,7 +501,7 @@ public final class MapperUtils
 
     @SuppressWarnings("null")
     private static <SourceValue, TargetValue> int[][] buildLCSTable(List<? extends SourceValue> sourceList,
-        List<TargetValue> targetList, MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction)
+        List<TargetValue> targetList, MatchFunction<SourceValue, TargetValue> matchFunction)
     {
         int sourceSize = (sourceList != null) ? sourceList.size() : 0;
         int targetSize = targetList.size();
@@ -588,7 +515,7 @@ public final class MapperUtils
                 {
                     table[sourceIndex][targetIndex] = 0;
                 }
-                else if (uniqueKeyMatchFunction.matches(sourceList.get(sourceIndex), targetList.get(targetIndex)))
+                else if (matchFunction.matches(sourceList.get(sourceIndex), targetList.get(targetIndex)))
                 {
                     table[sourceIndex][targetIndex] = table[sourceIndex + 1][targetIndex + 1] + 1;
                 }
@@ -617,38 +544,7 @@ public final class MapperUtils
      * @param targetMap the target map, may not be null
      * @param groupKeyFunction the function extracting the key from a source value
      * @param createTargetCollectionFunction create a new collection entry for the target map
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
-     * @param mapFunction the function to map the source to a target object (the source and the target object may be
-     *            null)
-     * @return the target collection itself
-     * @deprecated no silly wrappers anymore
-     */
-    @Deprecated
-    public static <SourceValue, GroupKey, TargetCollection extends Collection<TargetValue>, TargetValue> Map<GroupKey, TargetCollection> mapMixedGroups(
-        Iterable<? extends SourceValue> sourceIterable, Map<GroupKey, TargetCollection> targetMap,
-        Function<SourceValue, GroupKey> groupKeyFunction, Supplier<TargetCollection> createTargetCollectionFunction,
-        MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
-        BiFunction<SourceValue, TargetValue, TargetValue> mapFunction)
-    {
-        return mapMixedGroups(sourceIterable, targetMap, groupKeyFunction, createTargetCollectionFunction,
-            uniqueKeyMatchFunction, mapFunction, targetValue -> targetValue != null, null);
-    }
-
-    /**
-     * Maps the source iterable into the target map. Performs a grouping operation. Keeps the order of the collections.
-     * Searches for existing objects by using the specified match function, which may only match some important keys
-     * (maps the object even if the match function returns true). Maps the source entry to the target entry by using the
-     * specified map function. The map function must be able to handle null as target value (create a new instance).
-     *
-     * @param <SourceValue> the type of the values in the source iterable
-     * @param <GroupKey> the type of the key in the target map
-     * @param <TargetCollection> the type of the collection in the target map
-     * @param <TargetValue> the type of the values in the target map
-     * @param sourceIterable the source iterable, may be null
-     * @param targetMap the target map, may not be null
-     * @param groupKeyFunction the function extracting the key from a source value
-     * @param createTargetCollectionFunction create a new collection entry for the target map
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
+     * @param matchFunction the function to compare the source and the target object
      * @param mapFunction the function to map the source to a target object (the source and the target object may be
      *            null)
      * @param filter optional filter for excluding results
@@ -658,7 +554,7 @@ public final class MapperUtils
     public static <SourceValue, GroupKey, TargetCollection extends Collection<TargetValue>, TargetValue> Map<GroupKey, TargetCollection> mapMixedGroups(
         Iterable<? extends SourceValue> sourceIterable, Map<GroupKey, TargetCollection> targetMap,
         Function<SourceValue, GroupKey> groupKeyFunction, Supplier<TargetCollection> createTargetCollectionFunction,
-        MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
+        MatchFunction<SourceValue, TargetValue> matchFunction,
         BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
         Consumer<Map<GroupKey, TargetCollection>> afterMapConsumer)
     {
@@ -669,21 +565,42 @@ public final class MapperUtils
             return targetMap;
         }
 
-        Map<GroupKey, List<SourceValue>> sourceMap =
-            StreamSupport.stream(sourceIterable.spliterator(), false).collect(Collectors.groupingBy(groupKeyFunction));
+        Map<GroupKey, List<SourceValue>> sourceMap = new HashMap<>();
 
-        sourceMap.entrySet().forEach(sourceEntry -> {
+        // this implementation is null-able, in contrast to the groupingBy collector
+        StreamSupport.stream(sourceIterable.spliterator(), false).forEach(sourceItem -> {
+            GroupKey key = groupKeyFunction.apply(sourceItem);
+            List<SourceValue> list = sourceMap.get(key);
+
+            if (list == null)
+            {
+                list = new ArrayList<>();
+
+                sourceMap.put(key, list);
+            }
+
+            list.add(sourceItem);
+        });
+
+        Iterator<Entry<GroupKey, List<SourceValue>>> sourceIterator = sourceMap.entrySet().iterator();
+
+        while (sourceIterator.hasNext())
+        {
+            Entry<GroupKey, List<SourceValue>> sourceEntry = sourceIterator.next();
             TargetCollection targetCollection = targetMap.get(sourceEntry.getKey());
 
             if (targetCollection == null)
             {
                 targetCollection = createTargetCollectionFunction.get();
-
-                targetMap.put(sourceEntry.getKey(), targetCollection);
             }
 
-            mapMixed(sourceEntry.getValue(), targetCollection, uniqueKeyMatchFunction, mapFunction, filter, null);
-        });
+            mapMixed(sourceEntry.getValue(), targetCollection, matchFunction, mapFunction, filter, null);
+
+            if (!targetCollection.isEmpty())
+            {
+                targetMap.put(sourceEntry.getKey(), targetCollection);
+            }
+        }
 
         if (afterMapConsumer != null)
         {
@@ -707,38 +624,7 @@ public final class MapperUtils
      * @param targetMap the target map, may not be null
      * @param groupKeyFunction the function extracting the key from a source value
      * @param createTargetCollectionFunction create a new collection entry for the target map
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
-     * @param mapFunction the function to map the source to a target object (the source and the target object may be
-     *            null)
-     * @return the target collection itself
-     * @deprecated no silly wrappers anymore
-     */
-    @Deprecated
-    public static <SourceValue, GroupKey, TargetCollection extends Collection<TargetValue>, TargetValue> Map<GroupKey, TargetCollection> mapOrderedGroups(
-        Iterable<? extends SourceValue> sourceIterable, Map<GroupKey, TargetCollection> targetMap,
-        Function<SourceValue, GroupKey> groupKeyFunction, Supplier<TargetCollection> createTargetCollectionFunction,
-        MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
-        BiFunction<SourceValue, TargetValue, TargetValue> mapFunction)
-    {
-        return mapOrderedGroups(sourceIterable, targetMap, groupKeyFunction, createTargetCollectionFunction,
-            uniqueKeyMatchFunction, mapFunction, targetValue -> targetValue != null, null);
-    }
-
-    /**
-     * Maps the source iterable into the target map. Performs a grouping operation. Keeps the order of the collections.
-     * Searches for existing objects by using the specified match function, which may only match some important keys
-     * (maps the object even if the match function returns true). Maps the source entry to the target entry by using the
-     * specified map function. The map function must be able to handle null as target value (create a new instance).
-     *
-     * @param <SourceValue> the type of the values in the source iterable
-     * @param <GroupKey> the type of the key in the target map
-     * @param <TargetCollection> the type of the collection in the target map
-     * @param <TargetValue> the type of the values in the target map
-     * @param sourceIterable the source iterable, may be null
-     * @param targetMap the target map, may not be null
-     * @param groupKeyFunction the function extracting the key from a source value
-     * @param createTargetCollectionFunction create a new collection entry for the target map
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
+     * @param matchFunction the function to compare the source and the target object
      * @param mapFunction the function to map the source to a target object (the source and the target object may be
      *            null)
      * @param filter optional filter for excluding results
@@ -748,7 +634,7 @@ public final class MapperUtils
     public static <SourceValue, GroupKey, TargetCollection extends Collection<TargetValue>, TargetValue> Map<GroupKey, TargetCollection> mapOrderedGroups(
         Iterable<? extends SourceValue> sourceIterable, Map<GroupKey, TargetCollection> targetMap,
         Function<SourceValue, GroupKey> groupKeyFunction, Supplier<TargetCollection> createTargetCollectionFunction,
-        MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
+        MatchFunction<SourceValue, TargetValue> matchFunction,
         BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
         Consumer<Map<GroupKey, TargetCollection>> afterMapConsumer)
     {
@@ -772,7 +658,7 @@ public final class MapperUtils
                 targetMap.put(sourceEntry.getKey(), targetCollection);
             }
 
-            mapMixed(sourceEntry.getValue(), targetCollection, uniqueKeyMatchFunction, mapFunction, filter, null);
+            mapMixed(sourceEntry.getValue(), targetCollection, matchFunction, mapFunction, filter, null);
         });
 
         if (afterMapConsumer != null)
@@ -794,34 +680,7 @@ public final class MapperUtils
      * @param <TargetValue> the type of the values in the target map
      * @param sourceMap the source map, may be null
      * @param targetCollection the target map, may not be null
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
-     * @param mapFunction the function to map the source to a target object (the source and the target object may be
-     *            null)
-     * @return the target collection itself
-     * @deprecated no silly wrappers anymore
-     */
-    @Deprecated
-    public static <SourceValue, TargetValue> Collection<TargetValue> mapOrdered(
-        Map<?, List<? extends SourceValue>> sourceMap, Collection<TargetValue> targetCollection,
-        MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
-        BiFunction<SourceValue, TargetValue, TargetValue> mapFunction)
-    {
-        return mapOrdered(sourceMap, targetCollection, uniqueKeyMatchFunction, mapFunction,
-            targetValue -> targetValue != null, null);
-    }
-
-    /**
-     * Maps the collections of the source map into the target list (performs an un-grouping operation). Keeps the order
-     * of the collection. Searches for existing objects by using the specified match function, which may only match some
-     * important keys (maps the object even if the match function returns true). Maps the source entry to the target
-     * entry by using the specified map function. The map function must be able to handle null as target value (create a
-     * new instance).
-     *
-     * @param <SourceValue> the type of the values in the source collection
-     * @param <TargetValue> the type of the values in the target map
-     * @param sourceMap the source map, may be null
-     * @param targetCollection the target map, may not be null
-     * @param uniqueKeyMatchFunction the function to compare the source and the target object
+     * @param matchFunction the function to compare the source and the target object
      * @param mapFunction the function to map the source to a target object (the source and the target object may be
      *            null)
      * @param filter optional filter for excluding results
@@ -830,7 +689,7 @@ public final class MapperUtils
      */
     public static <SourceValue, TargetValue> Collection<TargetValue> mapOrdered(
         Map<?, List<? extends SourceValue>> sourceMap, Collection<TargetValue> targetCollection,
-        MatchFunction<SourceValue, TargetValue> uniqueKeyMatchFunction,
+        MatchFunction<SourceValue, TargetValue> matchFunction,
         BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
         Consumer<List<TargetValue>> afterMapConsumer)
     {
@@ -850,7 +709,7 @@ public final class MapperUtils
             }
         });
 
-        return mapOrdered(sourceList, targetCollection, uniqueKeyMatchFunction, mapFunction, filter, afterMapConsumer);
+        return mapOrdered(sourceList, targetCollection, matchFunction, mapFunction, filter, afterMapConsumer);
     }
 
     /**

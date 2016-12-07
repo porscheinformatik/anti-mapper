@@ -9,7 +9,8 @@ public enum Hint
     KEEP_NULL,
 
     /**
-     * Tells the collection and map transformer to create unmodifiable collections and maps.
+     * Tells the collection and map transformer methods to create unmodifiable collections and maps. Tells the
+     * collection and map merger methods to assume and create unmodifiable collections and maps.
      */
     UNMODIFIABLE
 }

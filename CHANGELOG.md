@@ -1,5 +1,10 @@
 # anti-mapper 1.4
 
+## anti-mapper-1.4.1
+
+* Raised test coverage to 73,2% - all major paths are covered, now.
+* Fixes some bugs detected with the tests.
+ 
 ## anti-mapper-1.4.0
 
 * Renamed group to `at.porscheinformatik.anti-mapper`. The correct dependency is now:

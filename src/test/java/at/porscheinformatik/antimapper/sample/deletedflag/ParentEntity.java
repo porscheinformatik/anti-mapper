@@ -1,8 +1,8 @@
 package at.porscheinformatik.antimapper.sample.deletedflag;
 
-import java.util.Arrays;
+import static at.porscheinformatik.antimapper.TestUtils.*;
+
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 public class ParentEntity
 {
@@ -31,7 +31,7 @@ public class ParentEntity
         this.id = id;
         this.name = name;
 
-        this.childs = new TreeSet<>(Arrays.asList(childs));
+        this.childs = toTreeSet(childs);
 
         for (ChildEntity child : childs)
         {

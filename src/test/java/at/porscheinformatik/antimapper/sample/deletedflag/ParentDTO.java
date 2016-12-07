@@ -1,7 +1,7 @@
 package at.porscheinformatik.antimapper.sample.deletedflag;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import static at.porscheinformatik.antimapper.TestUtils.*;
+
 import java.util.List;
 
 public class ParentDTO
@@ -24,7 +24,7 @@ public class ParentDTO
         super();
         this.id = id;
         this.name = name;
-        this.childs = childs != null ? new ArrayList<>(Arrays.asList(childs)) : null;
+        this.childs = childs != null ? toList(childs) : null;
     }
 
     public Integer getId()

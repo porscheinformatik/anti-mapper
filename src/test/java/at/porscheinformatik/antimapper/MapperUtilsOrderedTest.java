@@ -437,7 +437,7 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
     public void testRandom()
     {
         System.out.println("Performing random ordered test ...");
-        
+
         IntStream.range(0, 65536).parallel().forEach(i -> testSample(i));
     }
 

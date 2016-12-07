@@ -15,6 +15,11 @@ public abstract class AbstractMerger<DTO, Entity> implements Merger<DTO, Entity>
     {
         if (dto == null)
         {
+            if (entity == null)
+            {
+                return null;
+            }
+
             return mergeNull(entity, hints);
         }
 
@@ -48,7 +53,7 @@ public abstract class AbstractMerger<DTO, Entity> implements Merger<DTO, Entity>
      * @param hints optional hints
      * @return the entity, either the passed one, or a newly created one
      */
-    protected abstract Entity mergeNonNull(DTO dto, Entity entity, Object... hints);
+    protected abstract Entity mergeNonNull(DTO dto, Entity entity, Object[] hints);
 
     /**
      * Create a new entity. Set basic values, that will not be set by the
@@ -58,6 +63,6 @@ public abstract class AbstractMerger<DTO, Entity> implements Merger<DTO, Entity>
      * @param hints the hints the hints
      * @return the entity, never null
      */
-    protected abstract Entity create(DTO dto, Object... hints);
+    protected abstract Entity create(DTO dto, Object[] hints);
 
 }

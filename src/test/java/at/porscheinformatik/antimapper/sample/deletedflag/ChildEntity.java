@@ -1,6 +1,6 @@
 package at.porscheinformatik.antimapper.sample.deletedflag;
 
-import at.porscheinformatik.antimapper.TestUtils;
+import static at.porscheinformatik.antimapper.TestUtils.*;
 
 public class ChildEntity implements Comparable<ChildEntity>
 {
@@ -92,7 +92,7 @@ public class ChildEntity implements Comparable<ChildEntity>
             return result;
         }
 
-        return TestUtils.compare(id, o.id);
+        return compare(id, o.id);
     }
 
     @Override

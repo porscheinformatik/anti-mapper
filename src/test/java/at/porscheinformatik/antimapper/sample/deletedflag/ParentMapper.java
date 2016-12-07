@@ -46,7 +46,7 @@ public class ParentMapper extends AbstractMapper<ParentDTO, ParentEntity>
     }
 
     @Override
-    protected ParentEntity mergeNonNull(ParentDTO dto, ParentEntity entity, Object... hints)
+    protected ParentEntity mergeNonNull(ParentDTO dto, ParentEntity entity, Object[] hints)
     {
         // add the entity to the hints, just in case the child mapper needs it
         hints = Hints.join(hints, entity);
@@ -61,7 +61,7 @@ public class ParentMapper extends AbstractMapper<ParentDTO, ParentEntity>
     }
 
     @Override
-    protected ParentEntity create(ParentDTO dto, Object... hints)
+    protected ParentEntity create(ParentDTO dto, Object[] hints)
     {
         return new ParentEntity(dto.getId());
     }
