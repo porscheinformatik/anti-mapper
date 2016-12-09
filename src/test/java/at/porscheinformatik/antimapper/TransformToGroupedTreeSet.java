@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -20,6 +21,15 @@ public class TransformToGroupedTreeSet extends AbstractMapperTest
         Map<Character, SortedSet<String>> dtos = MAPPER.transformToGroupedTreeSets(null, GROUPER, BOARDING_PASS);
 
         assertThat(dtos, nullValue());
+    }
+
+    @Test
+    public void testNullToGroupedTreeSetsOrEmpty()
+    {
+        Map<Character, SortedSet<String>> dtos =
+            MAPPER.transformToGroupedTreeSets(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
+
+        assertThat(dtos, is(Collections.emptyMap()));
     }
 
     @Test

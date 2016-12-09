@@ -26,6 +26,16 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
     }
 
     @Test
+    public void testNullMapIntoNullHashSetOrEmpty()
+    {
+        Map<Integer, String> dtos = null;
+        Set<char[]> entities = null;
+        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
+
+        assertThat(result, is(Collections.emptySet()));
+    }
+
+    @Test
     public void testNullMapIntoEmptyHashSet()
     {
         Map<Integer, String> dtos = null;

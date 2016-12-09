@@ -26,6 +26,16 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
     }
 
     @Test
+    public void testNullGroupedMapIntoNullArrayListOrEmpty()
+    {
+        Map<Character, List<String>> dtos = null;
+        List<char[]> entities = null;
+        List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
+
+        assertThat(result, is(Collections.emptyList()));
+    }
+
+    @Test
     public void testNullGroupedMapIntoEmptyArrayList()
     {
         Map<Character, List<String>> dtos = null;

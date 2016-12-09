@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -18,6 +19,14 @@ public class TransformToArrayList extends AbstractMapperTest
         List<String> dtos = MAPPER.transformToArrayList(null, BOARDING_PASS);
 
         assertThat(dtos, nullValue());
+    }
+
+    @Test
+    public void testNullToArrayListOrEmpty()
+    {
+        List<String> dtos = MAPPER.transformToArrayList(null, BOARDING_PASS, Hint.OR_EMPTY);
+
+        assertThat(dtos, is(Collections.emptyList()));
     }
 
     @Test

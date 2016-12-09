@@ -27,6 +27,16 @@ public class MergeGroupedMapIntoHashSetTest extends AbstractMapperTest
     }
 
     @Test
+    public void testNullGroupedMapIntoNullHashSetOrEmpty()
+    {
+        Map<Character, List<String>> dtos = null;
+        Set<char[]> entities = null;
+        Set<char[]> result = MAPPER.mergeGroupedMapIntoHashSet(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
+
+        assertThat(result, is(Collections.emptySet()));
+    }
+
+    @Test
     public void testNullGroupedMapIntoEmptyHashSet()
     {
         Map<Character, List<String>> dtos = null;

@@ -65,7 +65,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a collection to a collection
+     * Maps a collection to a collection. Ignores the order. If the entities parameter is null, it creates a
+     * {@link Collection} if necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in
+     * this case, merging the entities). Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <EntityCollection> the type of the collection
      * @param dtos the DTOs, may be null
@@ -80,7 +83,7 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities == null)
+            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
             {
                 return null;
             }
@@ -126,7 +129,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a collection to a collection
+     * Maps a collection to a collection. Keeps the order. If the entities parameter is null, it creates a
+     * {@link Collection} if necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in
+     * this case). Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <EntityCollection> the type of the collection
      * @param dtos the DTOs, may be null
@@ -141,7 +147,7 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities == null)
+            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
             {
                 return null;
             }
@@ -187,7 +193,7 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Called after a collection mapping
+     * Called after a collection mapping.
      *
      * @param entities the mapped entities
      * @param hints optional hints
@@ -198,7 +204,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a collection to a collection
+     * Maps a collection to a collection. If the entities parameter is null, it creates a {@link HashSet} if necessary.
+     * Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if
+     * the {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
@@ -211,7 +220,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a collection to a collection
+     * Maps a collection to a collection. If the entities parameter is null, it creates a {@link TreeSet} if necessary.
+     * Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if
+     * the {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
@@ -226,7 +238,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a collection to a collection
+     * Maps a collection to a collection. If the entities parameter is null, it creates a {@link TreeSet} if necessary.
+     * Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if
+     * the {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
@@ -241,7 +256,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a collection to a collection
+     * Maps a collection to a list. If the entities parameter is null, it creates an {@link ArrayList} if necessary.
+     * Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if
+     * the {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
@@ -254,7 +272,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a map to a collection
+     * Maps a map to a collection. Ignores the order. If the entities parameter is null, it creates a {@link Collection}
+     * if necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an
+     * unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case).
+     * Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <EntityCollection> the type of the collection
      * @param dtos the DTOs, may be null
@@ -269,7 +290,7 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities == null)
+            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
             {
                 return null;
             }
@@ -316,7 +337,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a map to a collection
+     * Maps a map to a collection. Keeps the order. If the entities parameter is null, it creates a {@link Collection}
+     * if necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an
+     * unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case).
+     * Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <EntityCollection> the type of the collection
      * @param dtos the DTOs, may be null
@@ -331,7 +355,7 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities == null)
+            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
             {
                 return null;
             }
@@ -379,7 +403,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a map to a collection
+     * Maps a map to a collection. If the entities parameter is null, it creates a {@link HashSet} if necessary. Ignores
+     * DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
@@ -392,7 +419,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a map to a collection
+     * Maps a map to a collection. If the entities parameter is null, it creates a {@link TreeSet} if necessary. Ignores
+     * DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
@@ -407,7 +437,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a map to a collection
+     * Maps a map to a collection. If the entities parameter is null, it creates a {@link TreeSet} if necessary. Ignores
+     * DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
@@ -422,7 +455,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a map to a collection
+     * Maps a map to a list. If the entities parameter is null, it creates a {@link List} if necessary. Ignores DTOs
+     * that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
@@ -435,7 +471,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a grouped map to a collection
+     * Maps a grouped map to a collection. Ignores the order. If the entities parameter is null, it creates a
+     * {@link Collection} if necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in
+     * this case). Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <EntityCollection> the type of the collection
      * @param dtos the grouped dtos
@@ -450,7 +489,7 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities == null)
+            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
             {
                 return null;
             }
@@ -503,7 +542,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a grouped map to a collection
+     * Maps a grouped map to a collection. Keeps the order. If the entities parameter is null, it creates a
+     * {@link Collection} if necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in
+     * this case). Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <EntityCollection> the type of the collection
      * @param dtos the grouped dtos
@@ -518,7 +560,7 @@ public interface Merger<DTO, Entity>
     {
         if (dtos == null)
         {
-            if (entities == null)
+            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
             {
                 return null;
             }
@@ -571,7 +613,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a grouped map to a set
+     * Maps a grouped map to a collection. If the entities parameter is null, it creates a {@link HashSet} if necessary.
+     * Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if
+     * the {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the grouped dtos
      * @param entities the entities
@@ -585,7 +630,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a grouped map to a set
+     * Maps a grouped map to a collection. If the entities parameter is null, it creates a {@link TreeSet} if necessary.
+     * Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if
+     * the {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the grouped dtos
      * @param entities the entities
@@ -600,7 +648,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a grouped map to a set
+     * Maps a grouped map to a collection. If the entities parameter is null, it creates a {@link TreeSet} if necessary.
+     * Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if
+     * the {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the grouped dtos
      * @param entities the entities
@@ -615,7 +666,10 @@ public interface Merger<DTO, Entity>
     }
 
     /**
-     * Maps a grouped map to a list
+     * Maps a grouped map to a list. If the entities parameter is null, it creates a {@link List} if necessary. Ignores
+     * DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
      *
      * @param dtos the grouped dtos
      * @param entities the entities

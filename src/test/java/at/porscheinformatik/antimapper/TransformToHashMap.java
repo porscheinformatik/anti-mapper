@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,14 @@ public class TransformToHashMap extends AbstractMapperTest
         Map<Character, String> dtos = MAPPER.transformToHashMap(null, GROUPER, BOARDING_PASS);
 
         assertThat(dtos, nullValue());
+    }
+
+    @Test
+    public void testNullToHashMapOrEmpty()
+    {
+        Map<Character, String> dtos = MAPPER.transformToHashMap(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
+
+        assertThat(dtos, is(Collections.emptyMap()));
     }
 
     @Test

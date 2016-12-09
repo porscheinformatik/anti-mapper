@@ -26,6 +26,16 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
     }
 
     @Test
+    public void testNullMapIntoNullArrayListOrEmpty()
+    {
+        Map<Integer, String> dtos = null;
+        List<char[]> entities = null;
+        List<char[]> result = MAPPER.mergeMapIntoArrayList(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
+
+        assertThat(result, is(Collections.emptyList()));
+    }
+
+    @Test
     public void testNullMapIntoEmptyArrayList()
     {
         Map<Integer, String> dtos = null;

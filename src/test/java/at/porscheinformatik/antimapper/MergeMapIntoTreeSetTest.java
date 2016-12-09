@@ -26,6 +26,16 @@ public class MergeMapIntoTreeSetTest extends AbstractMapperTest
     }
 
     @Test
+    public void testNullMapIntoNullTreeSetOrEmpty()
+    {
+        Map<Integer, String> dtos = null;
+        SortedSet<char[]> entities = null;
+        SortedSet<char[]> result = MAPPER.mergeMapIntoTreeSet(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
+
+        assertThat(result, is(Collections.emptySortedSet()));
+    }
+
+    @Test
     public void testNullMapIntoEmptyTreeSet()
     {
         Map<Integer, String> dtos = null;

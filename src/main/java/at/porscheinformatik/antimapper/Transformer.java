@@ -2,6 +2,7 @@ package at.porscheinformatik.antimapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +39,8 @@ public interface Transformer<DTO, Entity>
 
     /**
      * Transforms the entities in the {@link Stream} to DTOs and returns the {@link Stream} with DTOs. Ignores entities
-     * that transform to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
      *
      * @param entities the stream, may be null
      * @param hints optional hints
@@ -48,6 +50,11 @@ public interface Transformer<DTO, Entity>
     {
         if (entities == null)
         {
+            if (Hints.containsHint(hints, Hint.OR_EMPTY))
+            {
+                return Stream.empty();
+            }
+
             return null;
         }
 
@@ -71,7 +78,8 @@ public interface Transformer<DTO, Entity>
 
     /**
      * Transforms the entities in the {@link Collection} to DTOs and returns the {@link Stream} with DTOs. Removes
-     * entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
      *
      * @param entities the stream, may be null
      * @param hints optional hints
@@ -81,6 +89,11 @@ public interface Transformer<DTO, Entity>
     {
         if (entities == null)
         {
+            if (Hints.containsHint(hints, Hint.OR_EMPTY))
+            {
+                return Stream.empty();
+            }
+
             return null;
         }
 
@@ -88,9 +101,10 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Transforms a {@link Collection} of entities to a {@link Collection} of DTOs. The {@link Collection} of DTOs will
+     * Transforms an {@link Iterable} of entities to a {@link Collection} of DTOs. The {@link Collection} of DTOs will
      * be created by the specified factory. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL}
-     * hint is set. Returns an unmodifiable collection if the {@link Hint#UNMODIFIABLE} is set.
+     * hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
      *
      * @param <DTOCollection> the type of the collection of DTOs
      * @param entities the entities, may be null
@@ -103,7 +117,12 @@ public interface Transformer<DTO, Entity>
     {
         if (entities == null)
         {
-            return null;
+            if (!Hints.containsHint(hints, Hint.OR_EMPTY))
+            {
+                return null;
+            }
+
+            entities = Collections.emptyList();
         }
 
         DTOCollection dtos = transformToStream(entities, hints).collect(Collectors.toCollection(dtoCollectionFactory));
@@ -117,9 +136,9 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Transforms a {@link Collection} of entities to a {@link HashSet} of DTOs. Ignores entities that transform to
-     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable set if the {@link Hint#UNMODIFIABLE}
-     * is set.
+     * Transforms an {@link Iterable} of entities to a {@link HashSet} of DTOs. Ignores entities that transform to null,
+     * unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE}
+     * is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param entities the entities, may be null
      * @param hints optional hints
@@ -131,9 +150,9 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Transforms a {@link Collection} of entities to a {@link SortedSet} of DTOs. Ignores entities that transform to
-     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable set if the {@link Hint#UNMODIFIABLE}
-     * is set.
+     * Transforms an {@link Iterable} of entities to a {@link SortedSet} of DTOs. Ignores entities that transform to
+     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param entities the entities, may be null
      * @param hints optional hints
@@ -145,9 +164,9 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Transforms a {@link Collection} of entities to a {@link SortedSet} of DTOs. Ignores entities that transform to
-     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable set if the {@link Hint#UNMODIFIABLE}
-     * is set.
+     * Transforms an {@link Iterable} of entities to a {@link SortedSet} of DTOs. Ignores entities that transform to
+     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param entities the entities, may be null
      * @param comparator the comparator for the tree set
@@ -161,9 +180,9 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Transforms a {@link Collection} of entities to an {@link ArrayList} of DTOs. Ignores entities that transform to
-     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable list if the
-     * {@link Hint#UNMODIFIABLE} is set.
+     * Transforms an {@link Iterable} of entities to an {@link ArrayList} of DTOs. Ignores entities that transform to
+     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param entities the entities, may be null
      * @param hints optional hints
@@ -175,9 +194,10 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Transforms a {@link Collection} of entities to a {@link Map} of DTOs. Ignores entities that transform to null,
+     * Transforms an {@link Iterable} of entities to a {@link Map} of DTOs. Ignores entities that transform to null,
      * unless the {@link Hint#KEEP_NULL} hint is set. This method does not group results. DTOs with the same key will
-     * overwrite each other.
+     * overwrite each other. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns
+     * null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <Key> the type of the key
      * @param <DTOMap> the type of map
@@ -192,7 +212,12 @@ public interface Transformer<DTO, Entity>
     {
         if (entities == null)
         {
-            return null;
+            if (!Hints.containsHint(hints, Hint.OR_EMPTY))
+            {
+                return null;
+            }
+
+            entities = Collections.emptyList();
         }
 
         boolean keepNull = Hints.containsHint(hints, Hint.KEEP_NULL);
@@ -232,9 +257,10 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Transforms a {@link Collection} of entities to a {@link HashMap} of DTOs. Ignores entities that transform to
-     * null, unless the {@link Hint#KEEP_NULL} hint is set. This method does not group results. DTOs with the same key
-     * will overwrite each other.
+     * Transforms an {@link Iterable} of entities to a {@link HashMap} of DTOs. Ignores entities that transform to null,
+     * unless the {@link Hint#KEEP_NULL} hint is set. This method does not group results. DTOs with the same key will
+     * overwrite each other. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns
+     * null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <Key> the type of the key
      * @param entities the entities, may be null
@@ -249,8 +275,9 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Transforms a {@link Collection} of entities to a grouped {@link Map} of DTOs. Ignores entities that transform to
-     * null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * Transforms an {@link Iterable} of entities to a grouped {@link Map} of DTOs. Ignores entities that transform to
+     * null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <GroupKey> the type of the group key
      * @param <DTOCollection> the type of the collections in the result map
@@ -268,7 +295,12 @@ public interface Transformer<DTO, Entity>
     {
         if (entities == null)
         {
-            return null;
+            if (!Hints.containsHint(hints, Hint.OR_EMPTY))
+            {
+                return null;
+            }
+
+            entities = Collections.emptyList();
         }
 
         try
@@ -299,7 +331,9 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Maps a collection to a map
+     * Transforms an {@link Iterable} of entities to a grouped {@link Map} of {@link HashSet}s with DTOs. Ignores
+     * entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <GroupKey> the type of the group key
      * @param entities the entities, may be null
@@ -314,7 +348,9 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Maps a collection to a map
+     * Transforms an {@link Iterable} of entities to a grouped {@link Map} of {@link TreeSet}s with DTOs. Ignores
+     * entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <GroupKey> the type of the group key
      * @param entities the entities, may be null
@@ -330,7 +366,9 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Maps a collection to a map
+     * Transforms an {@link Iterable} of entities to a grouped {@link Map} of {@link TreeSet}s with DTOs. Ignores
+     * entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <GroupKey> the type of the group key
      * @param entities the entities, may be null
@@ -347,7 +385,9 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
-     * Maps a collection to a map
+     * Transforms an {@link Iterable} of entities to a grouped {@link Map} of {@link ArrayList}s with DTOs. Ignores
+     * entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
+     * if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <GroupKey> the type of the group key
      * @param entities the entities, may be null

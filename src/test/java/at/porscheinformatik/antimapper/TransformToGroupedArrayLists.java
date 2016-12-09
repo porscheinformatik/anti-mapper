@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +22,15 @@ public class TransformToGroupedArrayLists extends AbstractMapperTest
         Map<Character, List<String>> dtos = MAPPER.transformToGroupedArrayLists(null, GROUPER, BOARDING_PASS);
 
         assertThat(dtos, nullValue());
+    }
+
+    @Test
+    public void testNullToGroupedArrayListsOrEmpty()
+    {
+        Map<Character, List<String>> dtos =
+            MAPPER.transformToGroupedArrayLists(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
+
+        assertThat(dtos, is(Collections.emptyMap()));
     }
 
     @Test

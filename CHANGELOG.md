@@ -1,5 +1,9 @@
 # anti-mapper 1.4
 
+## anti-mapper-1.4.2
+
+* Adds Hint.OR_EMPTY. Tells the collection and map transformers and mergers never to return null.
+
 ## anti-mapper-1.4.1
 
 * Raised test coverage to 73,2% - all major paths are covered, now.

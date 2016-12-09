@@ -4,6 +4,12 @@ public enum Hint
 {
 
     /**
+     * Tells the collection and map transformer and merger methods to return an empty object, even if the source is
+     * null. Using this hint, these methods will never return null.
+     */
+    OR_EMPTY,
+
+    /**
      * Tells the collection and map transformer and merger methods to keep null entries.
      */
     KEEP_NULL,
