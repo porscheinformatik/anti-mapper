@@ -31,7 +31,7 @@ public class ParentEntity
         this.id = id;
         this.name = name;
 
-        this.childs = toTreeSet(childs);
+        this.childs = toSortedSet(childs);
 
         for (ChildEntity child : childs)
         {

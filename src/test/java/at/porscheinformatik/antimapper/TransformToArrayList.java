@@ -27,6 +27,10 @@ public class TransformToArrayList extends AbstractMapperTest
         List<String> dtos = MAPPER.transformToArrayList(null, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(dtos, is(Collections.emptyList()));
+
+        // check modifiable
+        dtos.add("Z");
+        assertThat(dtos, hasItem(is("Z")));
     }
 
     @Test
@@ -37,6 +41,10 @@ public class TransformToArrayList extends AbstractMapperTest
         List<String> dtos = MAPPER.transformToArrayList(entities, BOARDING_PASS);
 
         assertThat(dtos, is(toList("A", "A", "C1", "C2")));
+
+        // check modifiable
+        dtos.add("Z");
+        assertThat(dtos, hasItem(is("Z")));
     }
 
     @Test

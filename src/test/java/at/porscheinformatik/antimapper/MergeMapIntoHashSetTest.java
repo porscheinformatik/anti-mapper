@@ -33,17 +33,25 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(result, is(Collections.emptySet()));
+
+        // check modifiable
+        result.add("Z".toCharArray());
+        assertThat(result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
     public void testNullMapIntoEmptyHashSet()
     {
         Map<Integer, String> dtos = null;
-        Set<char[]> entities = Collections.emptySet();
+        Set<char[]> entities = TestUtils.toSet();
         Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(result, is(Collections.emptySet()));
         assertThat(result, sameInstance(entities));
+
+        // check modifiable
+        result.add("Z".toCharArray());
+        assertThat(result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -57,6 +65,10 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         assertThat(result, matchesCollection(toList(is("!a".toCharArray()), is("!a".toCharArray()),
             is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
         assertThat(result, sameInstance(entities));
+
+        // check modifiable
+        result.add("Z".toCharArray());
+        assertThat(result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -68,6 +80,10 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
 
         assertThat(result, matchesCollection(
             toList(is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()), is("A".toCharArray()))));
+
+        // check modifiable
+        result.add("Z".toCharArray());
+        assertThat(result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -78,17 +94,25 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(result, is(Collections.emptySet()));
+
+        // check modifiable
+        result.add("Z".toCharArray());
+        assertThat(result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
     public void testEmptyMapIntoEmptyHashSet()
     {
         Map<Integer, String> dtos = Collections.emptyMap();
-        Set<char[]> entities = Collections.emptySet();
+        Set<char[]> entities = TestUtils.toSet();
         Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(result, is(Collections.emptySet()));
         assertThat(result, sameInstance(entities));
+
+        // check modifiable
+        result.add("Z".toCharArray());
+        assertThat(result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -102,6 +126,10 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         assertThat(result, matchesCollection(toList(is("!a".toCharArray()), is("!a".toCharArray()),
             is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
         assertThat(result, sameInstance(entities));
+
+        // check modifiable
+        result.add("Z".toCharArray());
+        assertThat(result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -114,6 +142,10 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         assertThat(result, matchesCollection(
             toList(is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()), is("A".toCharArray()))));
         assertThat(result, sameInstance(entities));
+
+        // check modifiable
+        result.add("Z".toCharArray());
+        assertThat(result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -127,6 +159,10 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         assertThat(result, matchesCollection(toList(is("A".toCharArray()), is("A".toCharArray()),
             is("C2".toCharArray()), is("!a".toCharArray()), is("!b".toCharArray()), is("C1".toCharArray()))));
         assertThat(result, sameInstance(entities));
+
+        // check modifiable
+        result.add("Z".toCharArray());
+        assertThat(result, hasItem(is("Z".toCharArray())));
     }
 
     @Test

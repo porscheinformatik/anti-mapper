@@ -30,6 +30,10 @@ public class TransformToGroupedHashSets extends AbstractMapperTest
             MAPPER.transformToGroupedHashSets(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(dtos, is(Collections.emptyMap()));
+
+        // check modifiable
+        dtos.put('Z', TestUtils.toSet("Z"));
+        assertThat(dtos.get('Z'), is(TestUtils.toSet("Z")));
     }
 
     @Test
@@ -40,6 +44,12 @@ public class TransformToGroupedHashSets extends AbstractMapperTest
         Map<Character, Set<String>> dtos = MAPPER.transformToGroupedHashSets(entities, GROUPER, BOARDING_PASS);
 
         assertThat(dtos, matchesMap(toMap('A', is(toSet("A1")), 'C', is(toSet("C1", "C2")))));
+
+        // check modifiable
+        dtos.put('Z', TestUtils.toSet("Z"));
+        assertThat(dtos.get('Z'), is(TestUtils.toSet("Z")));
+        dtos.get('A').add("Z");
+        assertThat(dtos.get('A'), hasItem(is("Z")));
     }
 
     @Test

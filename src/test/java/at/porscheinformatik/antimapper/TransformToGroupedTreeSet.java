@@ -30,6 +30,10 @@ public class TransformToGroupedTreeSet extends AbstractMapperTest
             MAPPER.transformToGroupedTreeSets(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(dtos, is(Collections.emptyMap()));
+
+        // check modifiable
+        dtos.put('Z', TestUtils.toSortedSet("Z"));
+        assertThat(dtos.get('Z'), is(TestUtils.toSortedSet("Z")));
     }
 
     @Test
@@ -37,10 +41,18 @@ public class TransformToGroupedTreeSet extends AbstractMapperTest
     {
         List<char[]> entities = toList("A1".toCharArray(), "A1".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        Map<Character, SortedSet<String>> dtos = MAPPER.transformToGroupedTreeSets(entities, GROUPER, BOARDING_PASS);
+        Map<Character, SortedSet<String>> dtos =
+            MAPPER.transformToGroupedTreeSets(entities, GROUPER, STRING_COMPARATOR, BOARDING_PASS);
 
         assertThat(dtos, matchesMap(
-            toMap('A', is(toTreeSet(STRING_COMPARATOR, "A1")), 'C', is(toTreeSet(STRING_COMPARATOR, "C1", "C2")))));
+            toMap('A', is(toSortedSet(STRING_COMPARATOR, "A1")), 'C', is(toSortedSet(STRING_COMPARATOR, "C1", "C2")))));
+        assertThat(dtos.get('A').comparator(), is(STRING_COMPARATOR));
+
+        // check modifiable
+        dtos.put('Z', TestUtils.toSortedSet("Z"));
+        assertThat(dtos.get('Z'), is(TestUtils.toSortedSet("Z")));
+        dtos.get('A').add("Z");
+        assertThat(dtos.get('A'), hasItem(is("Z")));
     }
 
     @Test
@@ -52,9 +64,10 @@ public class TransformToGroupedTreeSet extends AbstractMapperTest
             Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
         assertThat(dtos,
-            matchesMap(toMap((Character) null, is(toTreeSet(STRING_COMPARATOR, (String) null)), 'A',
-                is(toTreeSet(STRING_COMPARATOR, "A1", "A1")), 'B', is(toTreeSet(STRING_COMPARATOR, (String) null)), 'C',
-                is(toTreeSet(STRING_COMPARATOR, "C1", "C2")))));
+            matchesMap(toMap((Character) null, is(toSortedSet(STRING_COMPARATOR, (String) null)), 'A',
+                is(toSortedSet(STRING_COMPARATOR, "A1", "A1")), 'B', is(toSortedSet(STRING_COMPARATOR, (String) null)), 'C',
+                is(toSortedSet(STRING_COMPARATOR, "C1", "C2")))));
+        assertThat(dtos.get('A').comparator(), is(STRING_COMPARATOR));
 
         try
         {

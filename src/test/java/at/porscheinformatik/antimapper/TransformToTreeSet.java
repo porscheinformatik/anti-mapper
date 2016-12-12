@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
 
 import org.junit.Test;
 
@@ -17,7 +17,7 @@ public class TransformToTreeSet extends AbstractMapperTest
     @Test
     public void testNullToTreeSet()
     {
-        Set<String> dtos = MAPPER.transformToTreeSet(null, BOARDING_PASS);
+        SortedSet<String> dtos = MAPPER.transformToTreeSet(null, BOARDING_PASS, STRING_COMPARATOR);
 
         assertThat(dtos, nullValue());
     }
@@ -25,9 +25,14 @@ public class TransformToTreeSet extends AbstractMapperTest
     @Test
     public void testNullToTreeSetOrEmpty()
     {
-        Set<String> dtos = MAPPER.transformToTreeSet(null, BOARDING_PASS, Hint.OR_EMPTY);
+        SortedSet<String> dtos = MAPPER.transformToTreeSet(null, STRING_COMPARATOR, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(dtos, is(Collections.emptySortedSet()));
+        assertThat(dtos.comparator(), is(STRING_COMPARATOR));
+
+        // check modifiable
+        dtos.add("Z");
+        assertThat(dtos, hasItem(is("Z")));
     }
 
     @Test
@@ -35,9 +40,14 @@ public class TransformToTreeSet extends AbstractMapperTest
     {
         List<char[]> entities = toList("A".toCharArray(), "A".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        Set<String> dtos = MAPPER.transformToTreeSet(entities, BOARDING_PASS);
+        SortedSet<String> dtos = MAPPER.transformToTreeSet(entities, STRING_COMPARATOR, BOARDING_PASS);
 
-        assertThat(dtos, is(toTreeSet(STRING_COMPARATOR, "A", "C1", "C2")));
+        assertThat(dtos, is(toSortedSet(STRING_COMPARATOR, "A", "C1", "C2")));
+        assertThat(dtos.comparator(), is(STRING_COMPARATOR));
+
+        // check modifiable
+        dtos.add("Z");
+        assertThat(dtos, hasItem(is("Z")));
     }
 
     @Test
@@ -45,9 +55,11 @@ public class TransformToTreeSet extends AbstractMapperTest
     {
         List<char[]> entities = toList("A".toCharArray(), "A".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        Set<String> dtos = MAPPER.transformToTreeSet(entities, Hint.UNMODIFIABLE, BOARDING_PASS);
+        SortedSet<String> dtos =
+            MAPPER.transformToTreeSet(entities, STRING_COMPARATOR, Hint.UNMODIFIABLE, BOARDING_PASS);
 
-        assertThat(dtos, is(toTreeSet(STRING_COMPARATOR, "A", "C1", "C2")));
+        assertThat(dtos, is(toSortedSet(STRING_COMPARATOR, "A", "C1", "C2")));
+        assertThat(dtos.comparator(), is(STRING_COMPARATOR));
 
         try
         {

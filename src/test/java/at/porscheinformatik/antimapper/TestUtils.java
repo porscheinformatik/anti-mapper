@@ -125,7 +125,7 @@ public class TestUtils
      * @return the list
      */
     @SafeVarargs
-    public static <Value> SortedSet<Value> toTreeSet(Comparator<Value> comparator, Value... values)
+    public static <Value> SortedSet<Value> toSortedSet(Comparator<Value> comparator, Value... values)
     {
         SortedSet<Value> set = new TreeSet<>(comparator);
 
@@ -148,7 +148,7 @@ public class TestUtils
      * @return the list
      */
     @SafeVarargs
-    public static <Value extends Comparable<Value>> SortedSet<Value> toTreeSet(Value... values)
+    public static <Value extends Comparable<Value>> SortedSet<Value> toSortedSet(Value... values)
     {
         SortedSet<Value> set = new TreeSet<>();
 

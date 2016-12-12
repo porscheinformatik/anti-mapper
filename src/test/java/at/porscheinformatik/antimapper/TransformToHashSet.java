@@ -28,6 +28,10 @@ public class TransformToHashSet extends AbstractMapperTest
         Set<String> dtos = MAPPER.transformToHashSet(null, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(dtos, is(Collections.emptySet()));
+
+        // check modifiable
+        dtos.add("Z");
+        assertThat(dtos, hasItem(is("Z")));
     }
 
     @Test
@@ -38,6 +42,10 @@ public class TransformToHashSet extends AbstractMapperTest
         Set<String> dtos = MAPPER.transformToHashSet(entities, BOARDING_PASS);
 
         assertThat(dtos, is(toSet("A", "C1", "C2")));
+
+        // check modifiable
+        dtos.add("Z");
+        assertThat(dtos, hasItem(is("Z")));
     }
 
     @Test

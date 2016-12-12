@@ -27,7 +27,7 @@ public class ParentEntity
 
         timestamp = new Date();
 
-        this.childs = toTreeSet(childs);
+        this.childs = toSortedSet(childs);
 
         for (ChildEntity child : childs)
         {

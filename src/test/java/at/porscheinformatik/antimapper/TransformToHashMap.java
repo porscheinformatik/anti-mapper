@@ -28,6 +28,10 @@ public class TransformToHashMap extends AbstractMapperTest
         Map<Character, String> dtos = MAPPER.transformToHashMap(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(dtos, is(Collections.emptyMap()));
+
+        // check modifiable
+        dtos.put('Z', "Z");
+        assertThat(dtos.get('Z'), is("Z"));
     }
 
     @Test
@@ -38,6 +42,10 @@ public class TransformToHashMap extends AbstractMapperTest
         Map<Character, String> dtos = MAPPER.transformToHashMap(entities, GROUPER, BOARDING_PASS);
 
         assertThat(dtos, is(toMap('A', "A1", 'C', "C2")));
+
+        // check modifiable
+        dtos.put('Z', "Z");
+        assertThat(dtos.get('Z'), is("Z"));
     }
 
     @Test
