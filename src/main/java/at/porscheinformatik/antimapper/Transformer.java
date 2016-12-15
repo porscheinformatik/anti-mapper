@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -400,6 +401,111 @@ public interface Transformer<DTO, Entity>
     {
         return transformToGroupedMap(entities, HashMap<GroupKey, List<DTO>>::new, groupKeyFunction, ArrayList::new,
             hints);
+    }
+
+    /**
+     * Transforms a grouped map with an {@link Iterable} of entities to a grouped {@link HashMap} with an
+     * {@link ArrayList} of DTOs. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is
+     * set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the
+     * {@link Hint#OR_EMPTY} is set. The key entities map key is added to the hints for each transformation round.
+     *
+     * @param <GroupKey> the type of the group key
+     * @param entities the entities, may be null
+     * @param hints optional hints
+     * @return a map
+     */
+    default <GroupKey> Map<GroupKey, List<DTO>> transformGroupedMapToGroupedArrayList(
+        Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
+    {
+        return transformGroupedMapToGroupedMap(entities, HashMap<GroupKey, List<DTO>>::new, ArrayList<DTO>::new, hints);
+    }
+
+    /**
+     * Transforms a grouped map with an {@link Iterable} of entities to a grouped {@link HashMap} with an
+     * {@link HashSet} of DTOs. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the
+     * {@link Hint#OR_EMPTY} is set. The key entities map key is added to the hints for each transformation round.
+     *
+     * @param <GroupKey> the type of the group key
+     * @param entities the entities, may be null
+     * @param hints optional hints
+     * @return a map
+     */
+    default <GroupKey> Map<GroupKey, Set<DTO>> transformGroupedMapToGroupedHashSet(
+        Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
+    {
+        return transformGroupedMapToGroupedMap(entities, HashMap<GroupKey, Set<DTO>>::new, HashSet<DTO>::new, hints);
+    }
+
+    /**
+     * Transforms a grouped map with an {@link Iterable} of entities to a grouped {@link HashMap} with an
+     * {@link TreeSet} of DTOs. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the
+     * {@link Hint#OR_EMPTY} is set. The key entities map key is added to the hints for each transformation round.
+     *
+     * @param <GroupKey> the type of the group key
+     * @param entities the entities, may be null
+     * @param hints optional hints
+     * @return a map
+     */
+    default <GroupKey> Map<GroupKey, SortedSet<DTO>> transformGroupedMapToGroupedTreeSet(
+        Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
+    {
+        return transformGroupedMapToGroupedMap(entities, HashMap<GroupKey, SortedSet<DTO>>::new, TreeSet<DTO>::new,
+            hints);
+    }
+
+    /**
+     * Transforms a grouped map with an {@link Iterable} of entities to a grouped {@link Map} of DTOs. Ignores entities
+     * that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set. The key entities map
+     * key is added to the hints for each transformation round.
+     *
+     * @param <GroupKey> the type of the group key
+     * @param <DTOCollection> the type of the collections in the result map
+     * @param <DTOMap> the type of map
+     * @param entities the entities, may be null
+     * @param mapFactory a factory for the result map
+     * @param collectionFactory a factory for the collections in the result map
+     * @param hints optional hints
+     * @return a map
+     */
+    default <GroupKey, DTOCollection extends Collection<DTO>, DTOMap extends Map<GroupKey, DTOCollection>> Map<GroupKey, DTOCollection> transformGroupedMapToGroupedMap(
+        Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Supplier<DTOMap> mapFactory,
+        Supplier<DTOCollection> collectionFactory, Object... hints)
+    {
+        if (entities == null)
+        {
+            if (!Hints.containsHint(hints, Hint.OR_EMPTY))
+            {
+                return null;
+            }
+
+            entities = Collections.emptyMap();
+        }
+
+        try
+        {
+            DTOMap dtos = mapFactory.get();
+
+            for (Entry<GroupKey, ? extends Iterable<? extends Entity>> entry : entities.entrySet())
+            {
+                dtos.put(entry.getKey(),
+                    transformToCollection(entry.getValue(), collectionFactory, Hints.join(hints, entry.getKey())));
+            }
+
+            if (Hints.containsHint(hints, Hint.UNMODIFIABLE))
+            {
+                dtos = MapperUtils.toUnmodifiableMap(dtos);
+            }
+
+            return dtos;
+        }
+        catch (Exception e)
+        {
+            throw new MapperException("Failed to transform entities to a grouped map: %s", e,
+                MapperUtils.abbreviate(String.valueOf(entities), 4096));
+        }
     }
 
 }
