@@ -2,6 +2,7 @@
 
 ## anti-mapper-1.4.2
 
+* Adds transformGroupedMap methods.
 * Adds Hint.OR_EMPTY. Tells the collection and map transformers and mergers never to return null.
 
 ## anti-mapper-1.4.1
