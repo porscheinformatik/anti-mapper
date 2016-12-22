@@ -18,6 +18,13 @@ public class ParentEntity
         super();
     }
 
+    public ParentEntity(Integer id)
+    {
+        super();
+        
+        this.id = id;
+    }
+
     public ParentEntity(Integer id, String key, ChildEntity... childs)
     {
         super();

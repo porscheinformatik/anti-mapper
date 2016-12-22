@@ -1,120 +1,93 @@
-# Anti-Mapper
+# `anti-mapper`
 
-Entity <-> DTO mapping in Java is a bit of a problem. 
+`anti-mapper` is a Java library, that assists the manual mapping of entities and DTOs.
+
+In contrast to complex mapping frameworks, the `anti-mapper` comes with absolutely **no reflection** and guarantees **zero magic**. It offers **no configuration** at all and shines with a **learing curve flat as a pancake**.
+
+Nevertheless, it is capable to boost your **"I am faster doing it manually"-approach**, because it helps you where it gets complicated: **mapping sets, lists and maps**. Additionally, it unifies your mapping efforts by offering **consistent interfaces** and **base classes**.
 
 ## Introduction 
 
-You have two possibilities: either do it manually or use one of the countless libraries.
+DTOs and entities are part of a design pattern used in enterprise applications. Mapping these objects is a common practice. In Java, you have two possibilities to implement this: either do it manually or use one of the countless libraries.
 
-Doing it manually is a boring task. It is always the same procedure but nevertheless the implementations fall apart
-and quickly become irregular, error-prone and hard to maintain.
+* Doing it manually is a boring task. It is always the same procedure but nevertheless the implementations fall apart and quickly become irregular, error-prone and hard to maintain.
+* Using a library simplifies and unifies the default cases, but usually makes special cases harder to solve. Most often you cannot simply implement theses special cases, you have to configure the mapper instead. And this can be a real pain.
 
-Using a library simplifies and unifies the default cases, but usually makes special cases harder to solve. Most often
-you cannot simply implement theses special cases, you have to configure the mapper instead. And this can be a real pain.
-
-Anti-Mapper offers a third possibility, the **assisted manual mapping**. That's why it is called Anti-Mapper. It is no
+`anti-mapper` offers a third possibility, the **assisted manual mapping**. That's why it is called `anti-mapper`. It is no
 classic mapping library. That's exactly the functionality it is missing.  
 
-**Happy one:** _"It let's you implement the direct mappings manually and just helps with the complex stuff like:_
-_collections, sets, lists and maps._
-_It offers simple interfaces like a_ `Transformer` _and a_ `Merger` _which will keep your implementations uniform_
-_and consistent. There is no need for any configuration. Everything is pure Java code, checked by the compiler."_
+> **Happy one:** _"It let's you implement the direct mappings manually and just helps with the complex stuff like: collections, sets, lists and maps. It offers simple interfaces like a_ `Transformer` _and a_ `Merger` _which will keep your implementations uniform and consistent. There is no need for any configuration. Everything is pure Java code, checked by the compiler."_
 
 
-**Grumpy one:** _"But OMG, what if I add a property to the entity and the DTO, I'm sure, I will forget the mapping. No reflection! What a stupid library!"_
+> **Grumpy one:** _"But OMG, what if I add a property to the entity and the DTO, I'm sure, I will forget the mapping. No reflection! What a stupid library!"_
  
-**Happy one:** _"No. Because you will test your new property at least once. You will notice that. If you don't, it's not the mappers fault."_
+> **Happy one:** _"You will test your new property at least once, won't you. You will notice that the mapping is missing. If you don't, it's not the mappers fault."_
 
-**Grumpy one:** _"I'm faster when I map it manually."_
+> **Grumpy one:** _"I'm faster doing it manually."_
  
-**Happy one:** _"No. You are mapping it manually. You cannot be faster either way."_
+> **Happy one:** _"You are mapping it manually. You cannot be faster either way."_
 
-**Grumpy one:** _"It will never map my lists the right way!"_
+> **Grumpy one:** _"It will never map my lists the right way!"_
  
-**Happy one:** _"It will. It uses a diff-algorithm for lists and reuses entities for Hibernate's sake. It can even handle_
-_deleted flags. There is no reason not to use the list mappings. But the best thing is: if you want to implement it in_
-_your style, it does not hinder you to do it."_
+> **Happy one:** _"It will. It uses a diff-algorithm for lists and reuses entities for Hibernate's sake. It can even handle deleted flags. There is no reason not to use the list mappings. But the best thing is: if you want to implement it in your style, it does not hinder you to do so."_
 
-**Grumpy one:** _"It's not worth to learn it."_
+> **Grumpy one:** _"It's not worth to learn it."_
 
-**Happy one:** _"There is one recipe that fits all. Just read on."_
+> **Happy one:** _"There is one recipe that fits all. Just read on."_
 
 ## Basic Concepts
 
-### DTO and Entity
+### `DTO` and `Entity`
 
-Anti-Mapper commonly uses the terms _entity_ and _DTO_.
+`anti-mapper` commonly uses the terms _entity_ and _DTO_.
 
-### Entity (in the scope of Anti-Mapper)
-
-For Anti-Mapper an _entity_ is an existing object that has to be modified when being mapped into. The most common case 
-for this is a database entity, that's why it is called _entity_. In Anti-Mapper the process of mapping into an 
+For `anti-mapper` an _entity_ is an existing object that has to be modified when being mapped into. The most common case 
+for this is a database entity, that's why it is called _entity_. In `anti-mapper` the process of mapping into an 
 existing object called _merging_.
 
-### DTO (in the scope of Anti-Mapper)
-
 A _DTO_ on the other hand, is an object that will always be newly created when mapped into. The most common case for 
-this is a DTO used in client-server applications. In Anti-Mapper the process of mapping into a newly created object
+this is a DTO used in client-server applications. In `anti-mapper` the process of mapping into a newly created object
 is called _transforming_.
 
-### `Transformer`
+### `Transformer`, `Merger` and `Mapper`
 
-A `Transformer` maps an object (most often an _entity_) into a newly created object (most often a _DTO_). 
+The mapping of **Entity** → **DTO** is performed by a `Transformer`. It maps an object (most often an _entity_) into a **newly created** object (most often a _DTO_). 
 
-### `Merger`
+The mapping of **DTO** → **Entity** is performed by a `Merger`. It maps an object (most often a _DTO_) into an **existing** object (most often an _entity_).
 
-A `Merger` maps an object (most often a _DTO_) into an existing object (most often an _entity_).
-
-### `Mapper`
-
-A `Mapper` is a combination of a `Transformer` and a `Merger`. If you implement a mapper you usually call it
-`SomethingLikeMapper`, no matter whether it is a `Transformer`, `Merger` or both.
-
-### `Referer`
-
-A `Referer` is a special case for mapping into _entities_, when it is enough to just set the ID.
+The mapping of **Entity** → **DTO** → **Entity** is performed by a `Mapper`. It is a combination of a `Transformer` and a `Merger`.
 
 ### `Hints`
 
-`Hints` are a list of objects that can be passed to transform and merge functions. Hints provide a context for mapping
-that make it simple to access default values or pass parent objects.
+`Hints` are an array of objects that can be passed to transform and merge functions. Hints provide a context for mapping operations that make it simple to access default values or pass parent objects.
 
 ## How-To
 
-### `Transformer` and `AbstractTransformer`
+### `Transformer`
 
-If you want to map an object into a newly created object, then you implement a `Transformer`. You can either 
-implement the interface or extend the `AbstractTransformer`. Make it a singleton - that means, you should always 
-use the same instance for transforming. Write it thread-safe (don't use fields)!
+If you want to map an object into a newly created object, then you implement a `Transformer`. 
 
-Call the class something like `*Mapper`. This is convenient and it makes it easy to find and recognize mapper classes.
+Create a new class and extend `AbstractTransformer`. Make it a singleton - that means, you should always use the same instance for transforming. Write it thread-safe - that means, you class should only contain final fields!
 
-A `Transformer` is an interface with one method: 
+Call the class something like `*Mapper`, even if it is just a Transformer. This is convenient and makes it easier to find and recognize mapper classes.
+
+A `Transformer` is an interface with one method to implement:
 
 * `DTO_TYPE transform(ENTITY_TYPE entity, Object... hints);`
 
-This is the only method you have to implement for a working transformer. The interface offers a lot of default methods
-for transforming collections, sets, lists and maps.
+Additionally, it offers a lot of default methods for transforming streams, collections, sets, lists and maps.
 
-A typical `Transformer` looks like this:
+The `AbstractTransformer`, you are using, encapsulates the null-checks. Usually, you just have to implement one method:
 
     @Override
-    public ParentDTO transform(ParentEntity entity, Object... hints)
+    protected ParentDTO transformNonNull(ParentEntity entity, Object[] hints)
     {
 
-First, check for null. This is mandatory. You will have to do it in every transformer. You can use the 
-`AbstractTransformer` to avoid this.
-
-        if (entity == null)
-        {
-            return null;
-        }
-        
-Next, start transforming by creating your target object. Final values are an easy task.
+Start transforming by creating your target object. Final values are an easy task.
 
         ParentDTO dto = new ParentDTO(entity.getId());
-         
-Add the entity and the DTO to the hints, just in case any child mapper needs it.
+
+If you want, you can add the DTO to the hints, just in case any child mapper needs it.
 
         hints = Hints.join(hints, dto);
         
@@ -136,45 +109,28 @@ That's it, return the object.
     
 Have a look at the [ParentMapper-Sample](https://github.com/porscheinformatik/anti-mapper/blob/master/src/test/java/at/porscheinformatik/antimapper/sample/parentchild/ParentMapper.java)!
 
-### `Merger` and `AbstractMerger`
+### `Merger`
 
-If you want to map an object into an existing object, then you implement a `Merger`. You can either 
-implement the interface or extend the `AbstractMerger`. Make it a singleton - that means, you should always 
-use the same instance for merging. Write it thread-safe (don't use fields)!
+If you want to map an object into an existing object, then you implement a `Merger`. 
 
-Call the class something like `*Mapper`. This is convenient and it makes it easy to find and recognize mapper classes.
+Create a new class and extends `AbstractMerger`. Make it a singleton - that means, you should always use the same instance for transforming. Write it thread-safe - that means, you class should only contain final fields!
 
-A `Merger` is an interface with two methods:
+Call the class something like `*Mapper`, even if it is just a Merger. This is convenient and makes it easier to find and recognize mapper classes.
+
+A `Merger` is an interface with two methods to implement:
 
 * `ENTITY_TYPE merge(DTO_TYPE dto, ENTITY_TYPE entity, Object... hints);`
 * `boolean isUniqueKeyMatching(DTO_TYPE dto, ENTITY_TYPE entity, Object... hints);`
 
-The `merge` method puts the values of the DTO in to the entity. The `isUniqueKeyMatching` method is used to
-find the right entity in collections and maps.
+Additionally, it offers a lot of default methods for merging streams, collections, sets, lists and maps.
 
-A typical `Merger` looks like this:
+The `AbstractMerger`, you are using, encapsulates the null-checks. Start by implementing the merge function:
 
     @Override
-    public ChildEntity merge(ChildDTO dto, ChildEntity entity, Object... hints)
+    protected ChildEntity mergeNonNull(ChildDTO dto, ChildEntity entity, Object[] hints)
     {
-    
-First, check for null. This is mandatory. You will have to do it in every merger. You can use the 
-`AbstractMerger` to avoid this.
-    
-        if (dto == null)
-        {
-            return null;
-        }
 
-Next, check if you have to create a new entity. You can use the `AbstractMerger` to avoid this.
-
-        if ((entity == null) || (!Objects.equals(dto.getId(), entity.getId())))
-        {
-            entity = new ChildEntity();
-            entity.setId(dto.getId());
-        }
-
-Then set the values. Name and type conversions are trivial.
+Neither the DTO nor the entity is null. Set the values. Name and type conversions are trivial.
 
         entity.setKey(dto.getName());
         entity.setType(ChildType.valueOf(dto.getType()));
@@ -188,7 +144,15 @@ That's it, return the object.
         return entity;
     }
 
-The matching function usually just checks the ID.
+If the entity is null, the AbstractMerger calls the create function before the merge. Implement it and set the final values.
+
+    @Override
+    protected ChildEntity create(ChildDTO dto, Object[] hints)
+    {
+        return new ChildEntity(dto.getId());
+    }
+
+The `isUniqueKeyMatching` method is used to find the right entity in collections and maps. The matching function usually just checks the ID.
 
     @Override
     public boolean isUniqueKeyMatching(ChildDTO dto, ChildEntity entity, Object... hints)
@@ -196,47 +160,44 @@ The matching function usually just checks the ID.
         return Objects.equals(dto.getId(), entity.getId());
     }
 
-And yes, this is enough, even if you map multiple DTOs with null as ID, because matched DTOs/Entity will not be matched
-twice.
+And yes, this is enough, even if you map multiple DTOs with null as ID, because matched DTOs/Entities will not be matched twice.
 
 Have a look at the [ChildMapper-Sample](https://github.com/porscheinformatik/anti-mapper/blob/master/src/test/java/at/porscheinformatik/antimapper/sample/parentchild/ChildMapper.java)!
 
-### `Mapper` and `AbstractMapper`
+### `Mapper`
 
-If you want a two-way mapping, then you implement a `Mapper`. It's the same as implementing a `Transformer` and a 
-`Merger` in the same class.
+If you want a two-way mapping, then you implement a `Mapper`. It's the same as implementing a `Transformer` and a `Merger` in the same class.
+
+> That's all you need to know - as I said, flat as a pancake. 
 
 ## Best Practices
 
 ### Mapping collections and maps
 
-The Transformer and Mapper interfaces contains a lot of method for mapping collections and maps.
+The `Transformer` and `Merger` interfaces contain a lot of methods for mapping collections and maps.
 
-First, the Transformer. It contains the following methods:
+First, the `Transformer`. It contains the following methods:
 
 * for transforming streams: `transformEach`, `transformToStream`.
-* for transforming collection: `transformToCollection`, `    transformToHashSet`, `    transformToTreeSet`, `    transformToArrayList`.
+* for transforming collection: `transformToCollection`, `transformToHashSet`, `transformToTreeSet`, `transformToArrayList`.
 * for transforming maps: `transformToMap`, `transformToHashMap`.
-* for transforming grouped maps: `transformToGroupedMap`, `transformToGroupedHashSets`, `    transformToGroupedTreeSets`, `transformToGroupedMap`, `transformToGroupedTreeSets`, `transformToGroupedArrayLists`.
+* for transforming grouped maps: `transformToGroupedMap`, `transformToGroupedHashSets`, `transformToGroupedTreeSets`, `transformToGroupedArrayLists`, `transformGroupedMapToGroupedMap`, `transformGroupedMapToGroupedHashSets`, `transformGroupedMapToGroupedTreeSets`, `transformGroupedMapToGroupedArrayLists`.
     
-The resulting collection will not contain any null values. If you need them, pass the `Hint.KEEP_NULL` hint.
-If the resulting collection should be unmodifiable (e.g. for a cache), pass the `Hint.UNMODIFIABLE` hint.
+The resulting maps and collections will not contain any null values. If you need them, pass the `Hint.KEEP_NULL` hint. If the resulting collection should be unmodifiable (e.g. for a cache), pass the `Hint.UNMODIFIABLE` hint.
 
-Next, the Merger. It basically distinguishes between ordered and mixed collections. Lists will keep the order when being mapped,
-sets will ignore the order. The mixed method just uses the `isUniqueKeyMatching` method to find the entity, the ordered
-method additionally uses a diff algorithm, too.
+Next, the Merger. It basically distinguishes between ordered and mixed collections. Lists will keep the order when being mapped, sets will ignore the order. The mixed method just uses the `isUniqueKeyMatching` method to find the entity, the ordered method additionally uses a diff algorithm, too.
 
-* for merging collections: `mergeIntoMixedCollection`, `    mergeIntoOrderedCollection`.    
+* for merging collections: `mergeIntoMixedCollection`, `mergeIntoOrderedCollection`.    
 * for merging sets (mixed): `mergeIntoHashSet`, `mergeIntoTreeSet`.    
 * for merging lists (ordered): `mergeIntoArrayList`.
 * for merging maps into sets or lists: `mergeMapIntoMixedCollection`, `mergeMapIntoOrderedCollection`, `mergeMapIntoTreeSet`, `mergeMapIntoArrayList`.    
 * for merging grouped maps into sets or lists: `mergeGroupedMapIntoMixedCollection`, `mergeGroupedMapIntoOrderedCollection`, `mergeGroupedMapIntoHashSet`, `mergeGroupedMapIntoTreeSet`, `mergeGroupedMapIntoArrayList`.
     
-For keeping null values in the resulting collections, you need to pass the `Hint.KEEP_NULL` hint.
+For keeping null values in the resulting collections, you need to pass the `Hint.KEEP_NULL` hint. If you pass the `Hint.UNMODIFIABLE` the maps and collections are assumed to be unmodifiable, and will always be new instances.
 
 If you need to process all entities in the collection after merging, implement the `afterMergeIntoCollection` method.
     
-### isUniqueKeyMatching method
+### `isUniqueKeyMatching` method
 
 This method is used by the mapping method that map collections of DTOs to collections of entities. It helps to determine which DTO matches which entity. Despite it is just a little method, it can be a little bit tricky to implement.
 
@@ -263,7 +224,7 @@ If your objects have some functional keys you may want to check these, too. This
 
 If your matching method is wrong, the less bad thing that can happen, is that too many mappings will take place. This happens if you always return `true`. The worse thing may be, that entities will never be updated and any DTO will be added to the entities. This happens if you always return `false`.  
 
-### afterMergeIntoCollection
+### `afterMergeIntoCollection`
 
 Sometimes it is necessary to update all entities of a collection, after the merge has finished. You will need this, e.g. if you want to update an ordinal value.
 
@@ -306,6 +267,8 @@ You can find the trick in the [ChildMapper](https://github.com/porscheinformatik
 Null values will automatically be filtered from the resulting collections.
 
 # Installation
+
+Make sure you have [Apache Maven](https://maven.apache.org/). Just type:
 
     mvn install
 

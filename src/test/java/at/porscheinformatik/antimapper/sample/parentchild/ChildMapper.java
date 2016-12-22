@@ -3,41 +3,21 @@ package at.porscheinformatik.antimapper.sample.parentchild;
 import java.util.Collection;
 import java.util.Objects;
 
+import at.porscheinformatik.antimapper.AbstractMapper;
 import at.porscheinformatik.antimapper.Hints;
-import at.porscheinformatik.antimapper.Mapper;
 
-public class ChildMapper implements Mapper<ChildDTO, ChildEntity>
+public class ChildMapper extends AbstractMapper<ChildDTO, ChildEntity>
 {
 
     @Override
-    public ChildDTO transform(ChildEntity entity, Object... hints)
+    protected ChildDTO transformNonNull(ChildEntity entity, Object[] hints)
     {
-        // the null-check is mandatory
-        if (entity == null)
-        {
-            return null;
-        }
-
         return new ChildDTO(entity.getId(), entity.getKey(), entity.getType().name());
     }
 
     @Override
-    public ChildEntity merge(ChildDTO dto, ChildEntity entity, Object... hints)
+    protected ChildEntity mergeNonNull(ChildDTO dto, ChildEntity entity, Object[] hints)
     {
-        // the null-check is mandatory
-        if (dto == null)
-        {
-            return null;
-        }
-
-        // if the ids do not match, create a new instance (Hibernate will be very thankful for this)
-        if ((entity == null) || (!Objects.equals(dto.getId(), entity.getId())))
-        {
-            entity = new ChildEntity();
-
-            entity.setId(dto.getId());
-        }
-
         entity.setKey(dto.getName());
         entity.setType(ChildType.valueOf(dto.getType()));
 
@@ -45,6 +25,12 @@ public class ChildMapper implements Mapper<ChildDTO, ChildEntity>
         entity.setParent(Hints.hint(hints, ParentEntity.class));
 
         return entity;
+    }
+
+    @Override
+    protected ChildEntity create(ChildDTO dto, Object[] hints)
+    {
+        return new ChildEntity(dto.getId());
     }
 
     @Override

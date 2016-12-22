@@ -16,6 +16,12 @@ public class ChildEntity implements Comparable<ChildEntity>
         super();
     }
 
+    public ChildEntity(Integer id)
+    {
+        super();
+        this.id = id;
+    }
+
     public ChildEntity(Integer id, String key, ChildType type, int ordinal)
     {
         super();
