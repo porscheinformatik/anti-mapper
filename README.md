@@ -14,18 +14,17 @@ DTOs and entities are part of a design pattern used in enterprise applications. 
 * Using a library simplifies and unifies the default cases, but usually makes special cases harder to solve. Most often you cannot simply implement theses special cases, you have to configure the mapper instead. And this can be a real pain.
 
 `anti-mapper` offers a third possibility, the **assisted manual mapping**. That's why it is called `anti-mapper`. It is no
-classic mapping library. That's exactly the functionality it is missing.  
+classic mapping library - that's exactly the functionality it is missing.  
 
-> **Happy one:** _"It let's you implement the direct mappings manually and just helps with the complex stuff like: collections, sets, lists and maps. It offers simple interfaces like a_ `Transformer` _and a_ `Merger` _which will keep your implementations uniform and consistent. There is no need for any configuration. Everything is pure Java code, checked by the compiler."_
-
+> **Happy one:** _"`anti-mapper` _allows you implement the field-to-field mappings manually and just helps with the complex stuff like: collections, sets, lists and maps. It offers simple interfaces like a_ `Transformer` _and a_ `Merger` _which will keep your implementations uniform and consistent. There is no need for any configuration. Everything is pure Java code, checked by the compiler."_
 
 > **Grumpy one:** _"But OMG, what if I add a property to the entity and the DTO, I'm sure, I will forget the mapping. No reflection! What a stupid library!"_
  
-> **Happy one:** _"You will test your new property at least once, won't you. You will notice that the mapping is missing. If you don't, it's not the mappers fault."_
+> **Happy one:** _"You will test your new property at least once, won't you? You will notice that the mapping is missing. If you don't, it's not the mappers fault."_
 
 > **Grumpy one:** _"I'm faster doing it manually."_
  
-> **Happy one:** _"You are mapping it manually. You cannot be faster either way."_
+> **Happy one:** _"You are mapping it manually! You will be fast, plus, it will be simple and consistent."_
 
 > **Grumpy one:** _"It will never map my lists the right way!"_
  
@@ -33,7 +32,7 @@ classic mapping library. That's exactly the functionality it is missing.
 
 > **Grumpy one:** _"It's not worth to learn it."_
 
-> **Happy one:** _"There is one recipe that fits all. Just read on."_
+> **Happy one:** _"There is one simple recipe that fits all. Just read on."_
 
 ## Basic Concepts
 
@@ -41,9 +40,13 @@ classic mapping library. That's exactly the functionality it is missing.
 
 `anti-mapper` commonly uses the terms _entity_ and _DTO_.
 
+#### What is called "an Entity"?
+
 For `anti-mapper` an _entity_ is an existing object that has to be modified when being mapped into. The most common case 
 for this is a database entity, that's why it is called _entity_. In `anti-mapper` the process of mapping into an 
 existing object called _merging_.
+
+#### What is called "a DTO"?
 
 A _DTO_ on the other hand, is an object that will always be newly created when mapped into. The most common case for 
 this is a DTO used in client-server applications. In `anti-mapper` the process of mapping into a newly created object
@@ -51,9 +54,15 @@ is called _transforming_.
 
 ### `Transformer`, `Merger` and `Mapper`
 
+#### What is "transforming"?
+
 The mapping of **Entity** → **DTO** is performed by a `Transformer`. It maps an object (most often an _entity_) into a **newly created** object (most often a _DTO_). 
 
+#### What is "merging"?
+
 The mapping of **DTO** → **Entity** is performed by a `Merger`. It maps an object (most often a _DTO_) into an **existing** object (most often an _entity_).
+
+#### What is "mapping"?
 
 The mapping of **Entity** → **DTO** → **Entity** is performed by a `Mapper`. It is a combination of a `Transformer` and a `Merger`.
 
@@ -67,9 +76,9 @@ The mapping of **Entity** → **DTO** → **Entity** is performed by a `Mapper`.
 
 If you want to map an object into a newly created object, then you implement a `Transformer`. 
 
-Create a new class and extend `AbstractTransformer`. Make it a singleton - that means, you should always use the same instance for transforming. Write it thread-safe - that means, you class should only contain final fields!
+Create a new class and extend the `AbstractTransformer`. Make it a singleton - that means, you should always use the same instance for transforming. Write it thread-safe - that means, you class should only contain final fields!
 
-Call the class something like `*Mapper`, even if it is just a Transformer. This is convenient and makes it easier to find and recognize mapper classes.
+Call the class something like `*Mapper` (even if it is just a Transformer). This is convenient and makes it easier to find and recognize mapper classes.
 
 A `Transformer` is an interface with one method to implement:
 
@@ -113,9 +122,9 @@ Have a look at the [ParentMapper-Sample](https://github.com/porscheinformatik/an
 
 If you want to map an object into an existing object, then you implement a `Merger`. 
 
-Create a new class and extends `AbstractMerger`. Make it a singleton - that means, you should always use the same instance for transforming. Write it thread-safe - that means, you class should only contain final fields!
+Create a new class and extend the `AbstractMerger`. Make it a singleton - that means, you should always use the same instance for transforming. Write it thread-safe - that means, you class should only contain final fields!
 
-Call the class something like `*Mapper`, even if it is just a Merger. This is convenient and makes it easier to find and recognize mapper classes.
+Call the class something like `*Mapper` (even if it is just a Merger). This is convenient and makes it easier to find and recognize mapper classes.
 
 A `Merger` is an interface with two methods to implement:
 
@@ -152,7 +161,7 @@ If the entity is null, the AbstractMerger calls the create function before the m
         return new ChildEntity(dto.getId());
     }
 
-The `isUniqueKeyMatching` method is used to find the right entity in collections and maps. The matching function usually just checks the ID.
+The `isUniqueKeyMatching` method is used to find the right entity in collections and maps. The matching function usually just checks the ID and, if necessary, the unique keys.
 
     @Override
     public boolean isUniqueKeyMatching(ChildDTO dto, ChildEntity entity, Object... hints)
@@ -201,9 +210,9 @@ If you need to process all entities in the collection after merging, implement t
 
 This method is used by the mapping method that map collections of DTOs to collections of entities. It helps to determine which DTO matches which entity. Despite it is just a little method, it can be a little bit tricky to implement.
 
-First of all, the method is never called with null values, this is checked beforehand.
+First of all, the method will never be called with null values, this is checked beforehand.
 
-If your objects have an unique id, the first step is to check for equality. If the id is the same, return true.
+If your objects have an unique id, the first step is to check for equality. If the ids are the same, return true.
 
     if (Objects.equals(dto.getId(), entity.getId())) {
         return true;
@@ -216,13 +225,15 @@ Most of the time, checking the unique id is enough.
     ...
     return false;     
 
-If your objects have some functional keys you may want to check these, too. This is only necessary if you are not sure, that your DTO contains the id, even if the entity exists already.
+If your objects have some functional keys you should check these, too. This is only necessary if you are not sure, that your DTO contains the id, even if the entity exists already.
 
     if (Objects.equals(dto.getKey(), entity.getKey())) {
         return true;
     }
 
-If your matching method is wrong, the less bad thing that can happen, is that too many mappings will take place. This happens if you always return `true`. The worse thing may be, that entities will never be updated and any DTO will be added to the entities. This happens if you always return `false`.  
+If your matching method is wrong, the less bad thing that can happen, is that too many mappings will take place. This happens if you always return `true`. The worse thing may be, that entities will never be updated and any DTO will be added to the entities. This happens if you always return `false`.
+
+If you have a unique key index in you database, it may happen, that inserting fails, if you don't check this key in the code. It is recommended, that you first check the id, if it is the same return true. Then check each property of the unique key and return false if any property differs.
 
 ### `afterMergeIntoCollection`
 
