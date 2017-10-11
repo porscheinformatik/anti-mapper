@@ -356,13 +356,13 @@ public final class MapperUtils
             if (matchFunction.matches(sourceValue, targetValue))
             {
                 // exists
-
                 TargetValue mappedTargetValue = mapFunction.apply(sourceValue, targetValue);
 
                 if (filter != null && !filter.test(mappedTargetValue))
                 {
-                    removedTargetValues.add(targetList.remove(writeIndex));
+                    removedTargetValues.add(mappedTargetValue);
 
+                    targetList.remove(writeIndex);
                     sourceIndex++;
                     targetIndex++;
 
@@ -416,19 +416,9 @@ public final class MapperUtils
             // removed
             TargetValue mappedTargetValue = mapFunction.apply(null, targetValue);
 
-            if (filter != null && !filter.test(mappedTargetValue))
-            {
-                removedTargetValues.add(targetValue);
-                targetList.remove(writeIndex);
+            removedTargetValues.add(mappedTargetValue);
+            targetList.remove(writeIndex);
 
-                targetIndex++;
-
-                continue;
-            }
-
-            targetList.set(writeIndex, mappedTargetValue);
-
-            writeIndex++;
             targetIndex++;
         }
 
@@ -438,15 +428,7 @@ public final class MapperUtils
             TargetValue targetValue = targetList.remove(writeIndex);
             TargetValue mappedTargetValue = mapFunction.apply(null, targetValue);
 
-            if (filter != null && !filter.test(mappedTargetValue))
-            {
-                removedTargetValues.add(targetValue);
-
-                continue;
-            }
-
-            targetList.add(writeIndex, mappedTargetValue);
-            writeIndex++;
+            removedTargetValues.add(mappedTargetValue);
         }
 
         // add remaining
@@ -455,7 +437,6 @@ public final class MapperUtils
             @SuppressWarnings("null")
             SourceValue sourceValue = sourceList.get(sourceIndex);
             TargetValue rescuedTargetValue = rescueTargetValue(sourceValue, removedTargetValues, matchFunction);
-
             TargetValue mappedTargetValue = mapFunction.apply(sourceValue, rescuedTargetValue);
 
             if (filter != null && !filter.test(mappedTargetValue))
@@ -468,6 +449,29 @@ public final class MapperUtils
             targetList.add(mappedTargetValue);
 
             sourceIndex++;
+        }
+
+        if (filter != null)
+        {
+            Iterator<TargetValue> iterator = targetList.iterator();
+
+            while (iterator.hasNext())
+            {
+                TargetValue next = iterator.next();
+
+                if (!filter.test(next))
+                {
+                    iterator.remove();
+                }
+            }
+        }
+
+        for (TargetValue targetValue : removedTargetValues)
+        {
+            if (filter == null || filter.test(targetValue))
+            {
+                targetList.add(targetValue);
+            }
         }
 
         if (afterMapConsumer != null)
@@ -488,7 +492,10 @@ public final class MapperUtils
         {
             TargetValue currentTargetValue = iterator.next();
 
-            if (matchFunction.matches(sourceValue, currentTargetValue))
+            if (sourceValue == currentTargetValue
+                || (sourceValue != null
+                    && currentTargetValue != null
+                    && matchFunction.matches(sourceValue, currentTargetValue)))
             {
                 rescuedTargetValue = currentTargetValue;
                 iterator.remove();

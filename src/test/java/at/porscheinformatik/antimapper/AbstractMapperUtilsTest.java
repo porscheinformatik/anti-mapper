@@ -237,7 +237,7 @@ public abstract class AbstractMapperUtilsTest
         }
     }
 
-    protected static void assertNext(Iterator<TargetItem> iterator, Change change, String text)
+    protected static void assertNext(Iterator<TargetItem> iterator, String text, Change change)
     {
         if (!iterator.hasNext())
         {
@@ -246,8 +246,8 @@ public abstract class AbstractMapperUtilsTest
 
         TargetItem targetItem = iterator.next();
 
-        assertThat(targetItem.getChange(), is(change));
         assertThat(targetItem.getText(), is(text));
+        assertThat(targetItem.getChange(), is(change));
     }
 
     protected static void assertNoNext(Iterator<TargetItem> iterator)

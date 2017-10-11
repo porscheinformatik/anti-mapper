@@ -84,9 +84,9 @@ public class DeletedFlagTest
     @Test
     public void testDelete()
     {
-        ChildEntity child1 = new ChildEntity(1, "Child#1", 0);
-        ChildEntity child2 = new ChildEntity(2, "Child#2", 1);
-        ChildEntity child3 = new ChildEntity(3, "Child#3", 2);
+        ChildEntity child1 = new ChildEntity(1, "Child#1", ChildType.A, 0);
+        ChildEntity child2 = new ChildEntity(2, "Child#2", ChildType.B, 1);
+        ChildEntity child3 = new ChildEntity(3, "Child#3", ChildType.C, 2);
 
         child2.setDeleted(true);
 

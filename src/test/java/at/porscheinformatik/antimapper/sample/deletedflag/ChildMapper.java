@@ -18,7 +18,7 @@ public class ChildMapper extends AbstractMapper<ChildDTO, ChildEntity>
             return null;
         }
 
-        return new ChildDTO(entity.getId(), entity.getName());
+        return new ChildDTO(entity.getId(), entity.getName(), entity.getType().name());
     }
 
     @Override

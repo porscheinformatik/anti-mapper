@@ -22,7 +22,7 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         List<char[]> entities = null;
         List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
 
-        assertThat(result, nullValue());
+        assertThat(describeResult(result), result, nullValue());
     }
 
     @Test
@@ -32,11 +32,11 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         List<char[]> entities = null;
         List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
 
-        assertThat(result, is(Collections.emptyList()));
+        assertThat(describeResult(result), result, is(Collections.emptyList()));
 
         // check modifiable
         result.add("Z".toCharArray());
-        assertThat(result, hasItem(is("Z".toCharArray())));
+        assertThat(describeResult(result), result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -46,12 +46,12 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         List<char[]> entities = TestUtils.toList();
         List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
 
-        assertThat(result, is(Collections.emptyList()));
-        assertThat(result, sameInstance(entities));
+        assertThat(describeResult(result), result, is(Collections.emptyList()));
+        assertThat(describeResult(result), result, sameInstance(entities));
 
         // check modifiable
         result.add("Z".toCharArray());
-        assertThat(result, hasItem(is("Z".toCharArray())));
+        assertThat(describeResult(result), result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -62,13 +62,13 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
             "c2".toCharArray(), null, null, "a".toCharArray());
         List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
 
-        assertThat(result, matchesList(toList(is("!a".toCharArray()), is("!a".toCharArray()), is("!b".toCharArray()),
-            is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
-        assertThat(result, sameInstance(entities));
+        assertThat(describeResult(result), result, matchesList(toList(is("!a".toCharArray()), is("!a".toCharArray()),
+            is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
+        assertThat(describeResult(result), result, sameInstance(entities));
 
         // check modifiable
         result.add("Z".toCharArray());
-        assertThat(result, hasItem(is("Z".toCharArray())));
+        assertThat(describeResult(result), result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -79,12 +79,12 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         List<char[]> entities = null;
         List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
 
-        assertThat(result, matchesList(
+        assertThat(describeResult(result), result, matchesList(
             toList(is("A".toCharArray()), is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()))));
 
         // check modifiable
         result.add("Z".toCharArray());
-        assertThat(result, hasItem(is("Z".toCharArray())));
+        assertThat(describeResult(result), result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -94,11 +94,11 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         List<char[]> entities = null;
         List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
 
-        assertThat(result, is(Collections.emptyList()));
+        assertThat(describeResult(result), result, is(Collections.emptyList()));
 
         // check modifiable
         result.add("Z".toCharArray());
-        assertThat(result, hasItem(is("Z".toCharArray())));
+        assertThat(describeResult(result), result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -108,12 +108,12 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         List<char[]> entities = TestUtils.toList();
         List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
 
-        assertThat(result, is(Collections.emptyList()));
-        assertThat(result, sameInstance(entities));
+        assertThat(describeResult(result), result, is(Collections.emptyList()));
+        assertThat(describeResult(result), result, sameInstance(entities));
 
         // check modifiable
         result.add("Z".toCharArray());
-        assertThat(result, hasItem(is("Z".toCharArray())));
+        assertThat(describeResult(result), result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -124,13 +124,13 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
             "c2".toCharArray(), null, null, "a".toCharArray());
         List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
 
-        assertThat(result, matchesList(toList(is("!a".toCharArray()), is("!a".toCharArray()), is("!b".toCharArray()),
-            is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
-        assertThat(result, sameInstance(entities));
+        assertThat(describeResult(result), result, matchesList(toList(is("!a".toCharArray()), is("!a".toCharArray()),
+            is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
+        assertThat(describeResult(result), result, sameInstance(entities));
 
         // check modifiable
         result.add("Z".toCharArray());
-        assertThat(result, hasItem(is("Z".toCharArray())));
+        assertThat(describeResult(result), result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -141,13 +141,13 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         List<char[]> entities = new ArrayList<>();
         List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
 
-        assertThat(result, matchesList(
+        assertThat(describeResult(result), result, matchesList(
             toList(is("A".toCharArray()), is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()))));
-        assertThat(result, sameInstance(entities));
+        assertThat(describeResult(result), result, sameInstance(entities));
 
         // check modifiable
         result.add("Z".toCharArray());
-        assertThat(result, hasItem(is("Z".toCharArray())));
+        assertThat(describeResult(result), result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -159,13 +159,13 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
             "c2".toCharArray(), null, null, "a".toCharArray());
         List<char[]> result = MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
 
-        assertThat(result, matchesList(toList(is("A".toCharArray()), is("A".toCharArray()), is("C2".toCharArray()),
-            is("!b".toCharArray()), is("C1".toCharArray()), is("!a".toCharArray()))));
-        assertThat(result, sameInstance(entities));
+        assertThat(describeResult(result), result, matchesList(toList(is("A".toCharArray()), is("A".toCharArray()),
+            is("C2".toCharArray()), is("C1".toCharArray()), is("!b".toCharArray()), is("!a".toCharArray()))));
+        assertThat(describeResult(result), result, sameInstance(entities));
 
         // check modifiable
         result.add("Z".toCharArray());
-        assertThat(result, hasItem(is("Z".toCharArray())));
+        assertThat(describeResult(result), result, hasItem(is("Z".toCharArray())));
     }
 
     @Test
@@ -178,8 +178,9 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         List<char[]> result =
             MAPPER.mergeGroupedMapIntoArrayList(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
-        assertThat(result, matchesList(toList(is("A".toCharArray()), is("A".toCharArray()), is("C2".toCharArray()),
-            is("!b".toCharArray()), is("C1".toCharArray()), nullValue(), nullValue(), is("!a".toCharArray()))));
+        assertThat(describeResult(result), result,
+            matchesList(toList(is("A".toCharArray()), is("A".toCharArray()), is("C2".toCharArray()),
+                is("C1".toCharArray()), nullValue(), is("!b".toCharArray()), nullValue(), is("!a".toCharArray()))));
 
         try
         {

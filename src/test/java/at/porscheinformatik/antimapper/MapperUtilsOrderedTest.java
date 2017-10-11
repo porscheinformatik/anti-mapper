@@ -25,9 +25,9 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "C");
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "C", Change.SAME);
         assertNoNext(iterator);
     }
 
@@ -42,15 +42,15 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "C");
-        assertNext(iterator, Change.SAME, "C");
-        assertNext(iterator, Change.SAME, "C");
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "C", Change.SAME);
+        assertNext(iterator, "C", Change.SAME);
+        assertNext(iterator, "C", Change.SAME);
         assertNoNext(iterator);
     }
 
@@ -65,13 +65,13 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.ADDED, "1");
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.ADDED, "2");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.ADDED, "3");
-        assertNext(iterator, Change.SAME, "C");
-        assertNext(iterator, Change.ADDED, "4");
+        assertNext(iterator, "1", Change.ADDED);
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "2", Change.ADDED);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "3", Change.ADDED);
+        assertNext(iterator, "C", Change.SAME);
+        assertNext(iterator, "4", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -87,20 +87,20 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.ADDED, "1");
-        assertNext(iterator, Change.ADDED, "1");
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.ADDED, "A");
-        assertNext(iterator, Change.ADDED, "2");
-        assertNext(iterator, Change.ADDED, "2");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.ADDED, "B");
-        assertNext(iterator, Change.ADDED, "3");
-        assertNext(iterator, Change.ADDED, "3");
-        assertNext(iterator, Change.SAME, "C");
-        assertNext(iterator, Change.ADDED, "C");
-        assertNext(iterator, Change.ADDED, "4");
-        assertNext(iterator, Change.ADDED, "4");
+        assertNext(iterator, "1", Change.ADDED);
+        assertNext(iterator, "1", Change.ADDED);
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "A", Change.ADDED);
+        assertNext(iterator, "2", Change.ADDED);
+        assertNext(iterator, "2", Change.ADDED);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "B", Change.ADDED);
+        assertNext(iterator, "3", Change.ADDED);
+        assertNext(iterator, "3", Change.ADDED);
+        assertNext(iterator, "C", Change.SAME);
+        assertNext(iterator, "C", Change.ADDED);
+        assertNext(iterator, "4", Change.ADDED);
+        assertNext(iterator, "4", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -115,9 +115,9 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "C");
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "C", Change.SAME);
         assertNoNext(iterator);
     }
 
@@ -133,9 +133,9 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "C");
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "C", Change.SAME);
         assertNoNext(iterator);
     }
 
@@ -150,11 +150,11 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.ADDED, "1");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.UPDATED, "C2");
-        assertNext(iterator, Change.SAME, "D");
-        assertNext(iterator, Change.ADDED, "3");
+        assertNext(iterator, "1", Change.ADDED);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "C2", Change.UPDATED);
+        assertNext(iterator, "D", Change.SAME);
+        assertNext(iterator, "3", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -169,16 +169,16 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.ADDED, "1");
-        assertNext(iterator, Change.ADDED, "1");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.UPDATED, "C2");
-        assertNext(iterator, Change.UPDATED, "C2");
-        assertNext(iterator, Change.SAME, "D");
-        assertNext(iterator, Change.SAME, "D");
-        assertNext(iterator, Change.ADDED, "3");
-        assertNext(iterator, Change.ADDED, "3");
+        assertNext(iterator, "1", Change.ADDED);
+        assertNext(iterator, "1", Change.ADDED);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "C2", Change.UPDATED);
+        assertNext(iterator, "C2", Change.UPDATED);
+        assertNext(iterator, "D", Change.SAME);
+        assertNext(iterator, "D", Change.SAME);
+        assertNext(iterator, "3", Change.ADDED);
+        assertNext(iterator, "3", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -193,9 +193,9 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.SAME, "C");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "A");
+        assertNext(iterator, "C", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "A", Change.SAME);
         assertNoNext(iterator);
     }
 
@@ -210,12 +210,12 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.SAME, "C");
-        assertNext(iterator, Change.SAME, "C");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "A");
+        assertNext(iterator, "C", Change.SAME);
+        assertNext(iterator, "C", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "A", Change.SAME);
         assertNoNext(iterator);
     }
 
@@ -232,18 +232,18 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.SAME, "@");
-        assertNext(iterator, Change.SAME, "1");
-        assertNext(iterator, Change.SAME, "2");
-        assertNext(iterator, Change.SAME, "3");
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "C");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "X");
-        assertNext(iterator, Change.SAME, "Y");
-        assertNext(iterator, Change.SAME, "Z");
+        assertNext(iterator, "@", Change.SAME);
+        assertNext(iterator, "1", Change.SAME);
+        assertNext(iterator, "2", Change.SAME);
+        assertNext(iterator, "3", Change.SAME);
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "C", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "X", Change.ADDED);
+        assertNext(iterator, "Y", Change.ADDED);
+        assertNext(iterator, "Z", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -258,9 +258,9 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.UPDATED, "A1");
-        assertNext(iterator, Change.UPDATED, "B2");
-        assertNext(iterator, Change.UPDATED, "C3");
+        assertNext(iterator, "A1", Change.UPDATED);
+        assertNext(iterator, "B2", Change.UPDATED);
+        assertNext(iterator, "C3", Change.UPDATED);
         assertNoNext(iterator);
     }
 
@@ -275,12 +275,12 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.UPDATED, "Bs");
-        assertNext(iterator, Change.UPDATED, "Cs");
-        assertNext(iterator, Change.ADDED, "Es");
-        assertNext(iterator, Change.UPDATED, "As");
-        assertNext(iterator, Change.UPDATED, "Ds");
-        assertNext(iterator, Change.ADDED, "Fs");
+        assertNext(iterator, "Bs", Change.UPDATED);
+        assertNext(iterator, "Cs", Change.UPDATED);
+        assertNext(iterator, "Es", Change.ADDED);
+        assertNext(iterator, "As", Change.ADDED);
+        assertNext(iterator, "Ds", Change.UPDATED);
+        assertNext(iterator, "Fs", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -295,10 +295,10 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.UPDATED, "As");
-        assertNext(iterator, Change.UPDATED, "Bs");
-        assertNext(iterator, Change.UPDATED, "Cs");
-        assertNext(iterator, Change.UPDATED, "Ds");
+        assertNext(iterator, "As", Change.UPDATED);
+        assertNext(iterator, "Bs", Change.UPDATED);
+        assertNext(iterator, "Cs", Change.UPDATED);
+        assertNext(iterator, "Ds", Change.UPDATED);
         assertNoNext(iterator);
     }
 
@@ -313,8 +313,8 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.UPDATED, "As");
-        assertNext(iterator, Change.ADDED, "As");
+        assertNext(iterator, "As", Change.UPDATED);
+        assertNext(iterator, "As", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -329,7 +329,7 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.ADDED, "As");
+        assertNext(iterator, "As", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -358,9 +358,9 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.ADDED, "1");
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.ADDED, "2");
+        assertNext(iterator, "1", Change.ADDED);
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "2", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -375,9 +375,9 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.SAME, "B");
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
+        assertNext(iterator, "B", Change.SAME);
         assertNoNext(iterator);
     }
 
@@ -392,10 +392,10 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.ADDED, "B");
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "B", Change.ADDED);
+        assertNext(iterator, "B", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -410,10 +410,10 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "A");
-        assertNext(iterator, Change.SAME, "B");
-        assertNext(iterator, Change.ADDED, "B");
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "A", Change.SAME);
+        assertNext(iterator, "B", Change.ADDED);
+        assertNext(iterator, "B", Change.ADDED);
         assertNoNext(iterator);
     }
 
@@ -428,8 +428,8 @@ public class MapperUtilsOrderedTest extends AbstractMapperUtilsTest
 
         Iterator<TargetItem> iterator = targetList.iterator();
 
-        assertNext(iterator, Change.ADDED, "B");
-        assertNext(iterator, Change.ADDED, "C");
+        assertNext(iterator, "B", Change.ADDED);
+        assertNext(iterator, "C", Change.ADDED);
         assertNoNext(iterator);
     }
 

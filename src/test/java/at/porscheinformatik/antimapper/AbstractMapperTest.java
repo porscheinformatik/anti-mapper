@@ -2,10 +2,12 @@ package at.porscheinformatik.antimapper;
 
 import static at.porscheinformatik.antimapper.TestUtils.*;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 
@@ -47,7 +49,8 @@ public abstract class AbstractMapperTest
         protected String transformNull(Object[] hints)
         {
             Assert.assertNotNull(hints);
-            Assert.assertEquals(BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+            Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS,
+                Hints.optionalHint(hints, UUID.class));
 
             return null;
         };
@@ -57,7 +60,8 @@ public abstract class AbstractMapperTest
         {
             Assert.assertNotNull(entity);
             Assert.assertNotNull(hints);
-            Assert.assertEquals(BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+            Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS,
+                Hints.optionalHint(hints, UUID.class));
 
             if (entity.length > 0 && entity[0] == '!')
             {
@@ -72,7 +76,8 @@ public abstract class AbstractMapperTest
         {
             Assert.assertNotNull(entity);
             Assert.assertNotNull(hints);
-            Assert.assertEquals(BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+            Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS,
+                Hints.optionalHint(hints, UUID.class));
 
             if (entity.length == 0)
             {
@@ -98,7 +103,8 @@ public abstract class AbstractMapperTest
             Assert.assertNotNull(dto);
             Assert.assertNotNull(entity);
             Assert.assertNotNull(hints);
-            Assert.assertEquals(BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+            Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS,
+                Hints.optionalHint(hints, UUID.class));
 
             if (dto.length() == entity.length)
             {
@@ -115,7 +121,8 @@ public abstract class AbstractMapperTest
         {
             Assert.assertNotNull(dto);
             Assert.assertNotNull(hints);
-            Assert.assertEquals(BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+            Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS,
+                Hints.optionalHint(hints, UUID.class));
 
             return new char[dto.length()];
         }
@@ -126,7 +133,8 @@ public abstract class AbstractMapperTest
             Assert.assertNotNull(dto);
             Assert.assertNotNull(entity);
             Assert.assertNotNull(hints);
-            Assert.assertEquals(BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+            Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS,
+                Hints.optionalHint(hints, UUID.class));
 
             String entityString = String.valueOf(entity);
 
@@ -144,5 +152,13 @@ public abstract class AbstractMapperTest
         }
 
     };
+
+    public String describeResult(Collection<char[]> chars)
+    {
+        return "The result of the mapping is: "
+            + (chars != null
+                ? chars.stream().map($ -> $ != null ? new String($) : "null").collect(Collectors.joining(","))
+                : "null");
+    }
 
 }
