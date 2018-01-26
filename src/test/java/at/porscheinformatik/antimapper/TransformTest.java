@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -15,7 +16,7 @@ public class TransformTest extends AbstractMapperTest
     @Test
     public void testNull()
     {
-        assertThat(MAPPER.transform(null, BOARDING_PASS), nullValue());
+        assertThat(MAPPER.transform(Optional.empty(), BOARDING_PASS), nullValue());
     }
 
     @Test

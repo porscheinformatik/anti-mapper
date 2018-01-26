@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -37,6 +38,18 @@ public interface Transformer<DTO, Entity>
      * @return the DTO, may be null if the entity is null
      */
     DTO transform(Entity entity, Object... hints);
+
+    /**
+     * Transforms the entity to a DTO. An empty optional will be handled as null.
+     *
+     * @param entity the entity, may be null
+     * @param hints optional hints
+     * @return the DTO, may be null if the entity is null
+     */
+    default DTO transform(Optional<? extends Entity> entity, Object... hints)
+    {
+        return transform(entity.orElse(null), hints);
+    }
 
     /**
      * Transforms the entities in the {@link Stream} to DTOs and returns the {@link Stream} with DTOs. Ignores entities
