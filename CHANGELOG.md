@@ -1,5 +1,10 @@
 # anti-mapper 1.4
 
+## anit-mapper-1.4.3
+
+* Adds the possibility to specified default hints for AbstractTransfomers, AbstractMergers and AbstractMappers.
+* Adds an AntiMapper class with the ability to specify a Mapper with an fluent interface and lambdas.
+
 ## anti-mapper-1.4.2
 
 * Adds transformGroupedMap methods.
