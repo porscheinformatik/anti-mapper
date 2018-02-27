@@ -10,9 +10,27 @@ package at.porscheinformatik.antimapper;
 public abstract class AbstractMerger<DTO, Entity> implements Merger<DTO, Entity>
 {
 
+    protected final Object[] defaultHints;
+
+    public AbstractMerger()
+    {
+        super();
+
+        defaultHints = null;
+    }
+
+    public AbstractMerger(Object... defaultHints)
+    {
+        super();
+
+        this.defaultHints = defaultHints != null && defaultHints.length > 0 ? defaultHints : null;
+    }
+
     @Override
     public final Entity merge(DTO dto, Entity entity, Object... hints)
     {
+        hints = Hints.join(defaultHints, hints);
+
         if (dto == null)
         {
             if (entity == null)

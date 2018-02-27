@@ -10,9 +10,27 @@ package at.porscheinformatik.antimapper;
 public abstract class AbstractTransformer<DTO, Entity> implements Transformer<DTO, Entity>
 {
 
+    private final Object[] defaultHints;
+
+    public AbstractTransformer()
+    {
+        super();
+
+        defaultHints = null;
+    }
+
+    public AbstractTransformer(Object... defaultHints)
+    {
+        super();
+
+        this.defaultHints = defaultHints != null && defaultHints.length > 0 ? defaultHints : null;
+    }
+
     @Override
     public final DTO transform(Entity entity, Object... hints)
     {
+        hints = Hints.join(defaultHints, hints);
+
         if (entity == null)
         {
             return transformNull(hints);
