@@ -1,9 +1,18 @@
 # anti-mapper 1.4
 
-## anit-mapper-1.4.3
+## anit-mapper-1.4.5
 
 * Adds the possibility to specified default hints for AbstractTransfomers, AbstractMergers and AbstractMappers.
 * Adds an AntiMapper class with the ability to specify a Mapper with an fluent interface and lambdas.
+
+## anit-mapper-1.4.4
+
+* Adds Optional to some interfaces
+
+## anti-mapper-1.4.3
+
+* [Issue #1](https://github.com/porscheinformatik/anti-mapper/issues/1): Removed entries will be moved to the end of the list.
+* Updates to the documentation.
 
 ## anti-mapper-1.4.2
 
