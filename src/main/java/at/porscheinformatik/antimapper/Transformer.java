@@ -2,20 +2,17 @@ package at.porscheinformatik.antimapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -27,7 +24,7 @@ import java.util.stream.StreamSupport;
  * @param <DTO> the type of the DTO
  * @param <Entity> the type of the entity
  */
-public interface Transformer<DTO, Entity>
+public interface Transformer<DTO, Entity> extends HintsProvider
 {
 
     /**
@@ -52,6 +49,213 @@ public interface Transformer<DTO, Entity>
     }
 
     /**
+     * Creates a {@link StreamTransformer} to transform each item in the {@link Iterable}. Ignores entities that
+     * transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param entities the entities, may be null
+     * @param hints optional hints
+     * @return a {@link StreamTransformer}
+     */
+    default StreamTransformer<DTO, Entity> transformAll(Iterable<? extends Entity> entities, Object... hints)
+    {
+        return new AbstractStreamTransformer<DTO, Entity, Entity>(
+            () -> entities != null ? StreamSupport.stream(entities.spliterator(), false) : null, hints)
+        {
+            @Override
+            protected DTO transform(Entity container, Object[] hints)
+            {
+                return Transformer.this.transform(container, hints);
+            }
+
+            @Override
+            protected <Key> Key toKey(Function<Entity, Key> keyFunction, Entity container)
+            {
+                return keyFunction.apply(container);
+            }
+
+            @Override
+            protected Object[] getTransformerHints()
+            {
+                return getDefaultHints();
+            }
+        };
+    }
+
+    /**
+     * Creates a {@link StreamTransformer} to transform each item in the {@link Stream}. Ignores entities that transform
+     * to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param entityStream the entities, may be null
+     * @param hints optional hints
+     * @return a {@link StreamTransformer}
+     */
+    default StreamTransformer<DTO, Entity> transformAll(Stream<? extends Entity> entityStream, Object... hints)
+    {
+        return new AbstractStreamTransformer<DTO, Entity, Entity>(() -> entityStream, hints)
+        {
+            @Override
+            protected DTO transform(Entity container, Object[] hints)
+            {
+                return Transformer.this.transform(container, hints);
+            }
+
+            @Override
+            protected <Key> Key toKey(Function<Entity, Key> keyFunction, Entity container)
+            {
+                return keyFunction.apply(container);
+            }
+
+            @Override
+            protected Object[] getTransformerHints()
+            {
+                return getDefaultHints();
+            }
+        };
+    }
+
+    /**
+     * Create a {@link StreamTransformer} that creates the list of entities from parents. You can use this to flatten
+     * maps. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an
+     * unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is
+     * set.
+     *
+     * @param <ParentEntity> the type of parent
+     * @param parents the parents
+     * @param mapper the mapper
+     * @param hints the hints
+     * @return the {@link StreamTransformer}
+     */
+    default <ParentEntity> StreamTransformer<DTO, Entity> flatMapAndTransformAll(
+        Iterable<? extends ParentEntity> parents,
+        Function<? super ParentEntity, ? extends Iterable<? extends Entity>> mapper, Object... hints)
+    {
+        // This awfully complex line flattens the parents by using the mapper
+        // and returns a supplier for a stream with Entity/ParentEntity pairs.
+        Supplier<Stream<? extends Pair<Entity, ParentEntity>>> streamSupplier = parents == null ? () -> Stream.empty()
+            : () -> StreamSupport
+                .stream(parents.spliterator(), false)
+                .filter(parentEntity -> parentEntity != null)
+                .flatMap(parentEntity -> {
+                    Iterable<? extends Entity> iterable = mapper.apply(parentEntity);
+                    Stream<? extends Entity> stream =
+                        iterable == null ? Stream.empty() : StreamSupport.stream(iterable.spliterator(), false);
+
+                    return stream.map(entity -> Pair.of(entity, parentEntity));
+                });
+
+        return new AbstractStreamTransformer<DTO, Entity, Pair<Entity, ParentEntity>>(streamSupplier, hints)
+        {
+            @Override
+            protected DTO transform(Pair<Entity, ParentEntity> container, Object[] hints)
+            {
+                Entity entity = container.getLeft();
+                ParentEntity parentEntity = container.getRight();
+
+                return Transformer.this.transform(entity, Hints.join(hints, parentEntity));
+            }
+
+            @Override
+            protected <Key> Key toKey(Function<Entity, Key> keyFunction, Pair<Entity, ParentEntity> container)
+            {
+                Entity entity = container.getLeft();
+
+                return keyFunction.apply(entity);
+            }
+
+            @Override
+            protected Object[] getTransformerHints()
+            {
+                return getDefaultHints();
+            }
+        };
+    }
+
+    /**
+     * Create a {@link StreamTransformer} that creates the list of entities from parents. You can use this to flatten
+     * maps. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an
+     * unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is
+     * set.
+     *
+     * @param <ParentEntity> the type of parent
+     * @param parents the parents
+     * @param mapper the mapper
+     * @param hints the hints
+     * @return the {@link StreamTransformer}
+     */
+    default <ParentEntity> StreamTransformer<DTO, Entity> flatMapAndTransformAll(Stream<? extends ParentEntity> parents,
+        Function<? super ParentEntity, ? extends Iterable<? extends Entity>> mapper, Object... hints)
+    {
+        // This awfully complex line flattens the parents by using the mapper
+        // and returns a supplier for a stream with Entity/ParentEntity pairs.
+        Supplier<Stream<? extends Pair<Entity, ParentEntity>>> streamSupplier = parents == null ? () -> Stream.empty()
+            : () -> parents.filter(parentEntity -> parentEntity != null).flatMap(parentEntity -> {
+                Iterable<? extends Entity> iterable = mapper.apply(parentEntity);
+                Stream<? extends Entity> stream =
+                    iterable == null ? Stream.empty() : StreamSupport.stream(iterable.spliterator(), false);
+
+                return stream.map(entity -> Pair.of(entity, parentEntity));
+            });
+
+        return new AbstractStreamTransformer<DTO, Entity, Pair<Entity, ParentEntity>>(streamSupplier, hints)
+        {
+            @Override
+            protected DTO transform(Pair<Entity, ParentEntity> container, Object[] hints)
+            {
+                Entity entity = container.getLeft();
+                ParentEntity parentEntity = container.getRight();
+
+                return Transformer.this.transform(entity, Hints.join(hints, parentEntity));
+            }
+
+            @Override
+            protected <Key> Key toKey(Function<Entity, Key> keyFunction, Pair<Entity, ParentEntity> container)
+            {
+                Entity entity = container.getLeft();
+
+                return keyFunction.apply(entity);
+            }
+
+            @Override
+            protected Object[] getTransformerHints()
+            {
+                return getDefaultHints();
+            }
+        };
+    }
+
+    /**
+     * Transforms all items of a grouped map. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL}
+     * hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the
+     * {@link Hint#OR_EMPTY} is set. The key entities map key is added to the hints for each transformation round.
+     *
+     * @param <GroupKey> the type of the group key
+     * @param entities the entities, may be null
+     * @param hints optional hints
+     * @return the {@link GroupTransformer}
+     */
+    default <GroupKey> GroupTransformer<DTO, GroupKey, Entity> transformAllGrouped(
+        Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
+    {
+        return new AbstractGroupTransformer<DTO, GroupKey, Entity>(entities, hints)
+        {
+            @Override
+            protected <DTOCollection extends Collection<DTO>> DTOCollection transformAll(
+                Iterable<? extends Entity> values, Supplier<DTOCollection> collectionFactory, Object[] hints)
+            {
+                return Transformer.this.transformAll(values, hints).toCollection(collectionFactory);
+            }
+
+            @Override
+            protected Object[] getTransformerHints()
+            {
+                return getDefaultHints();
+            }
+        };
+    }
+
+    /**
      * Transforms the entities in the {@link Stream} to DTOs and returns the {@link Stream} with DTOs. Ignores entities
      * that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Never returns null if the
      * {@link Hint#OR_EMPTY} is set.
@@ -59,35 +263,12 @@ public interface Transformer<DTO, Entity>
      * @param entities the stream, may be null
      * @param hints optional hints
      * @return the streams iterator
+     * @deprecated use the {@link #transformAll(Stream, Object...)} interface
      */
+    @Deprecated
     default Stream<DTO> transformEach(Stream<? extends Entity> entities, Object... hints)
     {
-        if (entities == null)
-        {
-            if (Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return Stream.empty();
-            }
-
-            return null;
-        }
-
-        try
-        {
-            Stream<DTO> stream = entities.map(entity -> transform(entity, hints));
-
-            if (!Hints.containsHint(hints, Hint.KEEP_NULL))
-            {
-                stream = stream.filter(dto -> dto != null);
-            }
-
-            return stream;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to transform entities in stream: %s", e,
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return transformAll(entities, hints).toStream();
     }
 
     /**
@@ -98,20 +279,12 @@ public interface Transformer<DTO, Entity>
      * @param entities the stream, may be null
      * @param hints optional hints
      * @return the streams iterator
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default Stream<DTO> transformToStream(Iterable<? extends Entity> entities, Object... hints)
     {
-        if (entities == null)
-        {
-            if (Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return Stream.empty();
-            }
-
-            return null;
-        }
-
-        return transformEach(StreamSupport.stream(entities.spliterator(), false), hints);
+        return transformAll(entities, hints).toStream();
     }
 
     /**
@@ -125,28 +298,13 @@ public interface Transformer<DTO, Entity>
      * @param dtoCollectionFactory a factory for the needed collection
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default <DTOCollection extends Collection<DTO>> DTOCollection transformToCollection(
         Iterable<? extends Entity> entities, Supplier<DTOCollection> dtoCollectionFactory, Object... hints)
     {
-        if (entities == null)
-        {
-            if (!Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            entities = Collections.emptyList();
-        }
-
-        DTOCollection dtos = transformToStream(entities, hints).collect(Collectors.toCollection(dtoCollectionFactory));
-
-        if (Hints.containsHint(hints, Hint.UNMODIFIABLE))
-        {
-            dtos = MapperUtils.toUnmodifiableCollection(dtos);
-        }
-
-        return dtos;
+        return transformAll(entities, hints).toCollection(dtoCollectionFactory);
     }
 
     /**
@@ -157,10 +315,12 @@ public interface Transformer<DTO, Entity>
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a set
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default Set<DTO> transformToHashSet(Iterable<? extends Entity> entities, Object... hints)
     {
-        return transformToCollection(entities, HashSet::new, hints);
+        return transformAll(entities, hints).toHashSet();
     }
 
     /**
@@ -171,10 +331,12 @@ public interface Transformer<DTO, Entity>
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a set
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default SortedSet<DTO> transformToTreeSet(Iterable<? extends Entity> entities, Object... hints)
     {
-        return transformToCollection(entities, TreeSet::new, hints);
+        return transformAll(entities, hints).toTreeSet();
     }
 
     /**
@@ -186,11 +348,13 @@ public interface Transformer<DTO, Entity>
      * @param comparator the comparator for the tree set
      * @param hints optional hints
      * @return a set
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default SortedSet<DTO> transformToTreeSet(Iterable<? extends Entity> entities, Comparator<? super DTO> comparator,
         Object... hints)
     {
-        return transformToCollection(entities, () -> new TreeSet<>(comparator), hints);
+        return transformAll(entities, hints).toTreeSet(comparator);
     }
 
     /**
@@ -201,10 +365,12 @@ public interface Transformer<DTO, Entity>
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a list
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default List<DTO> transformToArrayList(Iterable<? extends Entity> entities, Object... hints)
     {
-        return transformToCollection(entities, ArrayList::new, hints);
+        return transformAll(entities, hints).toArrayList();
     }
 
     /**
@@ -220,54 +386,13 @@ public interface Transformer<DTO, Entity>
      * @param keyFunction the function to extract the key from one entity
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default <Key, DTOMap extends Map<Key, DTO>> DTOMap transformToMap(Iterable<? extends Entity> entities,
         Supplier<DTOMap> mapFactory, Function<Entity, Key> keyFunction, Object... hints)
     {
-        if (entities == null)
-        {
-            if (!Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            entities = Collections.emptyList();
-        }
-
-        boolean keepNull = Hints.containsHint(hints, Hint.KEEP_NULL);
-
-        try
-        {
-            DTOMap dtos = mapFactory.get();
-
-            for (Entity entity : entities)
-            {
-                if (entity == null)
-                {
-                    continue;
-                }
-
-                Key key = keyFunction.apply(entity);
-                DTO dto = transform(entity, hints);
-
-                if (dto != null || keepNull)
-                {
-                    dtos.put(key, dto);
-                }
-            }
-
-            if (Hints.containsHint(hints, Hint.UNMODIFIABLE))
-            {
-                dtos = MapperUtils.toUnmodifiableMap(dtos);
-            }
-
-            return dtos;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to transform entities to a map: %s", e,
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return transformAll(entities, hints).toMap(mapFactory, keyFunction);
     }
 
     /**
@@ -281,11 +406,13 @@ public interface Transformer<DTO, Entity>
      * @param keyFunction the function to extract the key from one entity
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default <Key> Map<Key, DTO> transformToHashMap(Iterable<? extends Entity> entities,
         Function<Entity, Key> keyFunction, Object... hints)
     {
-        return transformToMap(entities, HashMap<Key, DTO>::new, keyFunction, hints);
+        return transformAll(entities, hints).toHashMap(keyFunction);
     }
 
     /**
@@ -302,46 +429,14 @@ public interface Transformer<DTO, Entity>
      * @param collectionFactory a factory for the collections in the result map
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default <GroupKey, DTOCollection extends Collection<DTO>, DTOMap extends Map<GroupKey, DTOCollection>> Map<GroupKey, DTOCollection> transformToGroupedMap(
         Iterable<? extends Entity> entities, Supplier<DTOMap> mapFactory, Function<Entity, GroupKey> groupKeyFunction,
         Supplier<DTOCollection> collectionFactory, Object... hints)
     {
-        if (entities == null)
-        {
-            if (!Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            entities = Collections.emptyList();
-        }
-
-        try
-        {
-            Map<GroupKey, DTOCollection> dtos = MapperUtils.mapMixedGroups(entities, mapFactory.get(), groupKeyFunction,
-                collectionFactory, (entity, dto) -> false, (entity, dto) -> transform(entity, hints),
-                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null, map -> {
-                    if (Hints.containsHint(hints, Hint.UNMODIFIABLE))
-                    {
-                        List<GroupKey> keys = new ArrayList<>(map.keySet());
-
-                        keys.forEach(key -> map.put(key, MapperUtils.toUnmodifiableCollection(map.get(key))));
-                    }
-                });
-
-            if (Hints.containsHint(hints, Hint.UNMODIFIABLE))
-            {
-                dtos = MapperUtils.toUnmodifiableMap(dtos);
-            }
-
-            return dtos;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to transform entities to a grouped map: %s", e,
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return transformAll(entities, hints).toGroupedMap(mapFactory, groupKeyFunction, collectionFactory);
     }
 
     /**
@@ -354,11 +449,13 @@ public interface Transformer<DTO, Entity>
      * @param groupKeyFunction extracts the key for the map
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default <GroupKey> Map<GroupKey, Set<DTO>> transformToGroupedHashSets(Iterable<? extends Entity> entities,
         Function<Entity, GroupKey> groupKeyFunction, Object... hints)
     {
-        return transformToGroupedMap(entities, HashMap<GroupKey, Set<DTO>>::new, groupKeyFunction, HashSet::new, hints);
+        return transformAll(entities, hints).toGroupedHashSets(groupKeyFunction);
     }
 
     /**
@@ -371,12 +468,13 @@ public interface Transformer<DTO, Entity>
      * @param groupKeyFunction extracts the key for the map
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default <GroupKey> Map<GroupKey, SortedSet<DTO>> transformToGroupedTreeSets(Iterable<? extends Entity> entities,
         Function<Entity, GroupKey> groupKeyFunction, Object... hints)
     {
-        return transformToGroupedMap(entities, HashMap<GroupKey, SortedSet<DTO>>::new, groupKeyFunction, TreeSet::new,
-            hints);
+        return transformAll(entities, hints).toGroupedTreeSets(groupKeyFunction);
     }
 
     /**
@@ -390,12 +488,13 @@ public interface Transformer<DTO, Entity>
      * @param comparator the comparator for the tree set
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default <GroupKey> Map<GroupKey, SortedSet<DTO>> transformToGroupedTreeSets(Iterable<? extends Entity> entities,
         Function<Entity, GroupKey> groupKeyFunction, Comparator<? super DTO> comparator, Object... hints)
     {
-        return transformToGroupedMap(entities, HashMap<GroupKey, SortedSet<DTO>>::new, groupKeyFunction,
-            () -> new TreeSet<>(comparator), hints);
+        return transformAll(entities, hints).toGroupedTreeSets(groupKeyFunction, comparator);
     }
 
     /**
@@ -408,12 +507,13 @@ public interface Transformer<DTO, Entity>
      * @param groupKeyFunction extracts the key for the map
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default <GroupKey> Map<GroupKey, List<DTO>> transformToGroupedArrayLists(Iterable<? extends Entity> entities,
         Function<Entity, GroupKey> groupKeyFunction, Object... hints)
     {
-        return transformToGroupedMap(entities, HashMap<GroupKey, List<DTO>>::new, groupKeyFunction, ArrayList::new,
-            hints);
+        return transformAll(entities, hints).toGroupedArrayLists(groupKeyFunction);
     }
 
     /**
@@ -430,43 +530,14 @@ public interface Transformer<DTO, Entity>
      * @param collectionFactory a factory for the collections in the result map
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAllGrouped(Map, Object...)} iterface
      */
+    @Deprecated
     default <GroupKey, DTOCollection extends Collection<DTO>, DTOMap extends Map<GroupKey, DTOCollection>> Map<GroupKey, DTOCollection> transformGroupedMapToGroupedMap(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Supplier<DTOMap> mapFactory,
         Supplier<DTOCollection> collectionFactory, Object... hints)
     {
-        if (entities == null)
-        {
-            if (!Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            entities = Collections.emptyMap();
-        }
-
-        try
-        {
-            DTOMap dtos = mapFactory.get();
-
-            for (Entry<GroupKey, ? extends Iterable<? extends Entity>> entry : entities.entrySet())
-            {
-                dtos.put(entry.getKey(),
-                    transformToCollection(entry.getValue(), collectionFactory, Hints.join(hints, entry.getKey())));
-            }
-
-            if (Hints.containsHint(hints, Hint.UNMODIFIABLE))
-            {
-                dtos = MapperUtils.toUnmodifiableMap(dtos);
-            }
-
-            return dtos;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to transform entities to a grouped map: %s", e,
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return transformAllGrouped(entities, hints).toGroupedMap(mapFactory, collectionFactory);
     }
 
     /**
@@ -479,11 +550,13 @@ public interface Transformer<DTO, Entity>
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAllGrouped(Map, Object...)} iterface
      */
+    @Deprecated
     default <GroupKey> Map<GroupKey, List<DTO>> transformGroupedMapToGroupedArrayLists(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
     {
-        return transformGroupedMapToGroupedMap(entities, HashMap<GroupKey, List<DTO>>::new, ArrayList<DTO>::new, hints);
+        return transformAllGrouped(entities, hints).toGroupedArrayLists();
     }
 
     /**
@@ -496,11 +569,13 @@ public interface Transformer<DTO, Entity>
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAllGrouped(Map, Object...)} iterface
      */
+    @Deprecated
     default <GroupKey> Map<GroupKey, Set<DTO>> transformGroupedMapToGroupedHashSets(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
     {
-        return transformGroupedMapToGroupedMap(entities, HashMap<GroupKey, Set<DTO>>::new, HashSet<DTO>::new, hints);
+        return transformAllGrouped(entities, hints).toGroupedHashSets();
     }
 
     /**
@@ -513,12 +588,13 @@ public interface Transformer<DTO, Entity>
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAllGrouped(Map, Object...)} iterface
      */
+    @Deprecated
     default <GroupKey> Map<GroupKey, SortedSet<DTO>> transformGroupedMapToGroupedTreeSets(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
     {
-        return transformGroupedMapToGroupedMap(entities, HashMap<GroupKey, SortedSet<DTO>>::new, TreeSet<DTO>::new,
-            hints);
+        return transformAllGrouped(entities, hints).toGroupedTreeSets();
     }
 
     /**
@@ -532,13 +608,14 @@ public interface Transformer<DTO, Entity>
      * @param comparator the comparator for the tree set
      * @param hints optional hints
      * @return a map
+     * @deprecated use the {@link #transformAllGrouped(Map, Object...)} iterface
      */
+    @Deprecated
     default <GroupKey> Map<GroupKey, SortedSet<DTO>> transformGroupedMapToGroupedTreeSets(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Comparator<? super DTO> comparator,
         Object... hints)
     {
-        return transformGroupedMapToGroupedMap(entities, HashMap<GroupKey, SortedSet<DTO>>::new,
-            () -> new TreeSet<>(comparator), hints);
+        return transformAllGrouped(entities, hints).toGroupedTreeSets(comparator);
     }
 
 }

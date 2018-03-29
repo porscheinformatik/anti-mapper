@@ -11,57 +11,20 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-/**
- * A merger is a mapper that merges a DTO into an entity.
- *
- * @author ham
- * @param <DTO> the dto type
- * @param <Entity> the entity type
- */
-public interface Merger<DTO, Entity> extends HintsProvider
+public abstract class AbstractStreamMerger<DTO, Entity>
 {
 
-    /**
-     * Maps the DTO to an entity. The implementation must be able to cope with a null value passed as entity! The
-     * implementation should prefer to modify a passed entity instead of creating a new one, but must not do so.
-     *
-     * @param dto the dto, may be null
-     * @param entity the entity, may be null
-     * @param hints optional hints
-     * @return the entity, either the passed one, or a newly created one
-     */
-    Entity merge(DTO dto, Entity entity, Object... hints);
+    private final Supplier<Stream<? extends DTO>> dtos;
+    private final Object[] hints;
 
-    /**
-     * Returns true if the unique keys match. Most often, this is the id. The method will not be called if either or
-     * both values are null. The method will be used for searches during list merge operations. The methods themself
-     * ensure, that no DTO and no entity will be matched twice, thus comparing the id should be enough most of the time,
-     * even if the list may contain multiple entries with an id set to null.
-     *
-     * If the entity is identifiable by a specific (combined) key, then use this key for the match operation. If this it
-     * not the case, just use the id.
-     *
-     * @param dto the DTO, never null
-     * @param entity the entity, never null
-     * @param hints optional hints
-     * @return true on match
-     */
-    boolean isUniqueKeyMatching(DTO dto, Entity entity, Object... hints);
-
-    default boolean isUniqueKeyMatchingNullable(DTO dto, Entity entity, Object... hints)
+    public AbstractStreamMerger(Supplier<Stream<? extends DTO>> dtos, Object... hints)
     {
-        if (dto == entity)
-        {
-            return true;
-        }
+        super();
 
-        if (dto == null || entity == null)
-        {
-            return false;
-        }
-
-        return isUniqueKeyMatching(dto, entity, hints);
+        this.dtos = dtos;
+        this.hints = hints;
     }
 
     /**
@@ -71,15 +34,12 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * this case, merging the entities). Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
      * @param <EntityCollection> the type of the collection
-     * @param dtos the DTOs, may be null
      * @param entities the entities, may be null
      * @param entityCollectionFactory a factory for the needed collection
-     * @param hints optional hints
      * @return a collection
      */
-    default <EntityCollection extends Collection<Entity>> EntityCollection mergeIntoMixedCollection(
-        Iterable<? extends DTO> dtos, EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory,
-        Object... hints)
+    public <EntityCollection extends Collection<Entity>> EntityCollection mergeIntoMixedCollection(
+        EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory)
     {
         if (dtos == null)
         {
@@ -468,218 +428,6 @@ public interface Merger<DTO, Entity> extends HintsProvider
     default List<Entity> mergeMapIntoArrayList(Map<?, ? extends DTO> dtos, List<Entity> entities, Object... hints)
     {
         return mergeMapIntoOrderedCollection(dtos, entities, ArrayList::new, hints);
-    }
-
-    /**
-     * Maps a grouped map to a collection. Ignores the order. If the entities parameter is null, it creates a
-     * {@link Collection} if necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set.
-     * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in
-     * this case). Never returns null if the {@link Hint#OR_EMPTY} is set.
-     *
-     * @param <EntityCollection> the type of the collection
-     * @param dtos the grouped dtos
-     * @param entities the entities
-     * @param entityCollectionFactory the factory for the entities collection
-     * @param hints optional hints
-     * @return the collection
-     */
-    default <EntityCollection extends Collection<Entity>> EntityCollection mergeGroupedMapIntoMixedCollection(
-        Map<?, ? extends Collection<? extends DTO>> dtos, EntityCollection entities,
-        Supplier<EntityCollection> entityCollectionFactory, Object... hints)
-    {
-        if (dtos == null)
-        {
-            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            dtos = Collections.emptyMap();
-        }
-
-        try
-        {
-            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
-
-            if (entities == null)
-            {
-                entities = entityCollectionFactory.get();
-            }
-            else if (unmodifiable)
-            {
-                EntityCollection originalEntity = entities;
-
-                entities = entityCollectionFactory.get();
-                entities.addAll(originalEntity);
-            }
-
-            Collection<Pair<?, ? extends DTO>> pairs = new ArrayList<>();
-
-            dtos.entrySet().forEach(
-                entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
-
-            entities = MapperUtils.mapMixed(pairs, entities,
-                (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null,
-                list -> afterMergeIntoCollection(list, hints));
-
-            if (unmodifiable)
-            {
-                entities = MapperUtils.toUnmodifiableCollection(entities);
-            }
-
-            return entities;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to merge grouped DTOs into a mixed collection: %s => %s", e,
-                MapperUtils.abbreviate(String.valueOf(dtos), 4096),
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
-    }
-
-    /**
-     * Maps a grouped map to a collection. Keeps the order. If the entities parameter is null, it creates a
-     * {@link Collection} if necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set.
-     * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in
-     * this case). Never returns null if the {@link Hint#OR_EMPTY} is set.
-     *
-     * @param <EntityCollection> the type of the collection
-     * @param dtos the grouped dtos
-     * @param entities the entities
-     * @param entityCollectionFactory the factory for the entities collection
-     * @param hints optional hints
-     * @return the collection
-     */
-    default <EntityCollection extends Collection<Entity>> EntityCollection mergeGroupedMapIntoOrderedCollection(
-        Map<?, ? extends Collection<? extends DTO>> dtos, EntityCollection entities,
-        Supplier<EntityCollection> entityCollectionFactory, Object... hints)
-    {
-        if (dtos == null)
-        {
-            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            dtos = Collections.emptyMap();
-        }
-
-        try
-        {
-            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
-
-            if (entities == null)
-            {
-                entities = entityCollectionFactory.get();
-            }
-            else if (unmodifiable)
-            {
-                EntityCollection originalEntity = entities;
-
-                entities = entityCollectionFactory.get();
-                entities.addAll(originalEntity);
-            }
-
-            Collection<Pair<?, ? extends DTO>> pairs = new ArrayList<>();
-
-            dtos.entrySet().forEach(
-                entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
-
-            entities = MapperUtils.mapOrdered(pairs, entities,
-                (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : entity -> entity != null,
-                list -> afterMergeIntoCollection(list, hints));
-
-            if (unmodifiable)
-            {
-                entities = MapperUtils.toUnmodifiableCollection(entities);
-            }
-
-            return entities;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to merge grouped DTOs into an ordered collection: %s => %s", e,
-                MapperUtils.abbreviate(String.valueOf(dtos), 4096),
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
-    }
-
-    /**
-     * Maps a grouped map to a collection. If the entities parameter is null, it creates a {@link HashSet} if necessary.
-     * Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
-     * if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if
-     * the {@link Hint#OR_EMPTY} is set.
-     *
-     * @param dtos the grouped dtos
-     * @param entities the entities
-     * @param hints optional hints
-     * @return the collection
-     */
-    default Set<Entity> mergeGroupedMapIntoHashSet(Map<?, ? extends Collection<? extends DTO>> dtos,
-        Set<Entity> entities, Object... hints)
-    {
-        return mergeGroupedMapIntoMixedCollection(dtos, entities, HashSet::new, hints);
-    }
-
-    /**
-     * Maps a grouped map to a collection. If the entities parameter is null, it creates a {@link TreeSet} if necessary.
-     * Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
-     * if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if
-     * the {@link Hint#OR_EMPTY} is set.
-     *
-     * @param dtos the grouped dtos
-     * @param entities the entities
-     * @param hints optional hints
-     * @return the collection
-     */
-    default SortedSet<Entity> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO>> dtos,
-        SortedSet<Entity> entities, Object... hints)
-    {
-        return mergeGroupedMapIntoOrderedCollection(dtos, entities,
-            () -> entities != null ? new TreeSet<>(entities.comparator()) : new TreeSet<>(), hints);
-    }
-
-    /**
-     * Maps a grouped map to a collection. If the entities parameter is null, it creates a {@link TreeSet} if necessary.
-     * Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance
-     * if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if
-     * the {@link Hint#OR_EMPTY} is set.
-     *
-     * @param dtos the grouped dtos
-     * @param entities the entities
-     * @param comparator the comparator
-     * @param hints optional hints
-     * @return the collection
-     */
-    default SortedSet<Entity> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO>> dtos,
-        SortedSet<Entity> entities, Comparator<? super Entity> comparator, Object... hints)
-    {
-        return mergeGroupedMapIntoOrderedCollection(dtos, entities, () -> new TreeSet<>(comparator), hints);
-    }
-
-    /**
-     * Maps a grouped map to a list. If the entities parameter is null, it creates a {@link List} if necessary. Ignores
-     * DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
-     * {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case). Never returns null if the
-     * {@link Hint#OR_EMPTY} is set.
-     *
-     * @param dtos the grouped dtos
-     * @param entities the entities
-     * @param hints optional hints
-     * @return the collection
-     */
-    default List<Entity> mergeGroupedMapIntoArrayList(Map<?, ? extends Collection<? extends DTO>> dtos,
-        List<Entity> entities, Object... hints)
-    {
-        return mergeGroupedMapIntoOrderedCollection(dtos, entities, ArrayList::new, hints);
     }
 
 }

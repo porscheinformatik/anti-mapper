@@ -27,6 +27,12 @@ public abstract class AbstractTransformer<DTO, Entity> implements Transformer<DT
     }
 
     @Override
+    public Object[] getDefaultHints()
+    {
+        return defaultHints;
+    }
+
+    @Override
     public final DTO transform(Entity entity, Object... hints)
     {
         hints = Hints.join(defaultHints, hints);

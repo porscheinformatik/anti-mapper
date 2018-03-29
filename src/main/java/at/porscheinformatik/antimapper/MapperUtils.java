@@ -21,6 +21,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -547,7 +548,7 @@ public final class MapperUtils
      * @param <GroupKey> the type of the key in the target map
      * @param <TargetCollection> the type of the collection in the target map
      * @param <TargetValue> the type of the values in the target map
-     * @param sourceIterable the source iterable, may be null
+     * @param sourceStream the source stream, may be null
      * @param targetMap the target map, may not be null
      * @param groupKeyFunction the function extracting the key from a source value
      * @param createTargetCollectionFunction create a new collection entry for the target map
@@ -559,13 +560,13 @@ public final class MapperUtils
      * @return the target collection itself
      */
     public static <SourceValue, GroupKey, TargetCollection extends Collection<TargetValue>, TargetValue> Map<GroupKey, TargetCollection> mapMixedGroups(
-        Iterable<? extends SourceValue> sourceIterable, Map<GroupKey, TargetCollection> targetMap,
+        Stream<? extends SourceValue> sourceStream, Map<GroupKey, TargetCollection> targetMap,
         Function<SourceValue, GroupKey> groupKeyFunction, Supplier<TargetCollection> createTargetCollectionFunction,
         MatchFunction<SourceValue, TargetValue> matchFunction,
         BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
         Consumer<Map<GroupKey, TargetCollection>> afterMapConsumer)
     {
-        if (sourceIterable == null)
+        if (sourceStream == null)
         {
             targetMap.clear();
 
@@ -575,7 +576,7 @@ public final class MapperUtils
         Map<GroupKey, List<SourceValue>> sourceMap = new HashMap<>();
 
         // this implementation is null-able, in contrast to the groupingBy collector
-        StreamSupport.stream(sourceIterable.spliterator(), false).forEach(sourceItem -> {
+        sourceStream.forEach(sourceItem -> {
             GroupKey key = groupKeyFunction.apply(sourceItem);
             List<SourceValue> list = sourceMap.get(key);
 

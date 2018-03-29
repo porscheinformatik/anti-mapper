@@ -27,6 +27,12 @@ public abstract class AbstractMerger<DTO, Entity> implements Merger<DTO, Entity>
     }
 
     @Override
+    public Object[] getDefaultHints()
+    {
+        return defaultHints;
+    }
+
+    @Override
     public final Entity merge(DTO dto, Entity entity, Object... hints)
     {
         hints = Hints.join(defaultHints, hints);

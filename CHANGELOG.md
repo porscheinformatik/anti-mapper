@@ -1,3 +1,11 @@
+# anit-mapper 1.5
+
+## anti-mapper 1.5.0
+
+* StreamTransformer to simplify the interface.
+* GroupTransformer to simplify the interface.
+* Breaking change: Some methods in the MapperUtils now use Streams instead of Iterables.
+
 # anti-mapper 1.4
 
 ## anit-mapper-1.4.5
