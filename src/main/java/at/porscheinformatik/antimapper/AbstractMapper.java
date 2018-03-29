@@ -10,12 +10,12 @@ package at.porscheinformatik.antimapper;
 public abstract class AbstractMapper<DTO, Entity> extends AbstractMerger<DTO, Entity> implements Mapper<DTO, Entity>
 {
 
-    public AbstractMapper()
+    protected AbstractMapper()
     {
         super();
     }
 
-    public AbstractMapper(Object... defaultHints)
+    protected AbstractMapper(Object... defaultHints)
     {
         super(defaultHints);
     }

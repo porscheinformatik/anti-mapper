@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -14,7 +15,6 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * A transformer is a mapper that (usually) transforms an entity to a DTO. The DTO is always a new object, there is no
@@ -59,8 +59,38 @@ public interface Transformer<DTO, Entity> extends HintsProvider
      */
     default StreamTransformer<DTO, Entity> transformAll(Iterable<? extends Entity> entities, Object... hints)
     {
-        return new AbstractStreamTransformer<DTO, Entity, Entity>(
-            () -> entities != null ? StreamSupport.stream(entities.spliterator(), false) : null, hints)
+        return transformAll(() -> MapperUtils.streamOrNull(entities), hints);
+    }
+
+    /**
+     * Creates a {@link StreamTransformer} to transform each item in the {@link Stream}. Ignores entities that transform
+     * to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param entityStream the entities, may be null
+     * @param hints optional hints
+     * @return a {@link StreamTransformer}
+     */
+    default StreamTransformer<DTO, Entity> transformAll(Stream<? extends Entity> entityStream, Object... hints)
+    {
+        return transformAll(() -> entityStream, hints);
+    }
+
+    /**
+     * Creates a {@link StreamTransformer} to transform each item in the {@link Stream}. Ignores entities that transform
+     * to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param entityStreamSupplier the entities
+     * @param hints optional hints
+     * @return a {@link StreamTransformer}
+     * @deprecated this should be private
+     */
+    @Deprecated
+    default StreamTransformer<DTO, Entity> transformAll(Supplier<Stream<? extends Entity>> entityStreamSupplier,
+        Object... hints)
+    {
+        return new AbstractStreamTransformer<DTO, Entity, Entity>(entityStreamSupplier, hints)
         {
             @Override
             protected DTO transform(Entity container, Object[] hints)
@@ -87,24 +117,25 @@ public interface Transformer<DTO, Entity> extends HintsProvider
      * to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
      * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
      *
-     * @param entityStream the entities, may be null
+     * @param entities the entities
      * @param hints optional hints
      * @return a {@link StreamTransformer}
      */
-    default StreamTransformer<DTO, Entity> transformAll(Stream<? extends Entity> entityStream, Object... hints)
+    default StreamTransformer<DTO, Entity> transformAll(Map<?, ? extends Entity> entities, Object... hints)
     {
-        return new AbstractStreamTransformer<DTO, Entity, Entity>(() -> entityStream, hints)
+        return new AbstractStreamTransformer<DTO, Entity, Entry<?, ? extends Entity>>(
+            () -> entities != null ? entities.entrySet().stream() : null, hints)
         {
             @Override
-            protected DTO transform(Entity container, Object[] hints)
+            protected DTO transform(Entry<?, ? extends Entity> container, Object[] hints)
             {
-                return Transformer.this.transform(container, hints);
+                return Transformer.this.transform(container.getValue(), Hints.join(hints, container.getKey()));
             }
 
             @Override
-            protected <Key> Key toKey(Function<Entity, Key> keyFunction, Entity container)
+            protected <Key> Key toKey(Function<Entity, Key> keyFunction, Entry<?, ? extends Entity> container)
             {
-                return keyFunction.apply(container);
+                return keyFunction.apply(container.getValue());
             }
 
             @Override
@@ -116,60 +147,78 @@ public interface Transformer<DTO, Entity> extends HintsProvider
     }
 
     /**
+     * Creates a {@link StreamTransformer} to transform each item in the {@link Stream}. Ignores entities that transform
+     * to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param <GroupKey> the type of the group key
+     * @param entityPairStreamSupplier the entities
+     * @param hints optional hints
+     * @return a {@link StreamTransformer}
+     * @deprecated this should be private
+     */
+    @Deprecated
+    default <GroupKey> PairTransformer<DTO, GroupKey, Entity> transformAllPairs(
+        Supplier<Stream<? extends Pair<? extends GroupKey, ? extends Entity>>> entityPairStreamSupplier,
+        Object... hints)
+    {
+        return new AbstractPairTransformer<DTO, GroupKey, Entity>(entityPairStreamSupplier, hints)
+        {
+            @Override
+            protected DTO transform(Pair<? extends GroupKey, ? extends Entity> container, Object[] hints)
+            {
+                return Transformer.this.transform(Pair.rightOf(container), Hints.join(hints, Pair.leftOf(container)));
+            }
+
+            @Override
+            protected <Key> Key toKey(Function<Entity, Key> keyFunction,
+                Pair<? extends GroupKey, ? extends Entity> container)
+            {
+                return keyFunction.apply(Pair.rightOf(container));
+            }
+
+            @Override
+            protected Object[] getTransformerHints()
+            {
+                throw new UnsupportedOperationException("Method \"getTransformerHints(..)\" not implemented");
+            }
+        };
+    }
+
+    /**
+     * Create a {@link StreamTransformer} that creates the list of entities from parents. You can use this to flatten
+     * maps. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an
+     * unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is
+     * set.
+     *
+     * @param entities the parents iterator, may be null
+     * @param hints the hints
+     * @return the {@link StreamTransformer}
+     */
+    default StreamTransformer<DTO, Entity> flatMapAndTransformAll(Map<?, ? extends Iterable<? extends Entity>> entities,
+        Object... hints)
+    {
+        return flatMapAndTransformAll(() -> entities != null ? entities.entrySet().stream() : null,
+            entry -> MapperUtils.streamOrNull(entry.getValue()), hints);
+    }
+
+    /**
      * Create a {@link StreamTransformer} that creates the list of entities from parents. You can use this to flatten
      * maps. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an
      * unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is
      * set.
      *
      * @param <ParentEntity> the type of parent
-     * @param parents the parents
+     * @param parents the parents iterator, may be null
      * @param mapper the mapper
      * @param hints the hints
      * @return the {@link StreamTransformer}
      */
     default <ParentEntity> StreamTransformer<DTO, Entity> flatMapAndTransformAll(
         Iterable<? extends ParentEntity> parents,
-        Function<? super ParentEntity, ? extends Iterable<? extends Entity>> mapper, Object... hints)
+        Function<? super ParentEntity, ? extends Stream<? extends Entity>> mapper, Object... hints)
     {
-        // This awfully complex line flattens the parents by using the mapper
-        // and returns a supplier for a stream with Entity/ParentEntity pairs.
-        Supplier<Stream<? extends Pair<Entity, ParentEntity>>> streamSupplier = parents == null ? () -> Stream.empty()
-            : () -> StreamSupport
-                .stream(parents.spliterator(), false)
-                .filter(parentEntity -> parentEntity != null)
-                .flatMap(parentEntity -> {
-                    Iterable<? extends Entity> iterable = mapper.apply(parentEntity);
-                    Stream<? extends Entity> stream =
-                        iterable == null ? Stream.empty() : StreamSupport.stream(iterable.spliterator(), false);
-
-                    return stream.map(entity -> Pair.of(entity, parentEntity));
-                });
-
-        return new AbstractStreamTransformer<DTO, Entity, Pair<Entity, ParentEntity>>(streamSupplier, hints)
-        {
-            @Override
-            protected DTO transform(Pair<Entity, ParentEntity> container, Object[] hints)
-            {
-                Entity entity = container.getLeft();
-                ParentEntity parentEntity = container.getRight();
-
-                return Transformer.this.transform(entity, Hints.join(hints, parentEntity));
-            }
-
-            @Override
-            protected <Key> Key toKey(Function<Entity, Key> keyFunction, Pair<Entity, ParentEntity> container)
-            {
-                Entity entity = container.getLeft();
-
-                return keyFunction.apply(entity);
-            }
-
-            @Override
-            protected Object[] getTransformerHints()
-            {
-                return getDefaultHints();
-            }
-        };
+        return flatMapAndTransformAll(() -> MapperUtils.streamOrNull(parents), mapper, hints);
     }
 
     /**
@@ -179,42 +228,65 @@ public interface Transformer<DTO, Entity> extends HintsProvider
      * set.
      *
      * @param <ParentEntity> the type of parent
-     * @param parents the parents
+     * @param parents the parents stream, may be null
      * @param mapper the mapper
      * @param hints the hints
      * @return the {@link StreamTransformer}
      */
     default <ParentEntity> StreamTransformer<DTO, Entity> flatMapAndTransformAll(Stream<? extends ParentEntity> parents,
-        Function<? super ParentEntity, ? extends Iterable<? extends Entity>> mapper, Object... hints)
+        Function<? super ParentEntity, ? extends Stream<? extends Entity>> mapper, Object... hints)
+    {
+        return flatMapAndTransformAll(() -> parents, mapper, hints);
+    }
+
+    /**
+     * Create a {@link StreamTransformer} that creates the list of entities from parents. You can use this to flatten
+     * maps. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an
+     * unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is
+     * set.
+     *
+     * @param <ParentEntity> the type of parent
+     * @param parentsStreamSupplier the supplier for the parents stream
+     * @param mapper the mapper
+     * @param hints the hints
+     * @return the {@link StreamTransformer}
+     * @deprecated this should be private
+     */
+    @Deprecated
+    default <ParentEntity> StreamTransformer<DTO, Entity> flatMapAndTransformAll(
+        Supplier<Stream<? extends ParentEntity>> parentsStreamSupplier,
+        Function<? super ParentEntity, ? extends Stream<? extends Entity>> mapper, Object... hints)
     {
         // This awfully complex line flattens the parents by using the mapper
         // and returns a supplier for a stream with Entity/ParentEntity pairs.
-        Supplier<Stream<? extends Pair<Entity, ParentEntity>>> streamSupplier = parents == null ? () -> Stream.empty()
-            : () -> parents.filter(parentEntity -> parentEntity != null).flatMap(parentEntity -> {
-                Iterable<? extends Entity> iterable = mapper.apply(parentEntity);
-                Stream<? extends Entity> stream =
-                    iterable == null ? Stream.empty() : StreamSupport.stream(iterable.spliterator(), false);
+        Supplier<Stream<? extends Pair<ParentEntity, Entity>>> streamSupplier = () -> {
+            Stream<? extends ParentEntity> parentStream = parentsStreamSupplier.get();
 
-                return stream.map(entity -> Pair.of(entity, parentEntity));
-            });
-
-        return new AbstractStreamTransformer<DTO, Entity, Pair<Entity, ParentEntity>>(streamSupplier, hints)
-        {
-            @Override
-            protected DTO transform(Pair<Entity, ParentEntity> container, Object[] hints)
+            if (parentStream == null)
             {
-                Entity entity = container.getLeft();
-                ParentEntity parentEntity = container.getRight();
+                return null;
+            }
 
-                return Transformer.this.transform(entity, Hints.join(hints, parentEntity));
+            return parentStream.filter(parentEntity -> parentEntity != null).flatMap(parentEntity -> {
+                Stream<? extends Entity> stream = mapper.apply(parentEntity);
+
+                return MapperUtils.streamOrEmpty(stream).map(entity -> Pair.of(parentEntity, entity));
+            });
+        };
+
+        return new AbstractStreamTransformer<DTO, Entity, Pair<ParentEntity, Entity>>(streamSupplier, hints)
+        {
+
+            @Override
+            protected DTO transform(Pair<ParentEntity, Entity> container, Object[] hints)
+            {
+                return Transformer.this.transform(Pair.rightOf(container), Hints.join(hints, Pair.leftOf(container)));
             }
 
             @Override
-            protected <Key> Key toKey(Function<Entity, Key> keyFunction, Pair<Entity, ParentEntity> container)
+            protected <Key> Key toKey(Function<Entity, Key> keyFunction, Pair<ParentEntity, Entity> container)
             {
-                Entity entity = container.getLeft();
-
-                return keyFunction.apply(entity);
+                return keyFunction.apply(Pair.rightOf(container));
             }
 
             @Override
@@ -235,7 +307,7 @@ public interface Transformer<DTO, Entity> extends HintsProvider
      * @param hints optional hints
      * @return the {@link GroupTransformer}
      */
-    default <GroupKey> GroupTransformer<DTO, GroupKey, Entity> transformAllGrouped(
+    default <GroupKey> GroupTransformer<DTO, GroupKey, Entity> transformGrouped(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
     {
         return new AbstractGroupTransformer<DTO, GroupKey, Entity>(entities, hints)
@@ -530,14 +602,14 @@ public interface Transformer<DTO, Entity> extends HintsProvider
      * @param collectionFactory a factory for the collections in the result map
      * @param hints optional hints
      * @return a map
-     * @deprecated use the {@link #transformAllGrouped(Map, Object...)} iterface
+     * @deprecated use the {@link #transformGrouped(Map, Object...)} iterface
      */
     @Deprecated
     default <GroupKey, DTOCollection extends Collection<DTO>, DTOMap extends Map<GroupKey, DTOCollection>> Map<GroupKey, DTOCollection> transformGroupedMapToGroupedMap(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Supplier<DTOMap> mapFactory,
         Supplier<DTOCollection> collectionFactory, Object... hints)
     {
-        return transformAllGrouped(entities, hints).toGroupedMap(mapFactory, collectionFactory);
+        return transformGrouped(entities, hints).toGroupedMap(mapFactory, collectionFactory);
     }
 
     /**
@@ -550,13 +622,13 @@ public interface Transformer<DTO, Entity> extends HintsProvider
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a map
-     * @deprecated use the {@link #transformAllGrouped(Map, Object...)} iterface
+     * @deprecated use the {@link #transformGrouped(Map, Object...)} iterface
      */
     @Deprecated
     default <GroupKey> Map<GroupKey, List<DTO>> transformGroupedMapToGroupedArrayLists(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
     {
-        return transformAllGrouped(entities, hints).toGroupedArrayLists();
+        return transformGrouped(entities, hints).toGroupedArrayLists();
     }
 
     /**
@@ -569,13 +641,13 @@ public interface Transformer<DTO, Entity> extends HintsProvider
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a map
-     * @deprecated use the {@link #transformAllGrouped(Map, Object...)} iterface
+     * @deprecated use the {@link #transformGrouped(Map, Object...)} iterface
      */
     @Deprecated
     default <GroupKey> Map<GroupKey, Set<DTO>> transformGroupedMapToGroupedHashSets(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
     {
-        return transformAllGrouped(entities, hints).toGroupedHashSets();
+        return transformGrouped(entities, hints).toGroupedHashSets();
     }
 
     /**
@@ -588,13 +660,13 @@ public interface Transformer<DTO, Entity> extends HintsProvider
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a map
-     * @deprecated use the {@link #transformAllGrouped(Map, Object...)} iterface
+     * @deprecated use the {@link #transformGrouped(Map, Object...)} iterface
      */
     @Deprecated
     default <GroupKey> Map<GroupKey, SortedSet<DTO>> transformGroupedMapToGroupedTreeSets(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
     {
-        return transformAllGrouped(entities, hints).toGroupedTreeSets();
+        return transformGrouped(entities, hints).toGroupedTreeSets();
     }
 
     /**
@@ -608,14 +680,14 @@ public interface Transformer<DTO, Entity> extends HintsProvider
      * @param comparator the comparator for the tree set
      * @param hints optional hints
      * @return a map
-     * @deprecated use the {@link #transformAllGrouped(Map, Object...)} iterface
+     * @deprecated use the {@link #transformGrouped(Map, Object...)} iterface
      */
     @Deprecated
     default <GroupKey> Map<GroupKey, SortedSet<DTO>> transformGroupedMapToGroupedTreeSets(
         Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Comparator<? super DTO> comparator,
         Object... hints)
     {
-        return transformAllGrouped(entities, hints).toGroupedTreeSets(comparator);
+        return transformGrouped(entities, hints).toGroupedTreeSets(comparator);
     }
 
 }

@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 /**
  * A transformer for each item of a stream
- * 
+ *
  * @author HAM
  *
  * @param <DTO> the type of DTO
@@ -53,7 +53,10 @@ public interface StreamTransformer<DTO, Entity>
      *
      * @return a set
      */
-    Set<DTO> toHashSet();
+    default Set<DTO> toHashSet()
+    {
+        return toCollection(HashSet::new);
+    }
 
     /**
      * Transforms the stream to a {@link SortedSet} of DTOs. Ignores entities that transform to null, unless the
@@ -62,7 +65,10 @@ public interface StreamTransformer<DTO, Entity>
      *
      * @return a set
      */
-    SortedSet<DTO> toTreeSet();
+    default SortedSet<DTO> toTreeSet()
+    {
+        return toCollection(TreeSet::new);
+    }
 
     /**
      * Transforms the stream to a {@link SortedSet} of DTOs. Ignores entities that transform to null, unless the
@@ -72,7 +78,10 @@ public interface StreamTransformer<DTO, Entity>
      * @param comparator the comparator for the tree set
      * @return a set
      */
-    SortedSet<DTO> toTreeSet(Comparator<? super DTO> comparator);
+    default SortedSet<DTO> toTreeSet(Comparator<? super DTO> comparator)
+    {
+        return toCollection(() -> new TreeSet<>(comparator));
+    }
 
     /**
      * Transforms the stream to an {@link ArrayList} of DTOs. Ignores entities that transform to null, unless the
@@ -81,7 +90,10 @@ public interface StreamTransformer<DTO, Entity>
      *
      * @return a list
      */
-    List<DTO> toArrayList();
+    default List<DTO> toArrayList()
+    {
+        return toCollection(ArrayList::new);
+    }
 
     /**
      * Transforms the stream to a {@link Map} of DTOs. Ignores entities that transform to null, unless the
@@ -107,7 +119,10 @@ public interface StreamTransformer<DTO, Entity>
      * @param keyFunction the function to extract the key from one entity
      * @return a map
      */
-    <Key> Map<Key, DTO> toHashMap(Function<Entity, Key> keyFunction);
+    default <Key> Map<Key, DTO> toHashMap(Function<Entity, Key> keyFunction)
+    {
+        return toMap(HashMap<Key, DTO>::new, keyFunction);
+    }
 
     /**
      * Transforms the stream to a grouped {@link Map} of DTOs. Ignores entities that transform to null, unless the
@@ -135,7 +150,10 @@ public interface StreamTransformer<DTO, Entity>
      * @param groupKeyFunction extracts the key for the map
      * @return a map
      */
-    <GroupKey> Map<GroupKey, Set<DTO>> toGroupedHashSets(Function<Entity, GroupKey> groupKeyFunction);
+    default <GroupKey> Map<GroupKey, Set<DTO>> toGroupedHashSets(Function<Entity, GroupKey> groupKeyFunction)
+    {
+        return toGroupedMap(HashMap<GroupKey, Set<DTO>>::new, groupKeyFunction, HashSet::new);
+    }
 
     /**
      * Transforms the stream to a grouped {@link Map} of {@link TreeSet}s with DTOs. Ignores entities that transform to
@@ -146,7 +164,10 @@ public interface StreamTransformer<DTO, Entity>
      * @param groupKeyFunction extracts the key for the map
      * @return a map
      */
-    <GroupKey> Map<GroupKey, SortedSet<DTO>> toGroupedTreeSets(Function<Entity, GroupKey> groupKeyFunction);
+    default <GroupKey> Map<GroupKey, SortedSet<DTO>> toGroupedTreeSets(Function<Entity, GroupKey> groupKeyFunction)
+    {
+        return toGroupedMap(HashMap<GroupKey, SortedSet<DTO>>::new, groupKeyFunction, TreeSet::new);
+    }
 
     /**
      * Transforms the stream to a grouped {@link Map} of {@link TreeSet}s with DTOs. Ignores entities that transform to
@@ -158,8 +179,11 @@ public interface StreamTransformer<DTO, Entity>
      * @param comparator the comparator for the tree set
      * @return a map
      */
-    <GroupKey> Map<GroupKey, SortedSet<DTO>> toGroupedTreeSets(Function<Entity, GroupKey> groupKeyFunction,
-        Comparator<? super DTO> comparator);
+    default <GroupKey> Map<GroupKey, SortedSet<DTO>> toGroupedTreeSets(Function<Entity, GroupKey> groupKeyFunction,
+        Comparator<? super DTO> comparator)
+    {
+        return toGroupedMap(HashMap<GroupKey, SortedSet<DTO>>::new, groupKeyFunction, () -> new TreeSet<>(comparator));
+    }
 
     /**
      * Transforms the stream to a grouped {@link Map} of {@link ArrayList}s with DTOs. Ignores entities that transform
@@ -170,6 +194,9 @@ public interface StreamTransformer<DTO, Entity>
      * @param groupKeyFunction extracts the key for the map
      * @return a map
      */
-    <GroupKey> Map<GroupKey, List<DTO>> toGroupedArrayLists(Function<Entity, GroupKey> groupKeyFunction);
+    default <GroupKey> Map<GroupKey, List<DTO>> toGroupedArrayLists(Function<Entity, GroupKey> groupKeyFunction)
+    {
+        return toGroupedMap(HashMap<GroupKey, List<DTO>>::new, groupKeyFunction, ArrayList::new);
+    }
 
 }

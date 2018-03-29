@@ -12,14 +12,14 @@ public abstract class AbstractMerger<DTO, Entity> implements Merger<DTO, Entity>
 
     protected final Object[] defaultHints;
 
-    public AbstractMerger()
+    protected AbstractMerger()
     {
         super();
 
         defaultHints = null;
     }
 
-    public AbstractMerger(Object... defaultHints)
+    protected AbstractMerger(Object... defaultHints)
     {
         super();
 

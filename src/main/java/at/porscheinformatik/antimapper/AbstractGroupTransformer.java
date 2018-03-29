@@ -1,17 +1,9 @@
 package at.porscheinformatik.antimapper;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.function.Supplier;
 
 /**
@@ -29,7 +21,7 @@ public abstract class AbstractGroupTransformer<DTO, GroupKey, Entity> implements
     private final Map<GroupKey, ? extends Iterable<? extends Entity>> entities;
     private final Object[] hints;
 
-    public AbstractGroupTransformer(Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
+    protected AbstractGroupTransformer(Map<GroupKey, ? extends Iterable<? extends Entity>> entities, Object... hints)
     {
         super();
 
@@ -85,30 +77,6 @@ public abstract class AbstractGroupTransformer<DTO, GroupKey, Entity> implements
             throw new MapperException("Failed to transform entities to a grouped map: %s", e,
                 MapperUtils.abbreviate(String.valueOf(entities), 4096));
         }
-    }
-
-    @Override
-    public Map<GroupKey, List<DTO>> toGroupedArrayLists()
-    {
-        return toGroupedMap(HashMap<GroupKey, List<DTO>>::new, ArrayList<DTO>::new);
-    }
-
-    @Override
-    public Map<GroupKey, Set<DTO>> toGroupedHashSets()
-    {
-        return toGroupedMap(HashMap<GroupKey, Set<DTO>>::new, HashSet<DTO>::new);
-    }
-
-    @Override
-    public Map<GroupKey, SortedSet<DTO>> toGroupedTreeSets()
-    {
-        return toGroupedMap(HashMap<GroupKey, SortedSet<DTO>>::new, TreeSet<DTO>::new);
-    }
-
-    @Override
-    public Map<GroupKey, SortedSet<DTO>> toGroupedTreeSets(Comparator<? super DTO> comparator)
-    {
-        return toGroupedMap(HashMap<GroupKey, SortedSet<DTO>>::new, () -> new TreeSet<>(comparator));
     }
 
 }

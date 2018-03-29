@@ -2,14 +2,8 @@ package at.porscheinformatik.antimapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -26,10 +20,10 @@ import java.util.stream.Stream;
 public abstract class AbstractStreamTransformer<DTO, Entity, EntityContainer> implements StreamTransformer<DTO, Entity>
 {
 
-    private final Supplier<Stream<? extends EntityContainer>> streamSupplier;
-    private final Object[] hints;
+    protected final Supplier<Stream<? extends EntityContainer>> streamSupplier;
+    protected final Object[] hints;
 
-    public AbstractStreamTransformer(Supplier<Stream<? extends EntityContainer>> streamSupplier, Object... hints)
+    protected AbstractStreamTransformer(Supplier<Stream<? extends EntityContainer>> streamSupplier, Object... hints)
     {
         super();
 
@@ -109,30 +103,6 @@ public abstract class AbstractStreamTransformer<DTO, Entity, EntityContainer> im
     }
 
     @Override
-    public Set<DTO> toHashSet()
-    {
-        return toCollection(HashSet::new);
-    }
-
-    @Override
-    public SortedSet<DTO> toTreeSet()
-    {
-        return toCollection(TreeSet::new);
-    }
-
-    @Override
-    public SortedSet<DTO> toTreeSet(Comparator<? super DTO> comparator)
-    {
-        return toCollection(() -> new TreeSet<>(comparator));
-    }
-
-    @Override
-    public List<DTO> toArrayList()
-    {
-        return toCollection(ArrayList::new);
-    }
-
-    @Override
     public <Key, DTOMap extends Map<Key, DTO>> DTOMap toMap(Supplier<DTOMap> mapFactory,
         Function<Entity, Key> keyFunction)
     {
@@ -184,12 +154,6 @@ public abstract class AbstractStreamTransformer<DTO, Entity, EntityContainer> im
     }
 
     @Override
-    public <Key> Map<Key, DTO> toHashMap(Function<Entity, Key> keyFunction)
-    {
-        return toMap(HashMap<Key, DTO>::new, keyFunction);
-    }
-
-    @Override
     public <GroupKey, DTOCollection extends Collection<DTO>, DTOMap extends Map<GroupKey, DTOCollection>> Map<GroupKey, DTOCollection> toGroupedMap(
         Supplier<DTOMap> mapFactory, Function<Entity, GroupKey> groupKeyFunction,
         Supplier<DTOCollection> collectionFactory)
@@ -232,31 +196,6 @@ public abstract class AbstractStreamTransformer<DTO, Entity, EntityContainer> im
             throw new MapperException("Failed to transform entities to a grouped map: %s", e,
                 MapperUtils.abbreviate(String.valueOf(stream), 4096));
         }
-    }
-
-    @Override
-    public <GroupKey> Map<GroupKey, Set<DTO>> toGroupedHashSets(Function<Entity, GroupKey> groupKeyFunction)
-    {
-        return toGroupedMap(HashMap<GroupKey, Set<DTO>>::new, groupKeyFunction, HashSet::new);
-    }
-
-    @Override
-    public <GroupKey> Map<GroupKey, SortedSet<DTO>> toGroupedTreeSets(Function<Entity, GroupKey> groupKeyFunction)
-    {
-        return toGroupedMap(HashMap<GroupKey, SortedSet<DTO>>::new, groupKeyFunction, TreeSet::new);
-    }
-
-    @Override
-    public <GroupKey> Map<GroupKey, SortedSet<DTO>> toGroupedTreeSets(Function<Entity, GroupKey> groupKeyFunction,
-        Comparator<? super DTO> comparator)
-    {
-        return toGroupedMap(HashMap<GroupKey, SortedSet<DTO>>::new, groupKeyFunction, () -> new TreeSet<>(comparator));
-    }
-
-    @Override
-    public <GroupKey> Map<GroupKey, List<DTO>> toGroupedArrayLists(Function<Entity, GroupKey> groupKeyFunction)
-    {
-        return toGroupedMap(HashMap<GroupKey, List<DTO>>::new, groupKeyFunction, ArrayList::new);
     }
 
 }

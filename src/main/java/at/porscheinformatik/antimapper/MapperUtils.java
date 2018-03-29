@@ -129,9 +129,37 @@ public final class MapperUtils
         BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
         Consumer<TargetCollection> afterMapConsumer)
     {
+        return mapMixed(streamOrNull(sourceIterable), targetCollection, matchFunction, mapFunction, filter,
+            afterMapConsumer);
+    }
+
+    /**
+     * Maps the source stream into the target collection. Ignores the order. Searches for existing objects by using the
+     * specified match function, which may only match some important keys (maps the object even if the match function
+     * returns true). Maps the source entry to the target entry by using the specified map function. The map function
+     * must be able to handle null as target value (create a new instance).
+     *
+     * @param <SourceValue> the type of the values in the source iterable
+     * @param <TargetCollection> the type of the target collection
+     * @param <TargetValue> the type of the values in the target collection
+     * @param sourceStream the source stream, may be null
+     * @param targetCollection the target collection, may not be null
+     * @param matchFunction the function to compare the source and the target object
+     * @param mapFunction the function to map the source to a target object (the source and the target object may be
+     *            null)
+     * @param filter optional filter for excluding results
+     * @param afterMapConsumer optional consumer, executed after a successful mapping
+     * @return the target collection itself
+     */
+    public static <SourceValue, TargetCollection extends Collection<TargetValue>, TargetValue> TargetCollection mapMixed(
+        Stream<? extends SourceValue> sourceStream, TargetCollection targetCollection,
+        MatchFunction<SourceValue, TargetValue> matchFunction,
+        BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
+        Consumer<TargetCollection> afterMapConsumer)
+    {
         Objects.requireNonNull(targetCollection);
 
-        if (sourceIterable == null)
+        if (sourceStream == null)
         {
             targetCollection.clear();
 
@@ -140,7 +168,7 @@ public final class MapperUtils
 
         Map<TargetValue, Void> mappedTargetValues = new IdentityHashMap<>();
 
-        mapMixedUpdate(mappedTargetValues, sourceIterable, targetCollection, matchFunction, mapFunction, filter);
+        mapMixedUpdate(mappedTargetValues, sourceStream, targetCollection, matchFunction, mapFunction, filter);
         mapMixedDelete(mappedTargetValues, targetCollection, mapFunction, filter);
 
         if (afterMapConsumer != null)
@@ -152,11 +180,11 @@ public final class MapperUtils
     }
 
     private static <TargetValue, TargetCollection extends Collection<TargetValue>, SourceValue> void mapMixedUpdate(
-        Map<TargetValue, Void> mappedTargetValues, Iterable<? extends SourceValue> sourceIterable,
+        Map<TargetValue, Void> mappedTargetValues, Stream<? extends SourceValue> sourceStream,
         TargetCollection targetCollection, MatchFunction<SourceValue, TargetValue> matchFunction,
         BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter)
     {
-        StreamSupport.stream(sourceIterable.spliterator(), false).forEach(sourceValue -> {
+        sourceStream.forEach(sourceValue -> {
             TargetValue targetValue = null;
             int index = 0;
 
@@ -244,6 +272,35 @@ public final class MapperUtils
     }
 
     /**
+     * Maps the source stream into the target collection. Keeps the order. Searches for existing objects by using the
+     * specified match function, which may only match some important keys (maps the object even if the match function
+     * returns true). Maps the source entry to the target entry by using the specified map function. The map function
+     * must be able to handle null as target value (create a new instance). Tries to rescue removed target values by
+     * reusing them (if the unique key matches).
+     *
+     * @param <SourceValue> the type of the values in the source iterable
+     * @param <TargetCollection> the type of the target collection
+     * @param <TargetValue> the type of the values in the target collection
+     * @param sourceStream the source stream, may be null
+     * @param targetCollection the target collection, may not be null
+     * @param matchFunction the function to compare the source and the target object
+     * @param mapFunction the function to map the source to a target object (the source and the target object may be
+     *            null)
+     * @param filter optional filter for excluding results
+     * @param afterMapConsumer optional consumer, executed after a successful mapping
+     * @return the target collection itself
+     */
+    public static <SourceValue, TargetCollection extends Collection<TargetValue>, TargetValue> TargetCollection mapOrdered(
+        Stream<? extends SourceValue> sourceStream, TargetCollection targetCollection,
+        MatchFunction<SourceValue, TargetValue> matchFunction,
+        BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
+        Consumer<List<TargetValue>> afterMapConsumer)
+    {
+        return mapOrdered(sourceStream != null ? sourceStream.collect(Collectors.toList()) : null, targetCollection,
+            matchFunction, mapFunction, filter, afterMapConsumer);
+    }
+
+    /**
      * Maps the source iterable into the target collection. Keeps the order. Searches for existing objects by using the
      * specified match function, which may only match some important keys (maps the object even if the match function
      * returns true). Maps the source entry to the target entry by using the specified map function. The map function
@@ -282,7 +339,7 @@ public final class MapperUtils
         }
         else
         {
-            sourceList = StreamSupport.stream(sourceIterable.spliterator(), false).collect(Collectors.toList());
+            sourceList = MapperUtils.streamOrEmpty(sourceIterable).collect(Collectors.toList());
         }
 
         List<TargetValue> targetList = null;
@@ -548,6 +605,38 @@ public final class MapperUtils
      * @param <GroupKey> the type of the key in the target map
      * @param <TargetCollection> the type of the collection in the target map
      * @param <TargetValue> the type of the values in the target map
+     * @param sourceIterable the source stream, may be null
+     * @param targetMap the target map, may not be null
+     * @param groupKeyFunction the function extracting the key from a source value
+     * @param createTargetCollectionFunction create a new collection entry for the target map
+     * @param matchFunction the function to compare the source and the target object
+     * @param mapFunction the function to map the source to a target object (the source and the target object may be
+     *            null)
+     * @param filter optional filter for excluding results
+     * @param afterMapConsumer optional consumer, executed after a successful mapping
+     * @return the target collection itself
+     */
+    public static <SourceValue, GroupKey, TargetCollection extends Collection<TargetValue>, TargetValue> Map<GroupKey, TargetCollection> mapMixedGroups(
+        Iterable<? extends SourceValue> sourceIterable, Map<GroupKey, TargetCollection> targetMap,
+        Function<SourceValue, GroupKey> groupKeyFunction, Supplier<TargetCollection> createTargetCollectionFunction,
+        MatchFunction<SourceValue, TargetValue> matchFunction,
+        BiFunction<SourceValue, TargetValue, TargetValue> mapFunction, Predicate<TargetValue> filter,
+        Consumer<Map<GroupKey, TargetCollection>> afterMapConsumer)
+    {
+        return mapMixedGroups(streamOrNull(sourceIterable), targetMap, groupKeyFunction, createTargetCollectionFunction,
+            matchFunction, mapFunction, filter, afterMapConsumer);
+    }
+
+    /**
+     * Maps the source stream into the target map. Performs a grouping operation. Keeps the order of the collections.
+     * Searches for existing objects by using the specified match function, which may only match some important keys
+     * (maps the object even if the match function returns true). Maps the source entry to the target entry by using the
+     * specified map function. The map function must be able to handle null as target value (create a new instance).
+     *
+     * @param <SourceValue> the type of the values in the source stream
+     * @param <GroupKey> the type of the key in the target map
+     * @param <TargetCollection> the type of the collection in the target map
+     * @param <TargetValue> the type of the values in the target map
      * @param sourceStream the source stream, may be null
      * @param targetMap the target map, may not be null
      * @param groupKeyFunction the function extracting the key from a source value
@@ -602,7 +691,8 @@ public final class MapperUtils
                 targetCollection = createTargetCollectionFunction.get();
             }
 
-            mapMixed(sourceEntry.getValue(), targetCollection, matchFunction, mapFunction, filter, null);
+            mapMixed(sourceEntry.getValue() != null ? sourceEntry.getValue().stream() : null, targetCollection,
+                matchFunction, mapFunction, filter, null);
 
             if (!targetCollection.isEmpty())
             {
@@ -654,7 +744,7 @@ public final class MapperUtils
         }
 
         Map<GroupKey, List<SourceValue>> sourceMap =
-            StreamSupport.stream(sourceIterable.spliterator(), false).collect(Collectors.groupingBy(groupKeyFunction));
+            streamOrEmpty(sourceIterable).collect(Collectors.groupingBy(groupKeyFunction));
 
         sourceMap.entrySet().forEach(sourceEntry -> {
             TargetCollection targetCollection = targetMap.get(sourceEntry.getKey());
@@ -666,7 +756,8 @@ public final class MapperUtils
                 targetMap.put(sourceEntry.getKey(), targetCollection);
             }
 
-            mapMixed(sourceEntry.getValue(), targetCollection, matchFunction, mapFunction, filter, null);
+            mapMixed(sourceEntry.getValue() != null ? sourceEntry.getValue().stream() : null, targetCollection,
+                matchFunction, mapFunction, filter, null);
         });
 
         if (afterMapConsumer != null)
@@ -821,6 +912,21 @@ public final class MapperUtils
         }
 
         return s.substring(0, s.length() - 3) + "...";
+    }
+
+    public static <Any> Stream<Any> streamOrNull(Iterable<Any> iterable)
+    {
+        return iterable != null ? StreamSupport.stream(iterable.spliterator(), false) : null;
+    }
+
+    public static <Any> Stream<Any> streamOrEmpty(Iterable<Any> iterable)
+    {
+        return iterable != null ? StreamSupport.stream(iterable.spliterator(), false) : Stream.empty();
+    }
+
+    public static <Any> Stream<Any> streamOrEmpty(Stream<Any> stream)
+    {
+        return stream != null ? stream : Stream.empty();
     }
 
 }

@@ -20,6 +20,16 @@ public class Pair<Left, Right> implements Serializable
         return new Pair<>(left, right);
     }
 
+    public static <Left> Left leftOf(Pair<Left, ?> pair)
+    {
+        return pair != null ? pair.left : null;
+    }
+
+    public static <Right> Right rightOf(Pair<?, Right> pair)
+    {
+        return pair != null ? pair.right : null;
+    }
+
     private final Left left;
     private final Right right;
 

@@ -13,7 +13,8 @@ import java.util.TreeSet;
 import java.util.function.Supplier;
 
 /**
- * Transforms grouped maps.
+ * Transforms paired values. Paired values are most often used for grouping, where the left value is the key and the
+ * right value is the entity.
  *
  * @author HAM
  *
@@ -21,7 +22,7 @@ import java.util.function.Supplier;
  * @param <GroupKey> the type of the group key
  * @param <Entity> the type of Entity
  */
-public interface GroupTransformer<DTO, GroupKey, Entity>
+public interface PairTransformer<DTO, GroupKey, Entity> extends StreamTransformer<DTO, Entity>
 {
 
     /**

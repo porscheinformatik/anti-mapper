@@ -7,10 +7,13 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * A merger is a mapper that merges a DTO into an entity.
@@ -65,6 +68,243 @@ public interface Merger<DTO, Entity> extends HintsProvider
     }
 
     /**
+     * Creates a {@link StreamMerger} for merging multiple DTOs into multiple Entities. Ignores DTOs that merge to null,
+     * unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE}
+     * is set (always creates a new result object in this case, merging the entities). Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
+     *
+     * @param dtos the DTOs, may be null
+     * @param hints optional hints
+     * @return a {@link StreamMerger}
+     */
+    default StreamMerger<DTO, Entity> mergeAll(Iterable<? extends DTO> dtos, Object... hints)
+    {
+        return mergeAll(() -> MapperUtils.streamOrNull(dtos), hints);
+    }
+
+    /**
+     * Creates a {@link StreamMerger} for merging multiple DTOs into multiple Entities. Ignores DTOs that merge to null,
+     * unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE}
+     * is set (always creates a new result object in this case, merging the entities). Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
+     *
+     * @param dtoStream the DTOs, may be null
+     * @param hints optional hints
+     * @return a {@link StreamMerger}
+     */
+    default StreamMerger<DTO, Entity> mergeAll(Stream<? extends DTO> dtoStream, Object... hints)
+    {
+        return mergeAll(() -> dtoStream, hints);
+    }
+
+    /**
+     * Creates a {@link StreamMerger} for merging multiple DTOs into multiple Entities. Ignores DTOs that merge to null,
+     * unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE}
+     * is set (always creates a new result object in this case, merging the entities). Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
+     *
+     * @param dtoStreamSupplier the supplier for the DTO stream
+     * @param hints optional hints
+     * @return a {@link StreamMerger}
+     * @deprecated this should be private
+     */
+    @Deprecated
+    default StreamMerger<DTO, Entity> mergeAll(Supplier<Stream<? extends DTO>> dtoStreamSupplier, Object... hints)
+    {
+        return new AbstractStreamMerger<DTO, DTO, Entity>(dtoStreamSupplier, hints)
+        {
+            @Override
+            protected boolean isUniqueKeyMatchingNullable(DTO dto, Entity entity, Object[] hints)
+            {
+                return Merger.this.isUniqueKeyMatchingNullable(dto, entity, hints);
+            }
+
+            @Override
+            protected Entity merge(DTO dto, Entity entity, Object[] hints)
+            {
+                return Merger.this.merge(dto, entity, hints);
+            }
+
+            @Override
+            protected void afterMergeIntoCollection(Collection<Entity> entities, Object[] hints)
+            {
+                Merger.this.afterMergeIntoCollection(entities, hints);
+            }
+
+            @Override
+            protected Object[] getTransformerHints()
+            {
+                return Merger.this.getDefaultHints();
+            }
+        };
+    }
+
+    /**
+     * Creates a {@link StreamMerger} for merging multiple DTOs into multiple Entities. Ignores DTOs that merge to null,
+     * unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE}
+     * is set (always creates a new result object in this case, merging the entities). Never returns null if the
+     * {@link Hint#OR_EMPTY} is set.
+     *
+     * @param dtos the DTOs, may be null
+     * @param hints optional hints
+     * @return a {@link StreamMerger}
+     */
+    default StreamMerger<DTO, Entity> mergeAll(Map<?, ? extends DTO> dtos, Object... hints)
+    {
+        return new AbstractStreamMerger<DTO, Entry<?, ? extends DTO>, Entity>(
+            () -> dtos != null ? dtos.entrySet().stream() : null, hints)
+        {
+            @Override
+            protected boolean isUniqueKeyMatchingNullable(Entry<?, ? extends DTO> dtoContainer, Entity entity,
+                Object[] hints)
+            {
+                if (dtoContainer == null)
+                {
+                    return Merger.this.isUniqueKeyMatchingNullable(null, entity, hints);
+                }
+
+                return Merger.this.isUniqueKeyMatchingNullable(dtoContainer.getValue(), entity, hints);
+            }
+
+            @Override
+            protected Entity merge(Entry<?, ? extends DTO> dtoContainer, Entity entity, Object[] hints)
+            {
+                if (dtoContainer == null)
+                {
+                    return Merger.this.merge(null, entity, hints);
+                }
+
+                return Merger.this.merge(dtoContainer.getValue(), entity, Hints.join(hints, dtoContainer.getKey()));
+            }
+
+            @Override
+            protected void afterMergeIntoCollection(Collection<Entity> entities, Object[] hints)
+            {
+                Merger.this.afterMergeIntoCollection(entities, hints);
+            }
+
+            @Override
+            protected Object[] getTransformerHints()
+            {
+                return Merger.this.getDefaultHints();
+            }
+        };
+    }
+
+    /**
+     * Flattens a map and merges each item. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is
+     * set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object
+     * in this case). Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param <ParentDTO> the type of parent DTO
+     * @param dtos an iterable of parent DTOs, may be null
+     * @param hints optional hints
+     * @return a {@link StreamMerger}
+     */
+    default <ParentDTO> StreamMerger<DTO, Entity> flatMapAndMergeAll(Map<?, Iterable<? extends DTO>> dtos,
+        Object... hints)
+    {
+        return flatMapAndMergeAll(() -> dtos != null ? dtos.entrySet().stream() : null, entry -> entry.getValue(),
+            hints);
+    }
+
+    /**
+     * Flattens an iterable of objects and merges them. Ignores DTOs that merge to null, unless the
+     * {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set
+     * (always creates a new result object in this case). Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param <ParentDTO> the type of parent DTO
+     * @param parentDtoIterable an iterable of parent DTOs, may be null
+     * @param mapper the mapper for flattening the parent
+     * @param hints optional hints
+     * @return a {@link StreamMerger}
+     */
+    default <ParentDTO> StreamMerger<DTO, Entity> flatMapAndMergeAll(Iterable<? extends ParentDTO> parentDtoIterable,
+        Function<? super ParentDTO, ? extends Iterable<? extends DTO>> mapper, Object... hints)
+    {
+        return flatMapAndMergeAll(() -> MapperUtils.streamOrNull(parentDtoIterable), mapper, hints);
+    }
+
+    /**
+     * Flattens a stream of objects and merges them. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL}
+     * hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new
+     * result object in this case). Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param <ParentDTO> the type of parent DTO
+     * @param parentDtoStream the stream of parent DTOs, may be null
+     * @param mapper the mapper for flattening the parent
+     * @param hints optional hints
+     * @return a {@link StreamMerger}
+     */
+    default <ParentDTO> StreamMerger<DTO, Entity> flatMapAndMergeAll(Stream<? extends ParentDTO> parentDtoStream,
+        Function<? super ParentDTO, ? extends Iterable<? extends DTO>> mapper, Object... hints)
+    {
+        return flatMapAndMergeAll(() -> parentDtoStream, mapper, hints);
+    }
+
+    /**
+     * Flattens a stream of objects and merges them. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL}
+     * hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new
+     * result object in this case). Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param <ParentDTO> the type of parent DTO
+     * @param parentDtoStreamSupplier the suppliert for the parent DTO stream
+     * @param mapper the mapper for flattening the parent
+     * @param hints optional hints
+     * @return a {@link StreamMerger}
+     */
+    default <ParentDTO> StreamMerger<DTO, Entity> flatMapAndMergeAll(
+        Supplier<Stream<? extends ParentDTO>> parentDtoStreamSupplier,
+        Function<? super ParentDTO, ? extends Iterable<? extends DTO>> mapper, Object... hints)
+    {
+
+        Supplier<Stream<? extends Pair<DTO, ParentDTO>>> dtoStreamSupplier = () -> {
+            Stream<? extends ParentDTO> parentDtoStream = parentDtoStreamSupplier.get();
+
+            if (parentDtoStream == null)
+            {
+                return null;
+            }
+
+            return parentDtoStream.filter(parentDto -> parentDto != null).flatMap(parentDto -> {
+                Iterable<? extends DTO> iterable = mapper.apply(parentDto);
+                Stream<? extends DTO> stream = MapperUtils.streamOrEmpty(iterable);
+
+                return stream.map(dto -> Pair.of(dto, parentDto));
+            });
+        };
+
+        return new AbstractStreamMerger<DTO, Pair<DTO, ParentDTO>, Entity>(dtoStreamSupplier, hints)
+        {
+            @Override
+            protected boolean isUniqueKeyMatchingNullable(Pair<DTO, ParentDTO> dtoContainer, Entity entity,
+                Object[] hints)
+            {
+                return Merger.this.isUniqueKeyMatchingNullable(dtoContainer.getLeft(), entity,
+                    Hints.join(hints, dtoContainer.getRight()));
+            }
+
+            @Override
+            protected Entity merge(Pair<DTO, ParentDTO> dtoContainer, Entity entity, Object[] hints)
+            {
+                return Merger.this.merge(dtoContainer.getLeft(), entity, Hints.join(hints, dtoContainer.getRight()));
+            }
+
+            @Override
+            protected void afterMergeIntoCollection(Collection<Entity> entities, Object[] hints)
+            {
+                Merger.this.afterMergeIntoCollection(entities, hints);
+            }
+
+            @Override
+            protected Object[] getTransformerHints()
+            {
+                return Merger.this.getDefaultHints();
+            }
+        };
+    }
+
+    /**
      * Maps a collection to a collection. Ignores the order. If the entities parameter is null, it creates a
      * {@link Collection} if necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set.
      * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in
@@ -76,56 +316,14 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entityCollectionFactory a factory for the needed collection
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #mergeAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default <EntityCollection extends Collection<Entity>> EntityCollection mergeIntoMixedCollection(
         Iterable<? extends DTO> dtos, EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory,
         Object... hints)
     {
-        if (dtos == null)
-        {
-            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            dtos = Collections.emptyList();
-        }
-
-        try
-        {
-            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
-
-            if (entities == null)
-            {
-                entities = entityCollectionFactory.get();
-            }
-            else if (unmodifiable)
-            {
-                EntityCollection originalEntity = entities;
-
-                entities = entityCollectionFactory.get();
-                entities.addAll(originalEntity);
-            }
-
-            entities =
-                MapperUtils.mapMixed(dtos, entities, (dto, entity) -> isUniqueKeyMatchingNullable(dto, entity, hints),
-                    (dto, entity) -> merge(dto, entity, hints),
-                    Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null,
-                    list -> afterMergeIntoCollection(list, hints));
-
-            if (unmodifiable)
-            {
-                entities = MapperUtils.toUnmodifiableCollection(entities);
-            }
-
-            return entities;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to merge DTOs into a mixed collection: %s => %s", e,
-                MapperUtils.abbreviate(String.valueOf(dtos), 4096),
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return mergeAll(dtos, hints).intoMixedCollection(entities, entityCollectionFactory);
     }
 
     /**
@@ -140,56 +338,14 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entityCollectionFactory a factory for the needed collection
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #mergeAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default <EntityCollection extends Collection<Entity>> EntityCollection mergeIntoOrderedCollection(
         Iterable<? extends DTO> dtos, EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory,
         Object... hints)
     {
-        if (dtos == null)
-        {
-            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            dtos = Collections.emptyList();
-        }
-
-        try
-        {
-            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
-
-            if (entities == null)
-            {
-                entities = entityCollectionFactory.get();
-            }
-            else if (unmodifiable)
-            {
-                EntityCollection originalEntity = entities;
-
-                entities = entityCollectionFactory.get();
-                entities.addAll(originalEntity);
-            }
-
-            entities =
-                MapperUtils.mapOrdered(dtos, entities, (dto, entity) -> isUniqueKeyMatchingNullable(dto, entity, hints),
-                    (dto, entity) -> merge(dto, entity, hints),
-                    Hints.containsHint(hints, Hint.KEEP_NULL) ? null : entity -> entity != null,
-                    list -> afterMergeIntoCollection(list, hints));
-
-            if (unmodifiable)
-            {
-                entities = MapperUtils.toUnmodifiableCollection(entities);
-            }
-
-            return entities;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to merge DTOs into an ordered collection: %s => %s", e,
-                MapperUtils.abbreviate(String.valueOf(dtos), 4096),
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return mergeAll(dtos, hints).intoOrderedCollection(entities, entityCollectionFactory);
     }
 
     /**
@@ -213,10 +369,12 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #mergeAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default Set<Entity> mergeIntoHashSet(Iterable<? extends DTO> dtos, Set<Entity> entities, Object... hints)
     {
-        return mergeIntoMixedCollection(dtos, entities, HashSet::new, hints);
+        return mergeAll(dtos, hints).intoHashSet(entities);
     }
 
     /**
@@ -229,12 +387,13 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #mergeAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default SortedSet<Entity> mergeIntoTreeSet(Iterable<? extends DTO> dtos, SortedSet<Entity> entities,
         Object... hints)
     {
-        return mergeIntoMixedCollection(dtos, entities,
-            () -> entities != null ? new TreeSet<>(entities.comparator()) : new TreeSet<>(), hints);
+        return mergeAll(dtos, hints).intoTreeSet(entities);
     }
 
     /**
@@ -252,7 +411,7 @@ public interface Merger<DTO, Entity> extends HintsProvider
     default SortedSet<Entity> mergeIntoTreeSet(Iterable<? extends DTO> dtos, SortedSet<Entity> entities,
         Comparator<? super Entity> comparator, Object... hints)
     {
-        return mergeIntoMixedCollection(dtos, entities, () -> new TreeSet<>(comparator), hints);
+        return mergeAll(dtos, hints).intoTreeSet(entities, comparator);
     }
 
     /**
@@ -268,7 +427,7 @@ public interface Merger<DTO, Entity> extends HintsProvider
      */
     default List<Entity> mergeIntoArrayList(Iterable<? extends DTO> dtos, List<Entity> entities, Object... hints)
     {
-        return mergeIntoOrderedCollection(dtos, entities, ArrayList::new, hints);
+        return mergeAll(dtos, hints).intoArrayList(entities);
     }
 
     /**
@@ -283,57 +442,14 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entityCollectionFactory a factory for the needed collection
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #mergeAll(Map, Object...)} interface
      */
+    @Deprecated
     default <EntityCollection extends Collection<Entity>> EntityCollection mergeMapIntoMixedCollection(
         Map<?, ? extends DTO> dtos, EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory,
         Object... hints)
     {
-        if (dtos == null)
-        {
-            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            dtos = Collections.emptyMap();
-        }
-
-        try
-        {
-            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
-
-            if (entities == null)
-            {
-                entities = entityCollectionFactory.get();
-            }
-            else if (unmodifiable)
-            {
-                EntityCollection originalEntity = entities;
-
-                entities = entityCollectionFactory.get();
-                entities.addAll(originalEntity);
-            }
-
-            entities = MapperUtils.mapMixed(dtos.entrySet(), entities,
-                (entry, entity) -> isUniqueKeyMatchingNullable(entry != null ? entry.getValue() : null, entity,
-                    entry != null ? Hints.join(hints, entry.getKey()) : hints),
-                (entry, entity) -> merge(entry != null ? entry.getValue() : null, entity,
-                    entry != null ? Hints.join(hints, entry.getKey()) : hints),
-                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null, this::afterMergeIntoCollection);
-
-            if (unmodifiable)
-            {
-                entities = MapperUtils.toUnmodifiableCollection(entities);
-            }
-
-            return entities;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to merge DTOs into a mixed collection: %s => %s", e,
-                MapperUtils.abbreviate(String.valueOf(dtos), 4096),
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return mergeAll(dtos, hints).intoMixedCollection(entities, entityCollectionFactory);
     }
 
     /**
@@ -348,58 +464,14 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entityCollectionFactory a factory for the needed collection
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #mergeAll(Map, Object...)} interface
      */
+    @Deprecated
     default <EntityCollection extends Collection<Entity>> EntityCollection mergeMapIntoOrderedCollection(
         Map<?, ? extends DTO> dtos, EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory,
         Object... hints)
     {
-        if (dtos == null)
-        {
-            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            dtos = Collections.emptyMap();
-        }
-
-        try
-        {
-            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
-
-            if (entities == null)
-            {
-                entities = entityCollectionFactory.get();
-            }
-            else if (unmodifiable)
-            {
-                EntityCollection originalEntity = entities;
-
-                entities = entityCollectionFactory.get();
-                entities.addAll(originalEntity);
-            }
-
-            entities = MapperUtils.mapOrdered(dtos.entrySet(), entities,
-                (entry, entity) -> isUniqueKeyMatchingNullable(entry != null ? entry.getValue() : null, entity,
-                    entry != null ? Hints.join(hints, entry.getKey()) : hints),
-                (entry, entity) -> merge(entry != null ? entry.getValue() : null, entity,
-                    entry != null ? Hints.join(hints, entry.getKey()) : hints),
-                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : entity -> entity != null,
-                this::afterMergeIntoCollection);
-
-            if (unmodifiable)
-            {
-                entities = MapperUtils.toUnmodifiableCollection(entities);
-            }
-
-            return entities;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to merge DTOs into an ordered collection: %s => %s", e,
-                MapperUtils.abbreviate(String.valueOf(dtos), 4096),
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return mergeAll(dtos, hints).intoOrderedCollection(entities, entityCollectionFactory);
     }
 
     /**
@@ -412,10 +484,12 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #mergeAll(Map, Object...)} interface
      */
+    @Deprecated
     default Set<Entity> mergeMapIntoHashSet(Map<?, ? extends DTO> dtos, Set<Entity> entities, Object... hints)
     {
-        return mergeMapIntoMixedCollection(dtos, entities, HashSet::new, hints);
+        return mergeAll(dtos, hints).intoHashSet(entities);
     }
 
     /**
@@ -428,12 +502,13 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a sorted set
+     * @deprecated use the {@link #mergeAll(Map, Object...)} interface
      */
+    @Deprecated
     default SortedSet<Entity> mergeMapIntoTreeSet(Map<?, ? extends DTO> dtos, SortedSet<Entity> entities,
         Object... hints)
     {
-        return mergeMapIntoMixedCollection(dtos, entities,
-            () -> entities != null ? new TreeSet<>(entities.comparator()) : new TreeSet<>(), hints);
+        return mergeAll(dtos, hints).intoTreeSet(entities);
     }
 
     /**
@@ -447,11 +522,13 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param comparator the comparator for the tree set
      * @param hints optional hints
      * @return a sorted set
+     * @deprecated use the {@link #mergeAll(Map, Object...)} interface
      */
+    @Deprecated
     default SortedSet<Entity> mergeMapIntoTreeSet(Map<?, ? extends DTO> dtos, SortedSet<Entity> entities,
         Comparator<? super Entity> comparator, Object... hints)
     {
-        return mergeMapIntoMixedCollection(dtos, entities, () -> new TreeSet<>(comparator), hints);
+        return mergeAll(dtos, hints).intoTreeSet(entities, comparator);
     }
 
     /**
@@ -467,7 +544,7 @@ public interface Merger<DTO, Entity> extends HintsProvider
      */
     default List<Entity> mergeMapIntoArrayList(Map<?, ? extends DTO> dtos, List<Entity> entities, Object... hints)
     {
-        return mergeMapIntoOrderedCollection(dtos, entities, ArrayList::new, hints);
+        return mergeAll(dtos, hints).intoArrayList(entities);
     }
 
     /**
@@ -518,7 +595,7 @@ public interface Merger<DTO, Entity> extends HintsProvider
             dtos.entrySet().forEach(
                 entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
 
-            entities = MapperUtils.mapMixed(pairs, entities,
+            entities = MapperUtils.mapMixed(pairs.stream(), entities,
                 (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
                     pair != null ? Hints.join(hints, pair.getLeft()) : hints),
                 (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,

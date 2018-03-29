@@ -12,14 +12,14 @@ public abstract class AbstractTransformer<DTO, Entity> implements Transformer<DT
 
     private final Object[] defaultHints;
 
-    public AbstractTransformer()
+    protected AbstractTransformer()
     {
         super();
 
         defaultHints = null;
     }
 
-    public AbstractTransformer(Object... defaultHints)
+    protected AbstractTransformer(Object... defaultHints)
     {
         super();
 
