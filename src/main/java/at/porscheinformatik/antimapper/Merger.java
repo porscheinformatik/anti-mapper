@@ -2,7 +2,6 @@ package at.porscheinformatik.antimapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -305,6 +304,45 @@ public interface Merger<DTO, Entity> extends HintsProvider
     }
 
     /**
+     * Merge the grouped DTOs
+     *
+     * @param <GroupKey> the type of the group key
+     * @param dtos the DTOs, may be null or empty
+     * @param hints some hints
+     * @return the {@link GroupMerger}
+     */
+    default <GroupKey> GroupMerger<DTO, Entity> mergeGrouped(Map<GroupKey, ? extends Iterable<? extends DTO>> dtos,
+        Object... hints)
+    {
+        return new AbstractGroupMerger<GroupKey, DTO, Entity>(dtos, hints)
+        {
+            @Override
+            protected boolean isUniqueKeyMatchingNullable(DTO dto, Entity entity, Object[] hints)
+            {
+                return Merger.this.isUniqueKeyMatchingNullable(dto, entity, hints);
+            }
+
+            @Override
+            protected Entity merge(DTO dto, Entity entity, Object[] hints)
+            {
+                return Merger.this.merge(dto, entity, hints);
+            }
+
+            @Override
+            protected void afterMergeIntoCollection(Collection<Entity> entities, Object[] hints)
+            {
+                Merger.this.afterMergeIntoCollection(entities, hints);
+            }
+
+            @Override
+            protected Object[] getTransformerHints()
+            {
+                return Merger.this.getDefaultHints();
+            }
+        };
+    }
+
+    /**
      * Maps a collection to a collection. Ignores the order. If the entities parameter is null, it creates a
      * {@link Collection} if necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set.
      * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in
@@ -407,7 +445,9 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param comparator the comparator for the tree set, will only be used for the create method
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #mergeAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default SortedSet<Entity> mergeIntoTreeSet(Iterable<? extends DTO> dtos, SortedSet<Entity> entities,
         Comparator<? super Entity> comparator, Object... hints)
     {
@@ -424,7 +464,9 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #mergeAll(Iterable, Object...)} interface
      */
+    @Deprecated
     default List<Entity> mergeIntoArrayList(Iterable<? extends DTO> dtos, List<Entity> entities, Object... hints)
     {
         return mergeAll(dtos, hints).intoArrayList(entities);
@@ -541,7 +583,9 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entities the entities, may be null
      * @param hints optional hints
      * @return a collection
+     * @deprecated use the {@link #mergeAll(Map, Object...)} interface
      */
+    @Deprecated
     default List<Entity> mergeMapIntoArrayList(Map<?, ? extends DTO> dtos, List<Entity> entities, Object... hints)
     {
         return mergeAll(dtos, hints).intoArrayList(entities);
@@ -559,63 +603,14 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entityCollectionFactory the factory for the entities collection
      * @param hints optional hints
      * @return the collection
+     * @deprecated use the {@link #mergeGrouped(Map, Object...)} interface
      */
+    @Deprecated
     default <EntityCollection extends Collection<Entity>> EntityCollection mergeGroupedMapIntoMixedCollection(
         Map<?, ? extends Collection<? extends DTO>> dtos, EntityCollection entities,
         Supplier<EntityCollection> entityCollectionFactory, Object... hints)
     {
-        if (dtos == null)
-        {
-            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            dtos = Collections.emptyMap();
-        }
-
-        try
-        {
-            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
-
-            if (entities == null)
-            {
-                entities = entityCollectionFactory.get();
-            }
-            else if (unmodifiable)
-            {
-                EntityCollection originalEntity = entities;
-
-                entities = entityCollectionFactory.get();
-                entities.addAll(originalEntity);
-            }
-
-            Collection<Pair<?, ? extends DTO>> pairs = new ArrayList<>();
-
-            dtos.entrySet().forEach(
-                entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
-
-            entities = MapperUtils.mapMixed(pairs.stream(), entities,
-                (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : dto -> dto != null,
-                list -> afterMergeIntoCollection(list, hints));
-
-            if (unmodifiable)
-            {
-                entities = MapperUtils.toUnmodifiableCollection(entities);
-            }
-
-            return entities;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to merge grouped DTOs into a mixed collection: %s => %s", e,
-                MapperUtils.abbreviate(String.valueOf(dtos), 4096),
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return mergeGrouped(dtos, hints).intoMixedCollection(entities, entityCollectionFactory);
     }
 
     /**
@@ -630,63 +625,14 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entityCollectionFactory the factory for the entities collection
      * @param hints optional hints
      * @return the collection
+     * @deprecated use the {@link #mergeGrouped(Map, Object...)} interface
      */
+    @Deprecated
     default <EntityCollection extends Collection<Entity>> EntityCollection mergeGroupedMapIntoOrderedCollection(
         Map<?, ? extends Collection<? extends DTO>> dtos, EntityCollection entities,
         Supplier<EntityCollection> entityCollectionFactory, Object... hints)
     {
-        if (dtos == null)
-        {
-            if (entities == null && !Hints.containsHint(hints, Hint.OR_EMPTY))
-            {
-                return null;
-            }
-
-            dtos = Collections.emptyMap();
-        }
-
-        try
-        {
-            boolean unmodifiable = Hints.containsHint(hints, Hint.UNMODIFIABLE);
-
-            if (entities == null)
-            {
-                entities = entityCollectionFactory.get();
-            }
-            else if (unmodifiable)
-            {
-                EntityCollection originalEntity = entities;
-
-                entities = entityCollectionFactory.get();
-                entities.addAll(originalEntity);
-            }
-
-            Collection<Pair<?, ? extends DTO>> pairs = new ArrayList<>();
-
-            dtos.entrySet().forEach(
-                entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
-
-            entities = MapperUtils.mapOrdered(pairs, entities,
-                (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                Hints.containsHint(hints, Hint.KEEP_NULL) ? null : entity -> entity != null,
-                list -> afterMergeIntoCollection(list, hints));
-
-            if (unmodifiable)
-            {
-                entities = MapperUtils.toUnmodifiableCollection(entities);
-            }
-
-            return entities;
-        }
-        catch (Exception e)
-        {
-            throw new MapperException("Failed to merge grouped DTOs into an ordered collection: %s => %s", e,
-                MapperUtils.abbreviate(String.valueOf(dtos), 4096),
-                MapperUtils.abbreviate(String.valueOf(entities), 4096));
-        }
+        return mergeGrouped(dtos, hints).intoOrderedCollection(entities, entityCollectionFactory);
     }
 
     /**
@@ -699,11 +645,13 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entities the entities
      * @param hints optional hints
      * @return the collection
+     * @deprecated use the {@link #mergeGrouped(Map, Object...)} interface
      */
+    @Deprecated
     default Set<Entity> mergeGroupedMapIntoHashSet(Map<?, ? extends Collection<? extends DTO>> dtos,
         Set<Entity> entities, Object... hints)
     {
-        return mergeGroupedMapIntoMixedCollection(dtos, entities, HashSet::new, hints);
+        return mergeGrouped(dtos, hints).intoHashSet(entities);
     }
 
     /**
@@ -716,12 +664,13 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entities the entities
      * @param hints optional hints
      * @return the collection
+     * @deprecated use the {@link #mergeGrouped(Map, Object...)} interface
      */
+    @Deprecated
     default SortedSet<Entity> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO>> dtos,
         SortedSet<Entity> entities, Object... hints)
     {
-        return mergeGroupedMapIntoOrderedCollection(dtos, entities,
-            () -> entities != null ? new TreeSet<>(entities.comparator()) : new TreeSet<>(), hints);
+        return mergeGrouped(dtos, hints).intoTreeSet(entities);
     }
 
     /**
@@ -735,11 +684,13 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param comparator the comparator
      * @param hints optional hints
      * @return the collection
+     * @deprecated use the {@link #mergeGrouped(Map, Object...)} interface
      */
+    @Deprecated
     default SortedSet<Entity> mergeGroupedMapIntoTreeSet(Map<?, ? extends Collection<? extends DTO>> dtos,
         SortedSet<Entity> entities, Comparator<? super Entity> comparator, Object... hints)
     {
-        return mergeGroupedMapIntoOrderedCollection(dtos, entities, () -> new TreeSet<>(comparator), hints);
+        return mergeGrouped(dtos, hints).intoTreeSet(entities, comparator);
     }
 
     /**
@@ -752,11 +703,13 @@ public interface Merger<DTO, Entity> extends HintsProvider
      * @param entities the entities
      * @param hints optional hints
      * @return the collection
+     * @deprecated use the {@link #mergeGrouped(Map, Object...)} interface
      */
+    @Deprecated
     default List<Entity> mergeGroupedMapIntoArrayList(Map<?, ? extends Collection<? extends DTO>> dtos,
         List<Entity> entities, Object... hints)
     {
-        return mergeGroupedMapIntoOrderedCollection(dtos, entities, ArrayList::new, hints);
+        return mergeGrouped(dtos, hints).intoArrayList(entities);
     }
 
 }

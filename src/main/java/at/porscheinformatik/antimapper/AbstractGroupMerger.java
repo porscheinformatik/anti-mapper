@@ -1,26 +1,28 @@
 package at.porscheinformatik.antimapper;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
-public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements StreamMerger<DTO, Entity>
+public abstract class AbstractGroupMerger<GroupKey, DTO, Entity> implements GroupMerger<DTO, Entity>
 {
 
-    private final Supplier<Stream<? extends DTOContainer>> streamSupplier;
+    private final Map<GroupKey, ? extends Iterable<? extends DTO>> dtos;
     private final Object[] hints;
 
-    protected AbstractStreamMerger(Supplier<Stream<? extends DTOContainer>> streamSupplier, Object... hints)
+    protected AbstractGroupMerger(Map<GroupKey, ? extends Iterable<? extends DTO>> dtos, Object... hints)
     {
         super();
 
-        this.streamSupplier = streamSupplier;
+        this.dtos = dtos;
         this.hints = hints;
     }
 
-    protected abstract boolean isUniqueKeyMatchingNullable(DTOContainer dtoContainer, Entity entity, Object[] hints);
+    protected abstract boolean isUniqueKeyMatchingNullable(DTO dto, Entity entity, Object[] hints);
 
-    protected abstract Entity merge(DTOContainer dtoContainer, Entity entity, Object[] hints);
+    protected abstract Entity merge(DTO dto, Entity entity, Object[] hints);
 
     protected abstract void afterMergeIntoCollection(Collection<Entity> entities, Object[] hints);
 
@@ -35,16 +37,16 @@ public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements
     public <EntityCollection extends Collection<Entity>> EntityCollection intoMixedCollection(EntityCollection entities,
         Supplier<EntityCollection> entityCollectionFactory)
     {
-        Stream<? extends DTOContainer> dtoContainers = streamSupplier.get();
+        Map<GroupKey, ? extends Iterable<? extends DTO>> dtos = this.dtos;
 
-        if (dtoContainers == null)
+        if (dtos == null)
         {
             if (entities == null && !containsHint(Hint.OR_EMPTY))
             {
                 return null;
             }
 
-            dtoContainers = Stream.empty();
+            dtos = Collections.emptyMap();
         }
 
         try
@@ -63,9 +65,16 @@ public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements
                 entities.addAll(originalEntity);
             }
 
-            entities = MapperUtils.mapMixed(dtoContainers, entities,
-                (dtoContainer, entity) -> isUniqueKeyMatchingNullable(dtoContainer, entity, hints),
-                (dtoContainer, entity) -> merge(dtoContainer, entity, hints),
+            Collection<Pair<?, ? extends DTO>> pairs = new ArrayList<>();
+
+            dtos.entrySet().forEach(
+                entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
+
+            entities = MapperUtils.mapMixed(pairs.stream(), entities,
+                (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
+                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
+                (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
+                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
                 containsHint(Hint.KEEP_NULL) ? null : dto -> dto != null,
                 list -> afterMergeIntoCollection(list, hints));
 
@@ -78,8 +87,8 @@ public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements
         }
         catch (Exception e)
         {
-            throw new MapperException("Failed to merge DTOs into a mixed collection: %s => %s", e,
-                MapperUtils.abbreviate(String.valueOf(dtoContainers), 4096),
+            throw new MapperException("Failed to merge grouped DTOs into a mixed collection: %s => %s", e,
+                MapperUtils.abbreviate(String.valueOf(dtos), 4096),
                 MapperUtils.abbreviate(String.valueOf(entities), 4096));
         }
     }
@@ -88,16 +97,16 @@ public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements
     public <EntityCollection extends Collection<Entity>> EntityCollection intoOrderedCollection(
         EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory)
     {
-        Stream<? extends DTOContainer> dtoContainers = streamSupplier.get();
+        Map<GroupKey, ? extends Iterable<? extends DTO>> dtos = this.dtos;
 
-        if (dtoContainers == null)
+        if (dtos == null)
         {
             if (entities == null && !containsHint(Hint.OR_EMPTY))
             {
                 return null;
             }
 
-            dtoContainers = Stream.empty();
+            dtos = Collections.emptyMap();
         }
 
         try
@@ -116,9 +125,16 @@ public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements
                 entities.addAll(originalEntity);
             }
 
-            entities = MapperUtils.mapOrdered(dtoContainers, entities,
-                (dto, entity) -> isUniqueKeyMatchingNullable(dto, entity, hints),
-                (dtoContainer, entity) -> merge(dtoContainer, entity, hints),
+            Collection<Pair<?, ? extends DTO>> pairs = new ArrayList<>();
+
+            dtos.entrySet().forEach(
+                entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
+
+            entities = MapperUtils.mapOrdered(pairs, entities,
+                (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
+                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
+                (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
+                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
                 containsHint(Hint.KEEP_NULL) ? null : entity -> entity != null,
                 list -> afterMergeIntoCollection(list, hints));
 
@@ -131,8 +147,8 @@ public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements
         }
         catch (Exception e)
         {
-            throw new MapperException("Failed to merge DTOs into an ordered collection: %s => %s", e,
-                MapperUtils.abbreviate(String.valueOf(dtoContainers), 4096),
+            throw new MapperException("Failed to merge grouped DTOs into an ordered collection: %s => %s", e,
+                MapperUtils.abbreviate(String.valueOf(dtos), 4096),
                 MapperUtils.abbreviate(String.valueOf(entities), 4096));
         }
     }
