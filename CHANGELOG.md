@@ -1,5 +1,14 @@
 # anti-mapper 1.4
 
+## anti-mapper 1.4.8
+
+* Updated README.
+* Additional tests.
+
+## anti-mapper 1.4.7
+
+* Fix for #2, mapper ignores Map Key when comparing 
+ 
 ## anti-mapper 1.4.6
 
 * StreamTransformer to simplify the interface.
