@@ -183,26 +183,17 @@ If you want a two-way mapping, then you implement a `Mapper`. It's the same as i
 
 ### Mapping collections and maps
 
-The `Transformer` and `Merger` interfaces contain a lot of methods for mapping collections and maps.
+The `Transformer` and `Merger` interfaces contain methods for mapping collections and maps.
 
-First, the `Transformer`. It contains the following methods:
-
-* for transforming streams: `transformEach`, `transformToStream`.
-* for transforming collection: `transformToCollection`, `transformToHashSet`, `transformToTreeSet`, `transformToArrayList`.
-* for transforming maps: `transformToMap`, `transformToHashMap`.
-* for transforming grouped maps: `transformToGroupedMap`, `transformToGroupedHashSets`, `transformToGroupedTreeSets`, `transformToGroupedArrayLists`, `transformGroupedMapToGroupedMap`, `transformGroupedMapToGroupedHashSets`, `transformGroupedMapToGroupedTreeSets`, `transformGroupedMapToGroupedArrayLists`.
+Start by using the `transformAll` and `mergeAll` methods, and specify the `Iterable`, `Stream` or `Map` you want to transform or merge. Those methods are all null-safe. You will get a StreamTransformer or StreamMerger, that contain methods to specify the target of the operation. 
     
-The resulting maps and collections will not contain any null values. If you need them, pass the `Hint.KEEP_NULL` hint. If the resulting collection should be unmodifiable (e.g. for a cache), pass the `Hint.UNMODIFIABLE` hint.
+**Watch out!** The resulting maps and collections will **not** contain any null values, they will be filtered by default! If you need them, pass the `Hint.KEEP_NULL` hint. 
 
-Next, the Merger. It basically distinguishes between ordered and mixed collections. Lists will keep the order when being mapped, sets will ignore the order. The mixed method just uses the `isUniqueKeyMatching` method to find the entity, the ordered method additionally uses a diff algorithm, too.
+If the resulting collection should be unmodifiable (e.g. for a cache), pass the `Hint.UNMODIFIABLE` hint.
 
-* for merging collections: `mergeIntoMixedCollection`, `mergeIntoOrderedCollection`.    
-* for merging sets (mixed): `mergeIntoHashSet`, `mergeIntoTreeSet`.    
-* for merging lists (ordered): `mergeIntoArrayList`.
-* for merging maps into sets or lists: `mergeMapIntoMixedCollection`, `mergeMapIntoOrderedCollection`, `mergeMapIntoTreeSet`, `mergeMapIntoArrayList`.    
-* for merging grouped maps into sets or lists: `mergeGroupedMapIntoMixedCollection`, `mergeGroupedMapIntoOrderedCollection`, `mergeGroupedMapIntoHashSet`, `mergeGroupedMapIntoTreeSet`, `mergeGroupedMapIntoArrayList`.
-    
-For keeping null values in the resulting collections, you need to pass the `Hint.KEEP_NULL` hint. If you pass the `Hint.UNMODIFIABLE` the maps and collections are assumed to be unmodifiable, and will always be new instances.
+You can also transform and merge groups. Use the `transformGroup` and `mergeGroup` methods for this. If your target is a group, you can use the `toGroupedMap` methods.
+
+The merger basically distinguishes between ordered and mixed collections. Lists will keep the order when being mapped, sets will ignore the order. The methods for mixed collections just uses the `isUniqueKeyMatching` method, to find the matching entity, the methods for the ordered collection additionally use a diff algorithm, too. If you pass the `Hint.UNMODIFIABLE` to a merger, the maps and collections are assumed to be unmodifiable, and will always be new instances.
 
 If you need to process all entities in the collection after merging, implement the `afterMergeIntoCollection` method.
     
