@@ -17,7 +17,7 @@ public class TransformToHashSet extends AbstractMapperTest
     @Test
     public void testNullToHashSet()
     {
-        Set<String> dtos = MAPPER.transformToHashSet(null, BOARDING_PASS);
+        Set<String> dtos = transformToHashSet(null, BOARDING_PASS);
 
         assertThat(dtos, nullValue());
     }
@@ -25,7 +25,7 @@ public class TransformToHashSet extends AbstractMapperTest
     @Test
     public void testNullToHashSetOrEmpty()
     {
-        Set<String> dtos = MAPPER.transformToHashSet(null, BOARDING_PASS, Hint.OR_EMPTY);
+        Set<String> dtos = transformToHashSet(null, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(dtos, is(Collections.emptySet()));
 
@@ -39,7 +39,7 @@ public class TransformToHashSet extends AbstractMapperTest
     {
         List<char[]> entities = toList("A".toCharArray(), "A".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        Set<String> dtos = MAPPER.transformToHashSet(entities, BOARDING_PASS);
+        Set<String> dtos = transformToHashSet(entities, BOARDING_PASS);
 
         assertThat(dtos, is(toSet("A", "C1", "C2")));
 
@@ -53,7 +53,7 @@ public class TransformToHashSet extends AbstractMapperTest
     {
         List<char[]> entities = toList("A".toCharArray(), "A".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        Set<String> dtos = MAPPER.transformToHashSet(entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+        Set<String> dtos = transformToHashSet(entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
         assertThat(dtos, is(toSet("A", null, "C1", "C2")));
 

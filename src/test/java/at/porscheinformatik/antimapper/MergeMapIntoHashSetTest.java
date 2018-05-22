@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class MergeMapIntoHashSetTest extends AbstractMapperTest
@@ -20,7 +21,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = null;
         Set<char[]> entities = null;
-        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, nullValue());
     }
@@ -30,7 +31,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = null;
         Set<char[]> entities = null;
-        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(describeResult(result), result, is(Collections.emptySet()));
 
@@ -44,7 +45,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = null;
         Set<char[]> entities = TestUtils.toSet();
-        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, is(Collections.emptySet()));
         assertThat(describeResult(result), result, sameInstance(entities));
@@ -60,7 +61,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         Map<Integer, String> dtos = null;
         Set<char[]> entities = toSet("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
-        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result,
             matchesCollection(toList(is("!a".toCharArray()), is("!a".toCharArray()), is("!b".toCharArray()),
@@ -77,7 +78,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = toMap(1, "A", 2, "C2", 3, "C1", 4, null, 5, "A");
         Set<char[]> entities = null;
-        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, matchesCollection(
             toList(is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()), is("A".toCharArray()))));
@@ -92,7 +93,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = Collections.emptyMap();
         Set<char[]> entities = null;
-        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, is(Collections.emptySet()));
 
@@ -106,7 +107,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = Collections.emptyMap();
         Set<char[]> entities = TestUtils.toSet();
-        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, is(Collections.emptySet()));
         assertThat(describeResult(result), result, sameInstance(entities));
@@ -122,7 +123,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         Map<Integer, String> dtos = Collections.emptyMap();
         Set<char[]> entities = toSet("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
-        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result,
             matchesCollection(toList(is("!a".toCharArray()), is("!a".toCharArray()), is("!b".toCharArray()),
@@ -139,7 +140,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = toMap(1, "A", 2, "C2", 3, "C1", 4, null, 5, "A");
         Set<char[]> entities = new HashSet<>();
-        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, matchesCollection(
             toList(is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()), is("A".toCharArray()))));
@@ -156,7 +157,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         Map<Integer, String> dtos = toMap(1, "A", 2, "C2", 3, "C1", 4, null, 5, "A");
         Set<char[]> entities = toSet("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
-        Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result,
             matchesCollection(toList(is("A".toCharArray()), is("A".toCharArray()), is("C2".toCharArray()),
@@ -174,8 +175,7 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         Map<Integer, String> dtos = toMap(1, "A", 2, "C2", 3, "C1", 4, null, 5, "A");
         Set<char[]> entities = Collections.unmodifiableSet(toSet("a".toCharArray(), "a".toCharArray(),
             "!b".toCharArray(), "c1".toCharArray(), "c2".toCharArray(), null, "a".toCharArray()));
-        Set<char[]> result =
-            MAPPER.mergeMapIntoHashSet(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+        Set<char[]> result = mergeMapIntoHashSet(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
         assertThat(describeResult(result), result,
             matchesCollection(toList(is("A".toCharArray()), is("C2".toCharArray()), is("!a".toCharArray()),
@@ -190,6 +190,15 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
         {
             // expected
         }
+    }
+
+    @Override
+    public boolean isUniqueKeyMatching(String dto, char[] entity, Object... hints)
+    {
+        // make sure, there is a key passed as hint
+        Assert.assertTrue(Hints.containsHint(hints, Integer.class));
+
+        return super.isUniqueKeyMatching(dto, entity, hints);
     }
 
 }

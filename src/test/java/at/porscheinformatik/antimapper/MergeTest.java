@@ -11,7 +11,7 @@ public class MergeTest extends AbstractMapperTest
     @Test
     public void testNull()
     {
-        char[] result = MAPPER.merge(null, null, BOARDING_PASS);
+        char[] result = merge(null, null, BOARDING_PASS);
 
         assertThat(result, nullValue());
     }
@@ -20,7 +20,7 @@ public class MergeTest extends AbstractMapperTest
     public void test()
     {
         char[] entity = "a".toCharArray();
-        char[] result = MAPPER.merge("A", entity, BOARDING_PASS);
+        char[] result = merge("A", entity, BOARDING_PASS);
 
         assertThat(result, is("A".toCharArray()));
         assertThat(result, sameInstance(entity));
@@ -30,7 +30,7 @@ public class MergeTest extends AbstractMapperTest
     public void testDeleted()
     {
         char[] entity = "a".toCharArray();
-        char[] result = MAPPER.merge(null, entity, BOARDING_PASS);
+        char[] result = merge(null, entity, BOARDING_PASS);
 
         assertThat(result, is("!a".toCharArray()));
         assertThat(result, not(sameInstance(entity)));

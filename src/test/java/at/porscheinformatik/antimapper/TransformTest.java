@@ -16,7 +16,7 @@ public class TransformTest extends AbstractMapperTest
     @Test
     public void testNull()
     {
-        assertThat(MAPPER.transform(Optional.empty(), BOARDING_PASS), nullValue());
+        assertThat(this.transform(Optional.empty(), BOARDING_PASS), nullValue());
     }
 
     @Test
@@ -24,7 +24,7 @@ public class TransformTest extends AbstractMapperTest
     {
         char[] entity = "A".toCharArray();
 
-        assertThat(MAPPER.transform(entity, BOARDING_PASS), is("A"));
+        assertThat(this.transform(entity, BOARDING_PASS), is("A"));
     }
 
     @Test
@@ -32,7 +32,7 @@ public class TransformTest extends AbstractMapperTest
     {
         char[] entity = "!A".toCharArray();
 
-        assertThat(MAPPER.transform(entity, BOARDING_PASS), nullValue());
+        assertThat(this.transform(entity, BOARDING_PASS), nullValue());
     }
 
     @Test
@@ -40,7 +40,7 @@ public class TransformTest extends AbstractMapperTest
     {
         List<char[]> entities = toList("A".toCharArray(), "A".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        List<String> dtos = MAPPER.transformEach(entities.stream(), BOARDING_PASS).collect(Collectors.toList());
+        List<String> dtos = transformEach(entities.stream(), BOARDING_PASS).collect(Collectors.toList());
 
         assertThat(dtos, is(toList("A", "A", "C1", "C2")));
     }

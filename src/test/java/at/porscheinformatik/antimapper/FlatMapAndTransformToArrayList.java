@@ -17,7 +17,7 @@ public class FlatMapAndTransformToArrayList extends AbstractMapperTest
     @Test
     public void testNullToArrayList()
     {
-        List<String> dtos = MAPPER.flatMapAndTransformAll(null, BOARDING_PASS).toArrayList();
+        List<String> dtos = this.flatMapAndTransformAll(null, BOARDING_PASS).toArrayList();
 
         assertThat(dtos, nullValue());
     }
@@ -25,7 +25,7 @@ public class FlatMapAndTransformToArrayList extends AbstractMapperTest
     @Test
     public void testNullToArrayListsOrEmpty()
     {
-        List<String> dtos = MAPPER.flatMapAndTransformAll(null, BOARDING_PASS, Hint.OR_EMPTY).toArrayList();
+        List<String> dtos = this.flatMapAndTransformAll(null, BOARDING_PASS, Hint.OR_EMPTY).toArrayList();
 
         assertThat(dtos, is(Collections.emptyList()));
 
@@ -39,7 +39,7 @@ public class FlatMapAndTransformToArrayList extends AbstractMapperTest
     {
         Map<Character, List<char[]>> entities = toMap('A', toList("A1".toCharArray(), "A1".toCharArray()), 'B',
             toList("!B".toCharArray()), 'C', toList("C1".toCharArray(), "C2".toCharArray()), null, null);
-        List<String> dtos = MAPPER.flatMapAndTransformAll(entities, BOARDING_PASS).toArrayList();
+        List<String> dtos = this.flatMapAndTransformAll(entities, BOARDING_PASS).toArrayList();
 
         assertThat(dtos, is(toList("A1", "A1", "C1", "C2")));
 
@@ -54,7 +54,7 @@ public class FlatMapAndTransformToArrayList extends AbstractMapperTest
         Map<Character, List<char[]>> entities = toMap('A', toList("A1".toCharArray(), "A1".toCharArray()), 'B',
             toList("!B".toCharArray()), 'C', toList("C1".toCharArray(), "C2".toCharArray()), null, null);
         List<String> dtos =
-            MAPPER.flatMapAndTransformAll(entities, BOARDING_PASS, Hint.KEEP_NULL, Hint.UNMODIFIABLE).toArrayList();
+            this.flatMapAndTransformAll(entities, BOARDING_PASS, Hint.KEEP_NULL, Hint.UNMODIFIABLE).toArrayList();
 
         assertThat(dtos, is(toList("A1", "A1", null, "C1", "C2")));
 

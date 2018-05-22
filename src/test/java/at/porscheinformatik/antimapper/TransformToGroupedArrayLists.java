@@ -17,7 +17,7 @@ public class TransformToGroupedArrayLists extends AbstractMapperTest
     @Test
     public void testNullToGroupedArrayLists()
     {
-        Map<Character, List<String>> dtos = MAPPER.transformToGroupedArrayLists(null, GROUPER, BOARDING_PASS);
+        Map<Character, List<String>> dtos = this.transformToGroupedArrayLists(null, GROUPER, BOARDING_PASS);
 
         assertThat(dtos, nullValue());
     }
@@ -26,7 +26,7 @@ public class TransformToGroupedArrayLists extends AbstractMapperTest
     public void testNullToGroupedArrayListsOrEmpty()
     {
         Map<Character, List<String>> dtos =
-            MAPPER.transformToGroupedArrayLists(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
+            this.transformToGroupedArrayLists(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(dtos, is(Collections.emptyMap()));
 
@@ -40,7 +40,7 @@ public class TransformToGroupedArrayLists extends AbstractMapperTest
     {
         List<char[]> entities = toList("A1".toCharArray(), "A1".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        Map<Character, List<String>> dtos = MAPPER.transformToGroupedArrayLists(entities, GROUPER, BOARDING_PASS);
+        Map<Character, List<String>> dtos = this.transformToGroupedArrayLists(entities, GROUPER, BOARDING_PASS);
 
         assertThat(dtos, matchesMap(toMap('A', is(toList("A1", "A1")), 'C', is(toList("C1", "C2")))));
 
@@ -57,7 +57,7 @@ public class TransformToGroupedArrayLists extends AbstractMapperTest
         List<char[]> entities = toList("A1".toCharArray(), "A1".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
         Map<Character, List<String>> dtos =
-            MAPPER.transformToGroupedArrayLists(entities, GROUPER, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+            this.transformToGroupedArrayLists(entities, GROUPER, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
         assertThat(dtos, matchesMap(toMap((Character) null, is(toList(new String[]{null})), 'A', is(toList("A1", "A1")),
             'B', is(toList(new String[]{null})), 'C', is(toList("C1", "C2")))));

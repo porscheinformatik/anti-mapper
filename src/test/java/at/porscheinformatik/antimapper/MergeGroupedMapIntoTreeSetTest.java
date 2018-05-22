@@ -21,7 +21,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
     {
         Map<Character, List<String>> dtos = null;
         SortedSet<char[]> entities = null;
-        SortedSet<char[]> result = MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
+        SortedSet<char[]> result = this.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, nullValue());
     }
@@ -32,7 +32,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
         Map<Character, List<String>> dtos = null;
         SortedSet<char[]> entities = null;
         SortedSet<char[]> result =
-            MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, CHAR_ARRAY_COMPARATOR, BOARDING_PASS, Hint.OR_EMPTY);
+            this.mergeGroupedMapIntoTreeSet(dtos, entities, CHAR_ARRAY_COMPARATOR, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(describeResult(result), result, is(Collections.emptySortedSet()));
         assertThat(describeResult(result), result.comparator(), is(CHAR_ARRAY_COMPARATOR));
@@ -47,7 +47,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
     {
         Map<Character, List<String>> dtos = null;
         SortedSet<char[]> entities = TestUtils.toSortedSet(CHAR_ARRAY_COMPARATOR);
-        SortedSet<char[]> result = MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
+        SortedSet<char[]> result = this.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, is(Collections.emptySet()));
         assertThat(describeResult(result), result, sameInstance(entities));
@@ -65,7 +65,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
         SortedSet<char[]> entities = toSortedSet(CHAR_ARRAY_COMPARATOR, "a".toCharArray(), "a".toCharArray(),
             "!b".toCharArray(), "c1".toCharArray(), "c2".toCharArray(), null, null, "a".toCharArray());
 
-        SortedSet<char[]> result = MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
+        SortedSet<char[]> result = this.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, matchesCollection(
             toList(is("!a".toCharArray()), is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()))));
@@ -84,7 +84,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
             toMap('a', toList("A", "A"), 'c', toList("C2", "C1"), null, toList((String) null));
         SortedSet<char[]> entities = null;
         SortedSet<char[]> result =
-            MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, CHAR_ARRAY_COMPARATOR, BOARDING_PASS);
+            this.mergeGroupedMapIntoTreeSet(dtos, entities, CHAR_ARRAY_COMPARATOR, BOARDING_PASS);
 
         assertThat(describeResult(result), result,
             matchesCollection(toList(is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()))));
@@ -101,7 +101,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
         Map<Character, List<String>> dtos = Collections.emptyMap();
         SortedSet<char[]> entities = null;
         SortedSet<char[]> result =
-            MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, CHAR_ARRAY_COMPARATOR, BOARDING_PASS);
+            this.mergeGroupedMapIntoTreeSet(dtos, entities, CHAR_ARRAY_COMPARATOR, BOARDING_PASS);
 
         assertThat(describeResult(result), result, is(Collections.emptySet()));
         assertThat(describeResult(result), result.comparator(), is(CHAR_ARRAY_COMPARATOR));
@@ -116,7 +116,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
     {
         Map<Character, List<String>> dtos = Collections.emptyMap();
         SortedSet<char[]> entities = new TreeSet<>(CHAR_ARRAY_COMPARATOR);
-        SortedSet<char[]> result = MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
+        SortedSet<char[]> result = this.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, is(Collections.emptySet()));
         assertThat(describeResult(result), result, sameInstance(entities));
@@ -134,7 +134,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
         SortedSet<char[]> entities = toSortedSet(CHAR_ARRAY_COMPARATOR, "a".toCharArray(), "a".toCharArray(),
             "!b".toCharArray(), "c1".toCharArray(), "c2".toCharArray(), null, null, "a".toCharArray());
 
-        SortedSet<char[]> result = MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
+        SortedSet<char[]> result = this.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, matchesCollection(
             toList(is("!a".toCharArray()), is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()))));
@@ -152,7 +152,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
         Map<Character, List<String>> dtos =
             toMap('a', toList("A", "A"), 'c', toList("C2", "C1"), null, toList((String) null));
         SortedSet<char[]> entities = new TreeSet<>(CHAR_ARRAY_COMPARATOR);
-        SortedSet<char[]> result = MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
+        SortedSet<char[]> result = this.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result,
             matchesCollection(toList(is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()))));
@@ -172,7 +172,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
         SortedSet<char[]> entities = toSortedSet(CHAR_ARRAY_COMPARATOR, "a".toCharArray(), "a".toCharArray(),
             "!b".toCharArray(), "c1".toCharArray(), "c2".toCharArray(), null, null, "a".toCharArray());
 
-        SortedSet<char[]> result = MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
+        SortedSet<char[]> result = this.mergeGroupedMapIntoTreeSet(dtos, entities, BOARDING_PASS);
 
         assertThat(describeResult(result), result, matchesCollection(
             toList(is("A".toCharArray()), is("C2".toCharArray()), is("!b".toCharArray()), is("C1".toCharArray()))));
@@ -194,7 +194,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
                 "!b".toCharArray(), "c1".toCharArray(), "c2".toCharArray(), null, "a".toCharArray()));
 
         SortedSet<char[]> result =
-            MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+            this.mergeGroupedMapIntoTreeSet(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
         assertThat(describeResult(result), result, matchesCollection(toList(is("A".toCharArray()),
             is("C2".toCharArray()), is("!b".toCharArray()), is("C1".toCharArray()), nullValue())));
@@ -219,7 +219,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
             "a".toCharArray(), "b".toCharArray(), "c".toCharArray(), "d".toCharArray()));
 
         SortedSet<char[]> result =
-            MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+            this.mergeGroupedMapIntoTreeSet(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
         System.out.println(result);
         //

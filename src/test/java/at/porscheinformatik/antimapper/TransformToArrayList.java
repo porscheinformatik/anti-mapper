@@ -16,7 +16,7 @@ public class TransformToArrayList extends AbstractMapperTest
     @Test
     public void testNullToArrayList()
     {
-        List<String> dtos = MAPPER.transformToArrayList(null, BOARDING_PASS);
+        List<String> dtos = transformToArrayList(null, BOARDING_PASS);
 
         assertThat(dtos, nullValue());
     }
@@ -24,7 +24,7 @@ public class TransformToArrayList extends AbstractMapperTest
     @Test
     public void testNullToArrayListOrEmpty()
     {
-        List<String> dtos = MAPPER.transformToArrayList(null, BOARDING_PASS, Hint.OR_EMPTY);
+        List<String> dtos = transformToArrayList(null, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(dtos, is(Collections.emptyList()));
 
@@ -38,7 +38,7 @@ public class TransformToArrayList extends AbstractMapperTest
     {
         List<char[]> entities = toList("A".toCharArray(), "A".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        List<String> dtos = MAPPER.transformToArrayList(entities, BOARDING_PASS);
+        List<String> dtos = transformToArrayList(entities, BOARDING_PASS);
 
         assertThat(dtos, is(toList("A", "A", "C1", "C2")));
 
@@ -52,7 +52,7 @@ public class TransformToArrayList extends AbstractMapperTest
     {
         List<char[]> entities = toList("A".toCharArray(), "A".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        List<String> dtos = MAPPER.transformToArrayList(entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+        List<String> dtos = transformToArrayList(entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
         assertThat(dtos, is(toList("A", "A", null, "C1", "C2", null)));
 
