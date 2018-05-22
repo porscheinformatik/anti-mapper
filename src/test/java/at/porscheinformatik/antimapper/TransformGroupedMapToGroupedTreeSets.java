@@ -43,8 +43,10 @@ public class TransformGroupedMapToGroupedTreeSets extends AbstractMapperTest
             toList("!B".toCharArray()), 'C', toList("C1".toCharArray(), "C2".toCharArray()), null, null);
         Map<Character, SortedSet<String>> dtos = MAPPER.transformGroupedMapToGroupedTreeSets(entities, BOARDING_PASS);
 
-        assertThat(dtos, matchesMap(toMap('A', is(toSortedSet(STRING_COMPARATOR, "A1", "A1")), 'B', is(toSortedSet(STRING_COMPARATOR)), 'C',
-            is(toSortedSet(STRING_COMPARATOR, "C1", "C2")), null, nullValue())));
+        assertThat(dtos,
+            matchesMap(
+                toMap('A', is(toSortedSet(STRING_COMPARATOR, "A1", "A1")), 'B', is(toSortedSet(STRING_COMPARATOR)), 'C',
+                    is(toSortedSet(STRING_COMPARATOR, "C1", "C2")), null, nullValue())));
 
         // check modifiable
         dtos.put('Z', TestUtils.toSortedSet("Z"));
@@ -58,12 +60,12 @@ public class TransformGroupedMapToGroupedTreeSets extends AbstractMapperTest
     {
         Map<Character, List<char[]>> entities = toMap('A', toList("A1".toCharArray(), "A1".toCharArray()), 'B',
             toList("!B".toCharArray()), 'C', toList("C1".toCharArray(), "C2".toCharArray()), null, null);
-        Map<Character, SortedSet<String>> dtos =
-            MAPPER.transformGroupedMapToGroupedTreeSets(entities, STRING_COMPARATOR, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+        Map<Character, SortedSet<String>> dtos = MAPPER.transformGroupedMapToGroupedTreeSets(entities,
+            STRING_COMPARATOR, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
-        assertThat(dtos,
-            matchesMap(toMap((Character) null, is(toSortedSet(STRING_COMPARATOR, new String[]{null})), 'A', is(toSortedSet(STRING_COMPARATOR, "A1", "A1")),
-                'B', is(toSortedSet(STRING_COMPARATOR, new String[]{null})), 'C', is(toSortedSet(STRING_COMPARATOR, "C1", "C2")), null, nullValue())));
+        assertThat(dtos, matchesMap(toMap((Character) null, is(toSortedSet(STRING_COMPARATOR, new String[]{null})), 'A',
+            is(toSortedSet(STRING_COMPARATOR, "A1", "A1")), 'B', is(toSortedSet(STRING_COMPARATOR, new String[]{null})),
+            'C', is(toSortedSet(STRING_COMPARATOR, "C1", "C2")), null, nullValue())));
 
         try
         {

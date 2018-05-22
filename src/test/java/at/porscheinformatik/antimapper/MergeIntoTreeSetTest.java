@@ -30,7 +30,8 @@ public class MergeIntoTreeSetTest extends AbstractMapperTest
     {
         Collection<String> dtos = null;
         SortedSet<char[]> entities = null;
-        SortedSet<char[]> result = MAPPER.mergeIntoTreeSet(dtos, entities, CHAR_ARRAY_COMPARATOR, BOARDING_PASS, Hint.OR_EMPTY);
+        SortedSet<char[]> result =
+            MAPPER.mergeIntoTreeSet(dtos, entities, CHAR_ARRAY_COMPARATOR, BOARDING_PASS, Hint.OR_EMPTY);
 
         assertThat(describeResult(result), result, is(Collections.emptySortedSet()));
         assertThat(describeResult(result), result.comparator(), is(CHAR_ARRAY_COMPARATOR));
@@ -188,8 +189,8 @@ public class MergeIntoTreeSetTest extends AbstractMapperTest
         SortedSet<char[]> result =
             MAPPER.mergeIntoTreeSet(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
-        assertThat(describeResult(result), result, matchesCollection(toList(is("A".toCharArray()), is("C2".toCharArray()),
-            is("!b".toCharArray()), is("C1".toCharArray()), nullValue())));
+        assertThat(describeResult(result), result, matchesCollection(toList(is("A".toCharArray()),
+            is("C2".toCharArray()), is("!b".toCharArray()), is("C1".toCharArray()), nullValue())));
         assertThat(describeResult(result), result.comparator(), is(CHAR_ARRAY_COMPARATOR));
 
         try

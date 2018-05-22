@@ -196,8 +196,8 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
         SortedSet<char[]> result =
             MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
-        assertThat(describeResult(result), result, matchesCollection(toList(is("A".toCharArray()), is("C2".toCharArray()),
-            is("!b".toCharArray()), is("C1".toCharArray()), nullValue())));
+        assertThat(describeResult(result), result, matchesCollection(toList(is("A".toCharArray()),
+            is("C2".toCharArray()), is("!b".toCharArray()), is("C1".toCharArray()), nullValue())));
         assertThat(describeResult(result), result.comparator(), is(CHAR_ARRAY_COMPARATOR));
 
         try
@@ -222,7 +222,7 @@ public class MergeGroupedMapIntoTreeSetTest extends AbstractMapperTest
             MAPPER.mergeGroupedMapIntoTreeSet(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
         System.out.println(result);
-        //        
+        //
         //        assertThat(describe(result), result, matchesCollection(toList(is("A".toCharArray()), is("C2".toCharArray()),
         //            is("!b".toCharArray()), is("C1".toCharArray()), nullValue())));
         //        assertThat(describe(result), result.comparator(), is(CHAR_ARRAY_COMPARATOR));

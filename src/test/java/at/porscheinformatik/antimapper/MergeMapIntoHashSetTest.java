@@ -62,8 +62,9 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
             "c2".toCharArray(), null, null, "a".toCharArray());
         Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
-        assertThat(describeResult(result), result, matchesCollection(toList(is("!a".toCharArray()), is("!a".toCharArray()),
-            is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
+        assertThat(describeResult(result), result,
+            matchesCollection(toList(is("!a".toCharArray()), is("!a".toCharArray()), is("!b".toCharArray()),
+                is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
         assertThat(describeResult(result), result, sameInstance(entities));
 
         // check modifiable
@@ -123,8 +124,9 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
             "c2".toCharArray(), null, null, "a".toCharArray());
         Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
-        assertThat(describeResult(result), result, matchesCollection(toList(is("!a".toCharArray()), is("!a".toCharArray()),
-            is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
+        assertThat(describeResult(result), result,
+            matchesCollection(toList(is("!a".toCharArray()), is("!a".toCharArray()), is("!b".toCharArray()),
+                is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
         assertThat(describeResult(result), result, sameInstance(entities));
 
         // check modifiable
@@ -156,8 +158,9 @@ public class MergeMapIntoHashSetTest extends AbstractMapperTest
             "c2".toCharArray(), null, null, "a".toCharArray());
         Set<char[]> result = MAPPER.mergeMapIntoHashSet(dtos, entities, BOARDING_PASS);
 
-        assertThat(describeResult(result), result, matchesCollection(toList(is("A".toCharArray()), is("A".toCharArray()),
-            is("C2".toCharArray()), is("!a".toCharArray()), is("!b".toCharArray()), is("C1".toCharArray()))));
+        assertThat(describeResult(result), result,
+            matchesCollection(toList(is("A".toCharArray()), is("A".toCharArray()), is("C2".toCharArray()),
+                is("!a".toCharArray()), is("!b".toCharArray()), is("C1".toCharArray()))));
         assertThat(describeResult(result), result, sameInstance(entities));
 
         // check modifiable

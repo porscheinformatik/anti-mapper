@@ -21,7 +21,7 @@ public class ParentEntity
     public ParentEntity(Integer id)
     {
         super();
-        
+
         this.id = id;
     }
 

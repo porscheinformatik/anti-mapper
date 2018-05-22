@@ -191,8 +191,8 @@ public class MergeMapIntoTreeSetTest extends AbstractMapperTest
         SortedSet<char[]> result =
             MAPPER.mergeMapIntoTreeSet(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
 
-        assertThat(describeResult(result), result, matchesCollection(toList(is("A".toCharArray()), is("C2".toCharArray()),
-            is("!b".toCharArray()), is("C1".toCharArray()), nullValue())));
+        assertThat(describeResult(result), result, matchesCollection(toList(is("A".toCharArray()),
+            is("C2".toCharArray()), is("!b".toCharArray()), is("C1".toCharArray()), nullValue())));
 
         try
         {

@@ -65,8 +65,8 @@ public class TransformToGroupedTreeSet extends AbstractMapperTest
 
         assertThat(dtos,
             matchesMap(toMap((Character) null, is(toSortedSet(STRING_COMPARATOR, (String) null)), 'A',
-                is(toSortedSet(STRING_COMPARATOR, "A1", "A1")), 'B', is(toSortedSet(STRING_COMPARATOR, (String) null)), 'C',
-                is(toSortedSet(STRING_COMPARATOR, "C1", "C2")))));
+                is(toSortedSet(STRING_COMPARATOR, "A1", "A1")), 'B', is(toSortedSet(STRING_COMPARATOR, (String) null)),
+                'C', is(toSortedSet(STRING_COMPARATOR, "C1", "C2")))));
         assertThat(dtos.get('A').comparator(), is(STRING_COMPARATOR));
 
         try

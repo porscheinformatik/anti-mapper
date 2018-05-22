@@ -110,7 +110,8 @@ public interface Merger<DTO, Entity> extends HintsProvider
     @Deprecated
     default StreamMerger<DTO, Entity> mergeAll(Supplier<Stream<? extends DTO>> dtoStreamSupplier, Object... hints)
     {
-        return new AbstractStreamMerger<DTO, DTO, Entity>(dtoStreamSupplier, hints) {
+        return new AbstractStreamMerger<DTO, DTO, Entity>(dtoStreamSupplier, hints)
+        {
             @Override
             protected boolean isUniqueKeyMatchingNullable(DTO dto, Entity entity, Object[] hints)
             {
@@ -150,7 +151,8 @@ public interface Merger<DTO, Entity> extends HintsProvider
     default StreamMerger<DTO, Entity> mergeAll(Map<?, ? extends DTO> dtos, Object... hints)
     {
         return new AbstractStreamMerger<DTO, Entry<?, ? extends DTO>, Entity>(
-            () -> dtos != null ? dtos.entrySet().stream() : null, hints) {
+            () -> dtos != null ? dtos.entrySet().stream() : null, hints)
+        {
             @Override
             protected boolean isUniqueKeyMatchingNullable(Entry<?, ? extends DTO> dtoContainer, Entity entity,
                 Object[] hints)
@@ -274,7 +276,8 @@ public interface Merger<DTO, Entity> extends HintsProvider
             });
         };
 
-        return new AbstractStreamMerger<DTO, Pair<DTO, ParentDTO>, Entity>(dtoStreamSupplier, hints) {
+        return new AbstractStreamMerger<DTO, Pair<DTO, ParentDTO>, Entity>(dtoStreamSupplier, hints)
+        {
             @Override
             protected boolean isUniqueKeyMatchingNullable(Pair<DTO, ParentDTO> dtoContainer, Entity entity,
                 Object[] hints)
@@ -314,7 +317,8 @@ public interface Merger<DTO, Entity> extends HintsProvider
     default <GroupKey> GroupMerger<DTO, Entity> mergeGrouped(Map<GroupKey, ? extends Iterable<? extends DTO>> dtos,
         Object... hints)
     {
-        return new AbstractGroupMerger<GroupKey, DTO, Entity>(dtos, hints) {
+        return new AbstractGroupMerger<GroupKey, DTO, Entity>(dtos, hints)
+        {
             @Override
             protected boolean isUniqueKeyMatchingNullable(DTO dto, Entity entity, Object[] hints)
             {
