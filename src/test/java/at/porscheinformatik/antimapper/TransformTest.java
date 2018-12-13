@@ -40,7 +40,7 @@ public class TransformTest extends AbstractMapperTest
     {
         List<char[]> entities = toList("A".toCharArray(), "A".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        List<String> dtos = transformEach(entities.stream(), BOARDING_PASS).collect(Collectors.toList());
+        List<String> dtos = transformAll(entities.stream(), BOARDING_PASS).toStream().collect(Collectors.toList());
 
         assertThat(dtos, is(toList("A", "A", "C1", "C2")));
     }

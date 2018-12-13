@@ -28,7 +28,7 @@ public class ParentMapper extends AbstractMapper<ParentDTO, ParentEntity>
         ParentDTO dto = new ParentDTO(entity.getId());
 
         dto.setName(entity.getName());
-        dto.setChilds(childMapper.transformToArrayList(entity.getChilds(), hints));
+        dto.setChilds(childMapper.transformAll(entity.getChilds(), hints).toArrayList());
 
         return dto;
     }
@@ -45,7 +45,7 @@ public class ParentMapper extends AbstractMapper<ParentDTO, ParentEntity>
     protected ParentEntity mergeNonNull(ParentDTO dto, ParentEntity entity, Object[] hints)
     {
         entity.setName(dto.getName());
-        entity.setChilds(childMapper.mergeIntoTreeSet(dto.getChilds(), entity.getChilds(), hints));
+        entity.setChilds(childMapper.mergeAll(dto.getChilds(), hints).intoTreeSet(entity.getChilds()));
 
         // ensure, that the entity is not deleted, because there was a DTO
         entity.setDeleted(false);

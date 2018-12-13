@@ -29,7 +29,9 @@ public class ParentMapper extends AbstractMapper<ParentDTO, ParentEntity>
         ZoneId timezone = Hints.hint(hints, ZoneId.class);
         dto.setTimestamp(entity.getTimestamp().toInstant().atZone(timezone).toLocalDateTime());
 
-        dto.setChilds(childMapper.transformToGroupedArrayLists(entity.getChilds(), child -> child.getType(), hints));
+        dto
+            .setChilds(
+                childMapper.transformAll(entity.getChilds(), hints).toGroupedArrayLists(child -> child.getType()));
 
         return dto;
     }
@@ -42,7 +44,7 @@ public class ParentMapper extends AbstractMapper<ParentDTO, ParentEntity>
         ZoneId timezone = Hints.hint(hints, ZoneId.class);
         entity.setTimestamp(Date.from(dto.getTimestamp().atZone(timezone).toInstant()));
 
-        entity.setChilds(childMapper.mergeGroupedMapIntoTreeSet(dto.getChilds(), entity.getChilds(), hints));
+        entity.setChilds(childMapper.mergeGrouped(dto.getChilds(), hints).intoTreeSet(entity.getChilds()));
 
         return entity;
     }

@@ -17,7 +17,7 @@ public class TransformToHashMap extends AbstractMapperTest
     @Test
     public void testNullToHashMap()
     {
-        Map<Character, String> dtos = this.transformToHashMap(null, GROUPER, BOARDING_PASS);
+        Map<Character, String> dtos = this.transformAll((List<char[]>) null, BOARDING_PASS).toHashMap(GROUPER);
 
         assertThat(dtos, nullValue());
     }
@@ -25,7 +25,8 @@ public class TransformToHashMap extends AbstractMapperTest
     @Test
     public void testNullToHashMapOrEmpty()
     {
-        Map<Character, String> dtos = this.transformToHashMap(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
+        Map<Character, String> dtos =
+            this.transformAll((List<char[]>) null, BOARDING_PASS, Hint.OR_EMPTY).toHashMap(GROUPER);
 
         assertThat(dtos, is(Collections.emptyMap()));
 
@@ -39,7 +40,7 @@ public class TransformToHashMap extends AbstractMapperTest
     {
         List<char[]> entities = toList("A1".toCharArray(), "A1".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        Map<Character, String> dtos = this.transformToHashMap(entities, GROUPER, BOARDING_PASS);
+        Map<Character, String> dtos = this.transformAll(entities, BOARDING_PASS).toHashMap(GROUPER);
 
         assertThat(dtos, is(toMap('A', "A1", 'C', "C2")));
 
@@ -54,7 +55,7 @@ public class TransformToHashMap extends AbstractMapperTest
         List<char[]> entities = toList("A1".toCharArray(), "A1".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
         Map<Character, String> dtos =
-            this.transformToHashMap(entities, GROUPER, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+            this.transformAll(entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS).toHashMap(GROUPER);
 
         assertThat(dtos, is(toMap('A', "A1", 'B', null, 'C', "C2")));
 

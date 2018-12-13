@@ -17,7 +17,7 @@ public class TransformToTreeSet extends AbstractMapperTest
     @Test
     public void testNullToTreeSet()
     {
-        SortedSet<String> dtos = this.transformToTreeSet(null, BOARDING_PASS, STRING_COMPARATOR);
+        SortedSet<String> dtos = this.transformAll((List<char[]>) null, BOARDING_PASS).toTreeSet(STRING_COMPARATOR);
 
         assertThat(dtos, nullValue());
     }
@@ -25,7 +25,8 @@ public class TransformToTreeSet extends AbstractMapperTest
     @Test
     public void testNullToTreeSetOrEmpty()
     {
-        SortedSet<String> dtos = this.transformToTreeSet(null, STRING_COMPARATOR, BOARDING_PASS, Hint.OR_EMPTY);
+        SortedSet<String> dtos =
+            this.transformAll((List<char[]>) null, BOARDING_PASS, Hint.OR_EMPTY).toTreeSet(STRING_COMPARATOR);
 
         assertThat(dtos, is(Collections.emptySortedSet()));
         assertThat(dtos.comparator(), is(STRING_COMPARATOR));
@@ -40,7 +41,7 @@ public class TransformToTreeSet extends AbstractMapperTest
     {
         List<char[]> entities = toList("A".toCharArray(), "A".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        SortedSet<String> dtos = this.transformToTreeSet(entities, STRING_COMPARATOR, BOARDING_PASS);
+        SortedSet<String> dtos = this.transformAll(entities, BOARDING_PASS).toTreeSet(STRING_COMPARATOR);
 
         assertThat(dtos, is(toSortedSet(STRING_COMPARATOR, "A", "C1", "C2")));
         assertThat(dtos.comparator(), is(STRING_COMPARATOR));
@@ -55,7 +56,8 @@ public class TransformToTreeSet extends AbstractMapperTest
     {
         List<char[]> entities = toList("A".toCharArray(), "A".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        SortedSet<String> dtos = this.transformToTreeSet(entities, STRING_COMPARATOR, Hint.UNMODIFIABLE, BOARDING_PASS);
+        SortedSet<String> dtos =
+            this.transformAll(entities, Hint.UNMODIFIABLE, BOARDING_PASS).toTreeSet(STRING_COMPARATOR);
 
         assertThat(dtos, is(toSortedSet(STRING_COMPARATOR, "A", "C1", "C2")));
         assertThat(dtos.comparator(), is(STRING_COMPARATOR));

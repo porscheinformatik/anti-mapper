@@ -18,7 +18,8 @@ public class TransformToGroupedTreeSet extends AbstractMapperTest
     @Test
     public void testNullToGroupedTreeSets()
     {
-        Map<Character, SortedSet<String>> dtos = this.transformToGroupedTreeSets(null, GROUPER, BOARDING_PASS);
+        Map<Character, SortedSet<String>> dtos =
+            this.transformAll((List<char[]>) null, BOARDING_PASS).toGroupedTreeSets(GROUPER);
 
         assertThat(dtos, nullValue());
     }
@@ -27,7 +28,7 @@ public class TransformToGroupedTreeSet extends AbstractMapperTest
     public void testNullToGroupedTreeSetsOrEmpty()
     {
         Map<Character, SortedSet<String>> dtos =
-            this.transformToGroupedTreeSets(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
+            this.transformAll((List<char[]>) null, BOARDING_PASS, Hint.OR_EMPTY).toGroupedTreeSets(GROUPER);
 
         assertThat(dtos, is(Collections.emptyMap()));
 
@@ -42,7 +43,7 @@ public class TransformToGroupedTreeSet extends AbstractMapperTest
         List<char[]> entities = toList("A1".toCharArray(), "A1".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
         Map<Character, SortedSet<String>> dtos =
-            this.transformToGroupedTreeSets(entities, GROUPER, STRING_COMPARATOR, BOARDING_PASS);
+            this.transformAll(entities, BOARDING_PASS).toGroupedTreeSets(GROUPER, STRING_COMPARATOR);
 
         assertThat(dtos, matchesMap(
             toMap('A', is(toSortedSet(STRING_COMPARATOR, "A1")), 'C', is(toSortedSet(STRING_COMPARATOR, "C1", "C2")))));
@@ -60,8 +61,9 @@ public class TransformToGroupedTreeSet extends AbstractMapperTest
     {
         List<char[]> entities = toList("A1".toCharArray(), "A1".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        Map<Character, SortedSet<String>> dtos = this.transformToGroupedTreeSets(entities, GROUPER, STRING_COMPARATOR,
-            Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+        Map<Character, SortedSet<String>> dtos = this
+            .transformAll(entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS)
+            .toGroupedTreeSets(GROUPER, STRING_COMPARATOR);
 
         assertThat(dtos,
             matchesMap(toMap((Character) null, is(toSortedSet(STRING_COMPARATOR, (String) null)), 'A',

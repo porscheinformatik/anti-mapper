@@ -18,7 +18,8 @@ public class TransformToGroupedHashSets extends AbstractMapperTest
     @Test
     public void testNullToGroupedHashSets()
     {
-        Map<Character, Set<String>> dtos = this.transformToGroupedHashSets(null, GROUPER, BOARDING_PASS);
+        Map<Character, Set<String>> dtos =
+            this.transformAll((List<char[]>) null, BOARDING_PASS).toGroupedHashSets(GROUPER);
 
         assertThat(dtos, nullValue());
     }
@@ -26,7 +27,8 @@ public class TransformToGroupedHashSets extends AbstractMapperTest
     @Test
     public void testNullToGroupedHashSetsOrEmpty()
     {
-        Map<Character, Set<String>> dtos = this.transformToGroupedHashSets(null, GROUPER, BOARDING_PASS, Hint.OR_EMPTY);
+        Map<Character, Set<String>> dtos =
+            this.transformAll((List<char[]>) null, BOARDING_PASS, Hint.OR_EMPTY).toGroupedHashSets(GROUPER);
 
         assertThat(dtos, is(Collections.emptyMap()));
 
@@ -40,7 +42,7 @@ public class TransformToGroupedHashSets extends AbstractMapperTest
     {
         List<char[]> entities = toList("A1".toCharArray(), "A1".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
-        Map<Character, Set<String>> dtos = this.transformToGroupedHashSets(entities, GROUPER, BOARDING_PASS);
+        Map<Character, Set<String>> dtos = this.transformAll(entities, BOARDING_PASS).toGroupedHashSets(GROUPER);
 
         assertThat(dtos, matchesMap(toMap('A', is(toSet("A1")), 'C', is(toSet("C1", "C2")))));
 
@@ -57,7 +59,7 @@ public class TransformToGroupedHashSets extends AbstractMapperTest
         List<char[]> entities = toList("A1".toCharArray(), "A1".toCharArray(), "!B".toCharArray(), "C1".toCharArray(),
             "C2".toCharArray(), null);
         Map<Character, Set<String>> dtos =
-            this.transformToGroupedHashSets(entities, GROUPER, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+            this.transformAll(entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS).toGroupedHashSets(GROUPER);
 
         assertThat(dtos, matchesMap(toMap((Character) null, is(toSet(new String[]{null})), 'A', is(toSet("A1", "A1")),
             'B', is(toSet(new String[]{null})), 'C', is(toSet("C1", "C2")))));

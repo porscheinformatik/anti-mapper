@@ -20,7 +20,7 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Character, List<String>> dtos = null;
         List<char[]> entities = null;
-        List<char[]> result = mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeGrouped(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, nullValue());
     }
@@ -30,7 +30,7 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Character, List<String>> dtos = null;
         List<char[]> entities = null;
-        List<char[]> result = mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
+        List<char[]> result = mergeGrouped(dtos, BOARDING_PASS, Hint.OR_EMPTY).intoArrayList(entities);
 
         assertThat(describeResult(result), result, is(Collections.emptyList()));
 
@@ -44,7 +44,7 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Character, List<String>> dtos = null;
         List<char[]> entities = TestUtils.toList();
-        List<char[]> result = mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeGrouped(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, is(Collections.emptyList()));
         assertThat(describeResult(result), result, sameInstance(entities));
@@ -60,7 +60,8 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         Map<Character, List<String>> dtos = null;
         List<char[]> entities = toList("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
-        List<char[]> result = mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeGrouped(dtos, BOARDING_PASS).intoArrayList(entities);
+        ;
 
         assertThat(describeResult(result), result, matchesList(toList(is("!a".toCharArray()), is("!a".toCharArray()),
             is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
@@ -77,7 +78,8 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         Map<Character, List<String>> dtos =
             toMap('a', toList("A", "A"), 'c', toList("C2", "C1"), null, toList((String) null));
         List<char[]> entities = null;
-        List<char[]> result = mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeGrouped(dtos, BOARDING_PASS).intoArrayList(entities);
+        ;
 
         assertThat(describeResult(result), result, matchesList(
             toList(is("A".toCharArray()), is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()))));
@@ -92,7 +94,8 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Character, List<String>> dtos = Collections.emptyMap();
         List<char[]> entities = null;
-        List<char[]> result = mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeGrouped(dtos, BOARDING_PASS).intoArrayList(entities);
+        ;
 
         assertThat(describeResult(result), result, is(Collections.emptyList()));
 
@@ -106,7 +109,7 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Character, List<String>> dtos = Collections.emptyMap();
         List<char[]> entities = TestUtils.toList();
-        List<char[]> result = mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeGrouped(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, is(Collections.emptyList()));
         assertThat(describeResult(result), result, sameInstance(entities));
@@ -122,7 +125,7 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         Map<Character, List<String>> dtos = Collections.emptyMap();
         List<char[]> entities = toList("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
-        List<char[]> result = mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeGrouped(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, matchesList(toList(is("!a".toCharArray()), is("!a".toCharArray()),
             is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
@@ -139,7 +142,7 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         Map<Character, List<String>> dtos =
             toMap('a', toList("A", "A"), 'c', toList("C2", "C1"), null, toList((String) null));
         List<char[]> entities = new ArrayList<>();
-        List<char[]> result = mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeGrouped(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, matchesList(
             toList(is("A".toCharArray()), is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()))));
@@ -157,7 +160,7 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
             toMap('a', toList("A", "A"), 'c', toList("C2", "C1"), null, toList((String) null));
         List<char[]> entities = toList("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
-        List<char[]> result = mergeGroupedMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeGrouped(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, matchesList(toList(is("A".toCharArray()), is("A".toCharArray()),
             is("C2".toCharArray()), is("C1".toCharArray()), is("!b".toCharArray()), is("!a".toCharArray()))));
@@ -176,7 +179,7 @@ public class MergeGroupedMapIntoArrayListTest extends AbstractMapperTest
         List<char[]> entities = toList("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
         List<char[]> result =
-            mergeGroupedMapIntoArrayList(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+            mergeGrouped(dtos, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result,
             matchesList(toList(is("A".toCharArray()), is("A".toCharArray()), is("C2".toCharArray()),

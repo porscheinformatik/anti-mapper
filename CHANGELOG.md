@@ -1,3 +1,9 @@
+# anti-mapper 1.5
+
+## anti-mapper 1.5.0
+
+* Removed deprecated methods.
+
 # anti-mapper 1.4
 
 ## anti-mapper 1.4.8

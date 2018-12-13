@@ -17,7 +17,8 @@ public class TransformGroupedMapToGroupedArrayLists extends AbstractMapperTest
     @Test
     public void testNullToGroupedArrayLists()
     {
-        Map<Character, List<String>> dtos = this.transformGroupedMapToGroupedArrayLists(null, BOARDING_PASS);
+        Map<Character, List<String>> dtos =
+            this.<Character> transformGrouped(null, BOARDING_PASS).toGroupedArrayLists();
 
         assertThat(dtos, nullValue());
     }
@@ -26,7 +27,7 @@ public class TransformGroupedMapToGroupedArrayLists extends AbstractMapperTest
     public void testNullToGroupedArrayListsOrEmpty()
     {
         Map<Character, List<String>> dtos =
-            this.transformGroupedMapToGroupedArrayLists(null, BOARDING_PASS, Hint.OR_EMPTY);
+            this.<Character> transformGrouped(null, BOARDING_PASS, Hint.OR_EMPTY).toGroupedArrayLists();
 
         assertThat(dtos, is(Collections.emptyMap()));
 
@@ -40,7 +41,7 @@ public class TransformGroupedMapToGroupedArrayLists extends AbstractMapperTest
     {
         Map<Character, List<char[]>> entities = toMap('A', toList("A1".toCharArray(), "A1".toCharArray()), 'B',
             toList("!B".toCharArray()), 'C', toList("C1".toCharArray(), "C2".toCharArray()), null, null);
-        Map<Character, List<String>> dtos = this.transformGroupedMapToGroupedArrayLists(entities, BOARDING_PASS);
+        Map<Character, List<String>> dtos = this.transformGrouped(entities, BOARDING_PASS).toGroupedArrayLists();
 
         assertThat(dtos, matchesMap(
             toMap('A', is(toList("A1", "A1")), 'B', is(toList()), 'C', is(toList("C1", "C2")), null, nullValue())));
@@ -58,7 +59,7 @@ public class TransformGroupedMapToGroupedArrayLists extends AbstractMapperTest
         Map<Character, List<char[]>> entities = toMap('A', toList("A1".toCharArray(), "A1".toCharArray()), 'B',
             toList("!B".toCharArray()), 'C', toList("C1".toCharArray(), "C2".toCharArray()), null, null);
         Map<Character, List<String>> dtos =
-            this.transformGroupedMapToGroupedArrayLists(entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+            this.transformGrouped(entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS).toGroupedArrayLists();
 
         assertThat(dtos, matchesMap(toMap((Character) null, is(toList(new String[]{null})), 'A', is(toList("A1", "A1")),
             'B', is(toList(new String[]{null})), 'C', is(toList("C1", "C2")), null, nullValue())));

@@ -21,7 +21,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = null;
         List<char[]> entities = null;
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeAll(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, nullValue());
     }
@@ -31,7 +31,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = null;
         List<char[]> entities = null;
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, BOARDING_PASS, Hint.OR_EMPTY);
+        List<char[]> result = mergeAll(dtos, BOARDING_PASS, Hint.OR_EMPTY).intoArrayList(entities);
 
         assertThat(describeResult(result), result, is(Collections.emptyList()));
 
@@ -45,7 +45,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = null;
         List<char[]> entities = TestUtils.toList();
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeAll(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, is(Collections.emptyList()));
         assertThat(describeResult(result), result, sameInstance(entities));
@@ -61,7 +61,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
         Map<Integer, String> dtos = null;
         List<char[]> entities = toList("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeAll(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, matchesList(toList(is("!a".toCharArray()), is("!a".toCharArray()),
             is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
@@ -77,7 +77,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = toMap(1, "A", 2, "C2", 3, "C1", 4, null, 5, "A");
         List<char[]> entities = null;
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeAll(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, matchesList(
             toList(is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()), is("A".toCharArray()))));
@@ -92,7 +92,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = Collections.emptyMap();
         List<char[]> entities = null;
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeAll(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, is(Collections.emptyList()));
 
@@ -106,7 +106,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = Collections.emptyMap();
         List<char[]> entities = TestUtils.toList();
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeAll(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, is(Collections.emptyList()));
         assertThat(describeResult(result), result, sameInstance(entities));
@@ -122,7 +122,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
         Map<Integer, String> dtos = Collections.emptyMap();
         List<char[]> entities = toList("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeAll(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, matchesList(toList(is("!a".toCharArray()), is("!a".toCharArray()),
             is("!b".toCharArray()), is("!c1".toCharArray()), is("!c2".toCharArray()), is("!a".toCharArray()))));
@@ -138,7 +138,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
     {
         Map<Integer, String> dtos = toMap(1, "A", 2, "C2", 3, "C1", 4, null, 5, "A");
         List<char[]> entities = new ArrayList<>();
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeAll(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, matchesList(
             toList(is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()), is("A".toCharArray()))));
@@ -155,7 +155,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
         Map<Integer, String> dtos = toMap(1, "A", 2, "C2", 3, "C1", 4, null, 5, "A");
         List<char[]> entities = toList("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, BOARDING_PASS);
+        List<char[]> result = mergeAll(dtos, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result, matchesList(toList(is("A".toCharArray()), is("C2".toCharArray()),
             is("C1".toCharArray()), is("A".toCharArray()), is("!a".toCharArray()), is("!b".toCharArray()))));
@@ -172,7 +172,7 @@ public class MergeMapIntoArrayListTest extends AbstractMapperTest
         Map<Integer, String> dtos = toMap(1, "A", 2, "C2", 3, "C1", 4, null, 5, "A");
         List<char[]> entities = toList("a".toCharArray(), "a".toCharArray(), "!b".toCharArray(), "c1".toCharArray(),
             "c2".toCharArray(), null, null, "a".toCharArray());
-        List<char[]> result = mergeMapIntoArrayList(dtos, entities, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS);
+        List<char[]> result = mergeAll(dtos, Hint.KEEP_NULL, Hint.UNMODIFIABLE, BOARDING_PASS).intoArrayList(entities);
 
         assertThat(describeResult(result), result,
             matchesList(toList(is("A".toCharArray()), is("C2".toCharArray()), is("C1".toCharArray()), nullValue(),
