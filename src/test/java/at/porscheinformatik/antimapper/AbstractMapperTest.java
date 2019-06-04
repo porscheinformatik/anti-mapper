@@ -46,7 +46,7 @@ public abstract class AbstractMapperTest extends AbstractMapper<String, char[]>
     protected String transformNull(Object[] hints)
     {
         Assert.assertNotNull(hints);
-        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.hintOrNull(hints, UUID.class));
 
         return null;
     };
@@ -56,7 +56,7 @@ public abstract class AbstractMapperTest extends AbstractMapper<String, char[]>
     {
         Assert.assertNotNull(entity);
         Assert.assertNotNull(hints);
-        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.hintOrNull(hints, UUID.class));
 
         if (entity.length > 0 && entity[0] == '!')
         {
@@ -71,7 +71,7 @@ public abstract class AbstractMapperTest extends AbstractMapper<String, char[]>
     {
         Assert.assertNotNull(entity);
         Assert.assertNotNull(hints);
-        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.hintOrNull(hints, UUID.class));
 
         if (entity.length == 0)
         {
@@ -97,7 +97,7 @@ public abstract class AbstractMapperTest extends AbstractMapper<String, char[]>
         Assert.assertNotNull(dto);
         Assert.assertNotNull(entity);
         Assert.assertNotNull(hints);
-        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.hintOrNull(hints, UUID.class));
 
         if (dto.length() == entity.length)
         {
@@ -114,7 +114,7 @@ public abstract class AbstractMapperTest extends AbstractMapper<String, char[]>
     {
         Assert.assertNotNull(dto);
         Assert.assertNotNull(hints);
-        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.hintOrNull(hints, UUID.class));
 
         return new char[dto.length()];
     }
@@ -125,7 +125,7 @@ public abstract class AbstractMapperTest extends AbstractMapper<String, char[]>
         Assert.assertNotNull(dto);
         Assert.assertNotNull(entity);
         Assert.assertNotNull(hints);
-        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.optionalHint(hints, UUID.class));
+        Assert.assertEquals("Hints were not passed correctly", BOARDING_PASS, Hints.hintOrNull(hints, UUID.class));
 
         String entityString = String.valueOf(entity);
 

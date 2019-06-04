@@ -4,6 +4,10 @@
 
 * Removed deprecated methods.
 
+## anti-mapper 1.5.1
+
+* `Hints.optionalHint` now returns an `Optional`. This is breaking change, but fairly easy to fix. Use `Hint.hintOrNull` as direct replacement.
+
 # anti-mapper 1.4
 
 ## anti-mapper 1.4.8

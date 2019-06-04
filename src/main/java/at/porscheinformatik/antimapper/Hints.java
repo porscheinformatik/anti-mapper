@@ -2,6 +2,7 @@ package at.porscheinformatik.antimapper;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -45,7 +46,7 @@ public final class Hints
     }
 
     /**
-     * Returns the hint of the specified type. Null if not found
+     * Returns the hint of the specified type. Throws an exception, if there's no value of the specified type.
      *
      * @param <Any> the type of the hint
      * @param hints the hints
@@ -53,41 +54,60 @@ public final class Hints
      * @return the hint
      * @throws IllegalArgumentException if no hint for the given type is available
      */
-    public static <Any> Any hint(Object[] hints, Class<Any> type)
+    public static <Any> Any hint(Object[] hints, Class<Any> type) throws IllegalArgumentException
     {
         return hint(hints, type, null);
     }
 
     /**
-     * Returns the hint of the specified type. Null if not found
+     * Returns the hint of the specified type. Uses the defaultHintSupplier (if available) if the value is not
+     * specified. Throws an exception otherwise.
      *
      * @param <Any> the type of the hint
      * @param hints the hints
      * @param type the type
-     * @param defaultHintSupplier a {@link Supplier} of the default value if not specified
-     * @return the hint
+     * @param defaultValueSupplier a {@link Supplier} of the default value is not specified
+     * @return the hint, never null
+     * @throws IllegalArgumentException if the hint could not be found
      */
-    public static <Any> Any hint(Object[] hints, Class<Any> type, Supplier<Any> defaultHintSupplier)
+    public static <Any> Any hint(Object[] hints, Class<Any> type, Supplier<Any> defaultValueSupplier)
+        throws IllegalArgumentException
     {
-        Any hint = optionalHint(hints, type);
+        Any hint = hintOrNull(hints, type);
 
         if (hint != null)
         {
             return hint;
         }
 
-        if (defaultHintSupplier != null)
+        if (defaultValueSupplier != null)
         {
-            return defaultHintSupplier.get();
+            return defaultValueSupplier.get();
         }
 
-        throw new IllegalArgumentException(
-            String.format("The hint of type %s is missing. Available hints are: %s", MapperUtils.toClassName(type),
+        throw new IllegalArgumentException(String
+            .format("The hint of type %s is missing. Available hints are: %s", MapperUtils.toClassName(type),
                 Arrays.stream(hints).map(MapperUtils::toClassName).collect(Collectors.joining(", "))));
     }
 
     /**
-     * Returns the hint of the specified type. Null if not found
+     * Returns the hint of the specified type.
+     *
+     * @param <Any> the type of the hint
+     * @param hints the hints
+     * @param type the type
+     * @param defaultValue a default value
+     * @return the hint
+     */
+    public static <Any> Any hintOrElse(Object[] hints, Class<Any> type, Any defaultValue)
+    {
+        Any value = hintOrNull(hints, type);
+
+        return value != null ? value : defaultValue;
+    }
+
+    /**
+     * Returns the hint of the specified type, null if not available
      *
      * @param <Any> the type of the hint
      * @param hints the hints
@@ -95,7 +115,7 @@ public final class Hints
      * @return the hint
      */
     @SuppressWarnings("unchecked")
-    public static <Any> Any optionalHint(Object[] hints, Class<Any> type)
+    public static <Any> Any hintOrNull(Object[] hints, Class<Any> type)
     {
         if (hints != null)
         {
@@ -109,6 +129,19 @@ public final class Hints
         }
 
         return null;
+    }
+
+    /**
+     * Returns the hint of the specified type.
+     *
+     * @param <Any> the type of the hint
+     * @param hints the hints
+     * @param type the type
+     * @return an Optional with the hint, never null
+     */
+    public static <Any> Optional<Any> optionalHint(Object[] hints, Class<Any> type)
+    {
+        return Optional.ofNullable(hintOrNull(hints, type));
     }
 
     /**
