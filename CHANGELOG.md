@@ -1,12 +1,15 @@
+# anti-mapper 1.6
+
+## anti-mapper 1.6.0
+
+* `Hints.optionalHint` now returns an `Optional`. This is breaking change, but fairly easy to fix. Use `Hint.hintOrNull` as direct replacement.
+* Added methods for `LinkedHashSet`s.
+
 # anti-mapper 1.5
 
 ## anti-mapper 1.5.0
 
 * Removed deprecated methods.
-
-## anti-mapper 1.5.1
-
-* `Hints.optionalHint` now returns an `Optional`. This is breaking change, but fairly easy to fix. Use `Hint.hintOrNull` as direct replacement.
 
 # anti-mapper 1.4
 

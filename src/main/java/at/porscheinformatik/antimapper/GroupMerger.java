@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -60,6 +61,20 @@ public interface GroupMerger<DTO, Entity>
     default Set<Entity> intoHashSet(Set<Entity> entities)
     {
         return intoMixedCollection(entities, HashSet::new);
+    }
+
+    /**
+     * Maps a grouped map to a collection. If the entities parameter is null, it creates a {@link LinkedHashSet} if
+     * necessary. Ignores DTOs that merge to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an
+     * unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set (always creates a new result object in this case).
+     * Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param entities the entities
+     * @return the collection
+     */
+    default Set<Entity> intoLinkedHashSet(Set<Entity> entities)
+    {
+        return intoMixedCollection(entities, LinkedHashSet::new);
     }
 
     /**

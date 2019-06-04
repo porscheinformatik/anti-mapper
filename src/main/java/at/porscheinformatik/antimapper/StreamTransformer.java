@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +57,18 @@ public interface StreamTransformer<DTO, Entity>
     default Set<DTO> toHashSet()
     {
         return toCollection(HashSet::new);
+    }
+
+    /**
+     * Transforms the stream to a {@link LinkedHashSet} of DTOs. Ignores entities that transform to null, unless the
+     * {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set.
+     * Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @return a set
+     */
+    default Set<DTO> toLinkedHashSet()
+    {
+        return toCollection(LinkedHashSet::new);
     }
 
     /**
@@ -153,6 +166,20 @@ public interface StreamTransformer<DTO, Entity>
     default <GroupKey> Map<GroupKey, Set<DTO>> toGroupedHashSets(Function<Entity, GroupKey> groupKeyFunction)
     {
         return toGroupedMap(HashMap<GroupKey, Set<DTO>>::new, groupKeyFunction, HashSet::new);
+    }
+
+    /**
+     * Transforms the stream to a grouped {@link Map} of {@link LinkedHashSet}s with DTOs. Ignores entities that
+     * transform to null, unless the {@link Hint#KEEP_NULL} hint is set. Returns an unmodifiable instance if the
+     * {@link Hint#UNMODIFIABLE} is set. Never returns null if the {@link Hint#OR_EMPTY} is set.
+     *
+     * @param <GroupKey> the type of the group key
+     * @param groupKeyFunction extracts the key for the map
+     * @return a map
+     */
+    default <GroupKey> Map<GroupKey, Set<DTO>> toGroupedLinkedHashSets(Function<Entity, GroupKey> groupKeyFunction)
+    {
+        return toGroupedMap(HashMap<GroupKey, Set<DTO>>::new, groupKeyFunction, LinkedHashSet::new);
     }
 
     /**

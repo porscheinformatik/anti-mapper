@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,6 +64,19 @@ public interface GroupTransformer<DTO, GroupKey, Entity>
     default Map<GroupKey, Set<DTO>> toGroupedHashSets()
     {
         return toGroupedMap(HashMap<GroupKey, Set<DTO>>::new, HashSet<DTO>::new);
+    }
+
+    /**
+     * Transforms a grouped map with an {@link Iterable} of entities to a grouped {@link LinkedHashSet} with an
+     * {@link HashSet} of DTOs. Ignores entities that transform to null, unless the {@link Hint#KEEP_NULL} hint is set.
+     * Returns an unmodifiable instance if the {@link Hint#UNMODIFIABLE} is set. Never returns null if the
+     * {@link Hint#OR_EMPTY} is set. The key entities map key is added to the hints for each transformation round.
+     *
+     * @return a map
+     */
+    default Map<GroupKey, Set<DTO>> toGroupedLinkedHashSets()
+    {
+        return toGroupedMap(HashMap<GroupKey, Set<DTO>>::new, LinkedHashSet<DTO>::new);
     }
 
     /**
