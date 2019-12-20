@@ -15,6 +15,11 @@ public enum Hint
     KEEP_NULL,
 
     /**
+     * Tells the collection and map mergers to keep items, that are missing in the source (do not delete them).
+     */
+    KEEP_MISSING,
+    
+    /**
      * Tells the collection and map transformer methods to create unmodifiable collections and maps. Tells the
      * collection and map merger methods to assume and create unmodifiable collections and maps.
      */

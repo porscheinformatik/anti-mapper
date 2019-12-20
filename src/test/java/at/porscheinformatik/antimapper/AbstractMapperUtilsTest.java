@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -104,7 +105,7 @@ public abstract class AbstractMapperUtilsTest
         }
     }
 
-    protected void createRandomItems(List<String> sourceItems, List<String> targetItems, int count)
+    protected void createRandomItems(Random rnd, List<String> sourceItems, List<String> targetItems, int count)
     {
         char ch = 'A';
 
@@ -112,7 +113,7 @@ public abstract class AbstractMapperUtilsTest
         {
             targetItems.add(String.valueOf(ch));
 
-            if (Math.random() < 0.5)
+            if (rnd.nextBoolean())
             {
                 ch++;
             }
@@ -120,7 +121,7 @@ public abstract class AbstractMapperUtilsTest
 
         Collections.shuffle(targetItems);
 
-        count = Math.max(count, (int) (Math.random() * 8));
+        count = Math.max(count, rnd.nextInt(8));
 
         Iterator<String> iterator = targetItems.iterator();
 
@@ -141,11 +142,11 @@ public abstract class AbstractMapperUtilsTest
 
         while (sourceItems.size() < count)
         {
-            int pos = (int) (Math.random() * (sourceItems.size() - 1));
+            int pos = sourceItems.size() > 0 ? rnd.nextInt(sourceItems.size()) : 0;
 
             sourceItems.add(pos, String.valueOf(ch));
 
-            if (Math.random() < 0.5)
+            if (rnd.nextBoolean())
             {
                 ch++;
             }
@@ -155,7 +156,7 @@ public abstract class AbstractMapperUtilsTest
 
         while (i < sourceItems.size())
         {
-            double wat = Math.random();
+            double wat = rnd.nextDouble();
 
             if (wat < 0.25)
             {
@@ -163,7 +164,7 @@ public abstract class AbstractMapperUtilsTest
             }
             else if (wat < 0.5)
             {
-                int pos = (int) (Math.random() * (sourceItems.size() - 1));
+                int pos = sourceItems.size() > 0 ? rnd.nextInt(sourceItems.size()) : 0;
 
                 sourceItems.add(pos, sourceItems.remove(i));
             }

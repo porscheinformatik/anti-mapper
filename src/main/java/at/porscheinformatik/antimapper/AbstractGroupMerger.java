@@ -39,9 +39,13 @@ public abstract class AbstractGroupMerger<GroupKey, DTO, Entity> implements Grou
     {
         Map<GroupKey, ? extends Iterable<? extends DTO>> dtos = this.dtos;
 
+        boolean keepMissing = containsHint(Hint.KEEP_MISSING);
+
         if (dtos == null)
         {
-            if (entities == null && !containsHint(Hint.OR_EMPTY))
+            boolean orEmpty = containsHint(Hint.OR_EMPTY);
+
+            if (entities == null && !orEmpty && !keepMissing)
             {
                 return null;
             }
@@ -67,16 +71,19 @@ public abstract class AbstractGroupMerger<GroupKey, DTO, Entity> implements Grou
 
             Collection<Pair<?, ? extends DTO>> pairs = new ArrayList<>();
 
-            dtos.entrySet().forEach(
-                entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
+            dtos
+                .entrySet()
+                .forEach(entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
 
-            entities = MapperUtils.mapMixed(pairs.stream(), entities,
-                (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                containsHint(Hint.KEEP_NULL) ? null : dto -> dto != null,
-                list -> afterMergeIntoCollection(list, hints));
+            boolean keepNull = containsHint(Hint.KEEP_NULL);
+
+            entities = MapperUtils
+                .mapMixed(pairs.stream(), entities,
+                    (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
+                        pair != null ? Hints.join(hints, pair.getLeft()) : hints),
+                    (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
+                        pair != null ? Hints.join(hints, pair.getLeft()) : hints),
+                    keepMissing, keepNull ? null : dto -> dto != null, list -> afterMergeIntoCollection(list, hints));
 
             if (unmodifiable)
             {
@@ -98,10 +105,13 @@ public abstract class AbstractGroupMerger<GroupKey, DTO, Entity> implements Grou
         EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory)
     {
         Map<GroupKey, ? extends Iterable<? extends DTO>> dtos = this.dtos;
+        boolean keepMissing = containsHint(Hint.KEEP_MISSING);
 
         if (dtos == null)
         {
-            if (entities == null && !containsHint(Hint.OR_EMPTY))
+            boolean orEmpty = containsHint(Hint.OR_EMPTY);
+
+            if (entities == null && !orEmpty && !keepMissing)
             {
                 return null;
             }
@@ -127,16 +137,20 @@ public abstract class AbstractGroupMerger<GroupKey, DTO, Entity> implements Grou
 
             Collection<Pair<?, ? extends DTO>> pairs = new ArrayList<>();
 
-            dtos.entrySet().forEach(
-                entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
+            dtos
+                .entrySet()
+                .forEach(entry -> entry.getValue().forEach(item -> pairs.add(Pair.of(entry.getKey(), item))));
 
-            entities = MapperUtils.mapOrdered(pairs, entities,
-                (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
-                    pair != null ? Hints.join(hints, pair.getLeft()) : hints),
-                containsHint(Hint.KEEP_NULL) ? null : entity -> entity != null,
-                list -> afterMergeIntoCollection(list, hints));
+            boolean keepNull = containsHint(Hint.KEEP_NULL);
+
+            entities = MapperUtils
+                .mapOrdered(pairs, entities,
+                    (pair, entity) -> isUniqueKeyMatchingNullable(pair != null ? pair.getRight() : null, entity,
+                        pair != null ? Hints.join(hints, pair.getLeft()) : hints),
+                    (pair, entity) -> merge(pair != null ? pair.getRight() : null, entity,
+                        pair != null ? Hints.join(hints, pair.getLeft()) : hints),
+                    keepMissing, keepNull ? null : entity -> entity != null,
+                    list -> afterMergeIntoCollection(list, hints));
 
             if (unmodifiable)
             {

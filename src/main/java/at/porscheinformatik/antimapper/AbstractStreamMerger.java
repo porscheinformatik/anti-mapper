@@ -36,10 +36,13 @@ public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements
         Supplier<EntityCollection> entityCollectionFactory)
     {
         Stream<? extends DTOContainer> dtoContainers = streamSupplier.get();
+        boolean keepMissing = containsHint(Hint.KEEP_MISSING);
 
         if (dtoContainers == null)
         {
-            if (entities == null && !containsHint(Hint.OR_EMPTY))
+            boolean orEmpty = containsHint(Hint.OR_EMPTY);
+
+            if (entities == null && !orEmpty && !keepMissing)
             {
                 return null;
             }
@@ -63,11 +66,13 @@ public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements
                 entities.addAll(originalEntity);
             }
 
-            entities = MapperUtils.mapMixed(dtoContainers, entities,
-                (dtoContainer, entity) -> isUniqueKeyMatchingNullable(dtoContainer, entity, hints),
-                (dtoContainer, entity) -> merge(dtoContainer, entity, hints),
-                containsHint(Hint.KEEP_NULL) ? null : dto -> dto != null,
-                list -> afterMergeIntoCollection(list, hints));
+            boolean keepNull = containsHint(Hint.KEEP_NULL);
+
+            entities = MapperUtils
+                .mapMixed(dtoContainers, entities,
+                    (dtoContainer, entity) -> isUniqueKeyMatchingNullable(dtoContainer, entity, hints),
+                    (dtoContainer, entity) -> merge(dtoContainer, entity, hints), keepMissing,
+                    keepNull ? null : dto -> dto != null, list -> afterMergeIntoCollection(list, hints));
 
             if (unmodifiable)
             {
@@ -89,10 +94,13 @@ public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements
         EntityCollection entities, Supplier<EntityCollection> entityCollectionFactory)
     {
         Stream<? extends DTOContainer> dtoContainers = streamSupplier.get();
+        boolean keepMissing = containsHint(Hint.KEEP_MISSING);
 
         if (dtoContainers == null)
         {
-            if (entities == null && !containsHint(Hint.OR_EMPTY))
+            boolean orEmpty = containsHint(Hint.OR_EMPTY);
+
+            if (entities == null && !orEmpty && !keepMissing)
             {
                 return null;
             }
@@ -116,11 +124,12 @@ public abstract class AbstractStreamMerger<DTO, DTOContainer, Entity> implements
                 entities.addAll(originalEntity);
             }
 
-            entities = MapperUtils.mapOrdered(dtoContainers, entities,
-                (dto, entity) -> isUniqueKeyMatchingNullable(dto, entity, hints),
-                (dtoContainer, entity) -> merge(dtoContainer, entity, hints),
-                containsHint(Hint.KEEP_NULL) ? null : entity -> entity != null,
-                list -> afterMergeIntoCollection(list, hints));
+            boolean keepNull = containsHint(Hint.KEEP_NULL);
+
+            entities = MapperUtils
+                .mapOrdered(dtoContainers, entities, (dto, entity) -> isUniqueKeyMatchingNullable(dto, entity, hints),
+                    (dtoContainer, entity) -> merge(dtoContainer, entity, hints), keepMissing,
+                    keepNull ? null : entity -> entity != null, list -> afterMergeIntoCollection(list, hints));
 
             if (unmodifiable)
             {

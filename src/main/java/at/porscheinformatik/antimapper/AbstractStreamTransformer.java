@@ -172,9 +172,9 @@ public abstract class AbstractStreamTransformer<DTO, Entity, EntityContainer> im
 
         try
         {
-            Map<GroupKey, DTOCollection> dtos =
-                MapperUtils.mapMixedGroups(stream, mapFactory.get(), entity -> toKey(groupKeyFunction, entity),
-                    collectionFactory, (entity, dto) -> false, (entity, dto) -> transform(entity, hints),
+            Map<GroupKey, DTOCollection> dtos = MapperUtils
+                .mapMixedGroups(stream, mapFactory.get(), entity -> toKey(groupKeyFunction, entity), collectionFactory,
+                    (entity, dto) -> false, (entity, dto) -> transform(entity, hints), false,
                     containsHint(Hint.KEEP_NULL) ? null : dto -> dto != null, map -> {
                         if (containsHint(Hint.UNMODIFIABLE))
                         {

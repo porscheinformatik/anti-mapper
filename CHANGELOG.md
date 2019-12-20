@@ -1,5 +1,9 @@
 # anti-mapper 1.6
 
+## anti-mapper 1.6.1
+
+* Added Hint.KEEP_MISSING to merge operations. Entites in collections won't be deleted if they are missing in the DTOs.
+
 ## anti-mapper 1.6.0
 
 * `Hints.optionalHint` now returns an `Optional`. This is breaking change, but fairly easy to fix. Use `Hint.hintOrNull` as direct replacement.
