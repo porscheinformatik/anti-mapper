@@ -1,8 +1,12 @@
 # anti-mapper 1.6
 
+## anti-mapper 1.6.2
+
+* Updates to build and test dependencies
+
 ## anti-mapper 1.6.1
 
-* Added Hint.KEEP_MISSING to merge operations. Entites in collections won't be deleted if they are missing in the DTOs.
+* Added Hint.KEEP_MISSING to merge operations. Entities in collections won't be deleted if they are missing in the DTOs.
 
 ## anti-mapper 1.6.0
 
